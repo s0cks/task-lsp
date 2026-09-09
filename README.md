@@ -2,6 +2,8 @@
 
 > A [language server protocol](https://microsoft.github.io/language-server-protocol/) (LSP) for [Task](https://taskfile.dev/) Taskfiles.
 
+![Example Document Symbols](./assets/lsp_document_symbols.gif)
+
 ## Features
 
 Working features:
