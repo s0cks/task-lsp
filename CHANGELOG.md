@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/s0cks/task-lsp/compare/v1.2.0...v1.2.1) (2026-09-09)
+
+
+### Bug Fixes
+
+* **vscode:** 🐛 fix vscode plugin pnpm packageManager issue ([8f1283c](https://github.com/s0cks/task-lsp/commit/8f1283c39585c00cdda909837383379fcc7e23dd))
+
 ## [1.2.0](https://github.com/s0cks/task-lsp/compare/v1.1.0...v1.2.0) (2026-09-09)
 
 
