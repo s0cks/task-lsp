@@ -1,2 +1,4 @@
 *.bkp
 .task/
+node_modules/
+dist/
