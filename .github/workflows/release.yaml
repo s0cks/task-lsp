@@ -79,6 +79,7 @@ jobs:
       with:
         runtime: node@22
         cache: true
+        version: "10.28.1"
     - name: Build LSP
       run: |
         VERSION="${{ needs.release-please.outputs.version }}"
