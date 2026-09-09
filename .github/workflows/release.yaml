@@ -21,7 +21,7 @@ jobs:
     steps:
     - uses: googleapis/release-please-action@v4
       id: release
-  compile:
+  test:
     runs-on: ubuntu-latest
     needs:
     - release-please
@@ -36,7 +36,50 @@ jobs:
     - name: Test
       run: |
         go test -v ./...
-    - name: Build
+  compile:
+    runs-on: ubuntu-latest
+    needs:
+    - test
+    strategy:
+      matrix:
+        include:
+        - os: linux
+          arch: amd64
+          target: linux-x64
+          ext: ""
+        - os: linux
+          arch: arm64
+          target: linux-arm64
+          ext: ""
+        - os: darwin
+          arch: amd64
+          target: macos-x64
+          ext: ""
+        - os: darwin
+          arch: arm64
+          target: macos-arm64
+          ext: ""
+        - os: windows
+          arch: amd64
+          target: win-x64
+          ext: ".exe"
+        - os: windows
+          arch: arm64
+          target: win-arm64
+          ext: ".exe"
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: "1.23"
+    - name: Setup Nodejs & pnpm
+      uses: pnpm/setup@v2
+      with:
+        runtime: node@22
+        cache: true
+    - name: Build LSP
       run: |
         VERSION="${{ needs.release-please.outputs.version }}"
         if [ -z "$VERSION" ]; then
@@ -44,11 +87,18 @@ jobs:
           VERSION="${VERSION#v}"
         fi
 
+        export GOOS=${{ matrix.os }}
+        export GOARCH=${{ matrix.arch }}
         go build -ldflags="-X main.Version=$VERSION -s -w" \
-          -o taskfile-lsp-linux-amd64 \
+          -o taskfile-lsp-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.ext }} \
           cmd/taskfile-lsp/main.go
+    - name: Build VSCode Extension
+      run: |
+        cd vscode
+        npnpm install
+        npx @vscode/vsce package --target ${{ matrix.target }}
     - name: Upload Artifacts to Release
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ needs.release-please.outputs.tag_name || github.event.release.tag_name }}
-        files: taskfile-lsp-linux-amd64
+        files: taskfile-lsp-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.ext }}
