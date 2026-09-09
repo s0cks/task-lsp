@@ -102,6 +102,7 @@ jobs:
         cache: 'pnpm'
         cache-dependency-path: 'vscode/pnpm-lock.yaml'
     - name: Build LSP
+      shell: bash
       run: |
         VERSION="${{ needs.release-please.outputs.version }}"
         if [ -z "$VERSION" ]; then
@@ -130,6 +131,7 @@ jobs:
           -o taskfile-lsp-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.ext }} \
           cmd/taskfile-lsp/main.go
     - name: Build VSCode Extension
+      shell: bash
       run: |
         cd vscode
         pnpm install --frozen-lockfile
