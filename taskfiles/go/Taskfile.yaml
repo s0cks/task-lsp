@@ -1,0 +1,38 @@
+---
+version: '3'
+tasks:
+  build:
+    preconditions:
+      - sh: "command -v go"
+        msg: "go is not installed. Please install go before building"
+    requires:
+      vars:
+        - VERSION
+    cmds:
+      - |
+        go build \
+          {{.GO_BUILD_ARGS | default "" }} \
+          -o {{.GO_TARGET_NAME | default "taskfile-lsp" }} \
+          {{.GO_SOURCE_FILE | default "main.go"}}
+  build-dev:
+    cmds:
+      - task: build
+        vars:
+          GO_BUILD_ARGS: --tags dev -ldflags="-X taskfile-lsp/internal/lsp.Version={{.VERSION}}"
+  build-release:
+    cmds:
+      - task: build
+        vars:
+          GO_BUILD_ARGS: -trimpath -ldflags="-s -w -X taskfile-lsp/internal/lsp.Version={{.VERSION}}"
+  test:
+    preconditions:
+      - sh: "command -v go"
+        msg: "go is not installed. Please install go before building"
+    cmds:
+      - go test ./...
+  clean:
+    preconditions:
+      - sh: "command -v go"
+        msg: "go is not installed. Please install go before building"
+    cmds:
+      - rm -rf {{.GO_TARGET_NAME}}

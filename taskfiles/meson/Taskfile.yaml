@@ -1,0 +1,44 @@
+---
+version: '3'
+tasks:
+  test:
+    desc: "Run tests using meson"
+    preconditions:
+      - sh: "command -v meson"
+        msg: "meson is not installed. Please install meson first before running tests"
+    requires:
+      vars:
+        - BUILD_DIR
+    cmds:
+      - meson test -C {{ .BUILD_DIR }}
+  build:
+    desc: "Build using meson"
+    preconditions:
+      - sh: "command -v meson"
+        msg: "meson is not installed. Please install meson first before building"
+    requires:
+      vars:
+        - BUILD_DIR
+    cmds:
+      - |
+        meson setup {{ .BUILD_DIR }} \
+          --reconfigure \
+          --buildtype={{ .BUILD_TYPE | default "debug" }}
+      - meson compile {{ .BUILD_ARGS | default "" }} -C {{ .BUILD_DIR }}
+  install:
+    desc: "Install using meson"
+    preconditions:
+      - sh: "command -v meson"
+        msg: "meson is not installed. Please install meson first before installing"
+    requires:
+      vars:
+        - BUILD_DIR
+    cmds:
+      - meson install -C {{ .BUILD_DIR }}
+  clean:
+    desc: "Clean meson build artifacts"
+    requires:
+      vars:
+        - BUILD_DIR
+    cmds:
+      - rm -rf {{.BUILD_DIR}}

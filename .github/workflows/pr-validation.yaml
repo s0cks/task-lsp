@@ -1,0 +1,37 @@
+---
+name: Validate PR
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+jobs:
+  lint-and-test-go:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+      - name: Lint go
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.60
+      - name: Test go
+        run: |
+          go test \
+            -v \
+            -race \
+            -covermode=atomic \
+            ./...
+  lint-dockerfile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Lint build-env Dockerfile
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: ./docker/build-env/Dockerfile

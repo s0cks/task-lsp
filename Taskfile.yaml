@@ -1,0 +1,55 @@
+---
+version: 3
+vars:
+  GO_TARGET_NAME: taskfile-lsp
+  BUILD_DIR: "{{.ROOT_DIR}}/build"
+  VSCODE_DIR: "{{.ROOT_DIR}}/vscode"
+  VERSION: '{{.VERSION | default "latest" }}'
+includes:
+  go: ./taskfiles/go/Taskfile.yaml
+  meson: ./taskfiles/meson/Taskfile.yaml
+  vhs: ./taskfiles/vhs/Taskfile.yaml
+  vscode: ./taskfiles/vscode/Taskfile.yaml
+tasks:
+  build-dev:
+    aliases:
+      - default
+    cmds:
+      - task: meson:build
+      - task: go:build-dev
+  build-release:
+    aliases:
+      - build
+    cmds:
+      - task: meson:build
+        vars:
+          BUILD_TYPE: release
+          BUILD_ARGS: --clean
+      - task: go:build-release
+  build-tapes:
+    silent: true
+    aliases:
+      - tapes
+    cmds:
+      - |
+        for file in ./assets/[!_]*.tape; do
+            [ -e "$file" ] || continue
+            task vhs:tape VHS_FILE="$file"
+        done
+
+  test:
+    cmds:
+      - task: meson:test
+      - task: go:test
+
+  install:
+    deps:
+      - build-release
+    cmds:
+      - task: meson:install
+
+  clean:
+    deps:
+      - go:clean
+      - meson:clean
+      - vscode:clean

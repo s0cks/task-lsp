@@ -1,0 +1,7 @@
+taskfile-lsp
+(?i)Taskfile(s)?
+Neovim
+wget
+httpie
+(?i)VSCode
+(?i)Filetype(s)?

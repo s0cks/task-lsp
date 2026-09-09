@@ -1,0 +1,14 @@
+---
+version: '3'
+tasks:
+  tape:
+    silent: true
+    desc: Render a vhs .tape file
+    preconditions:
+      - sh: "command -v vhs"
+        msg: "vhs is not installed. Please install vhs before rendering tapes"
+    requires:
+      vars:
+        - VHS_FILE
+    cmds:
+      - vhs "{{.VHS_FILE}}" >/dev/null 2>&1
