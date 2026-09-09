@@ -75,7 +75,7 @@ jobs:
       with:
         go-version: "1.23"
     - name: Setup Nodejs & pnpm
-      uses: pnpm/setup@v2
+      uses: pnpm/setup@v4
       with:
         runtime: node@22
         cache: true
