@@ -1,4 +1,9 @@
 ---
+prepare-commit-msg:
+  commands:
+    koji:
+      interactive: true
+      run: koji --hook --yes
 commit-msg:
   commands:
     conventional-commits:
@@ -9,13 +14,24 @@ pre-commit:
       glob: "*.go"
       run: gofmt -w {staged_files}
       stage_fixed: true
+    go-vet:
+      glob: "*.go"
+      run: go vet ./...
+    go-lint:
+      glob: "*.go"
+      run: golangci-lint run --fix ./...
+      stage_fixed: true
     yaml-format:
       glob: "*.{yaml,yml}"
       run: yamlfmt {staged_files}
       stage_fixed: true
+    yaml-lint:
+      glob: "*.{yaml,yml}"
+      run: yamllint {staged_files}
     hadolint-format:
       glob: "**/Dockerfile*"
       run: hadolint {staged_files}
+      stage_fixed: true
     gitleaks:
       glob: "*"
       run: gitleaks protect --staged --verbose

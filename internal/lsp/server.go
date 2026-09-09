@@ -60,11 +60,13 @@ func (s *Server) publish(conn *rpc.Conn, uri string, version int, raw []taskfile
 		})
 	}
 	v := version
-	conn.Notify("textDocument/publishDiagnostics", PublishDiagnosticsParams{
+	if err := conn.Notify("textDocument/publishDiagnostics", PublishDiagnosticsParams{
 		URI:         uri,
 		Version:     &v,
 		Diagnostics: diags,
-	})
+	}); err != nil {
+		fmt.Printf("notify failed: %v", err)
+	}
 }
 
 func newTaskEdit(f *taskfile.File, name string) TextEdit {

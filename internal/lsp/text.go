@@ -38,7 +38,7 @@ func wordAt(text string, pos Position) string {
 	return string(runes[start:end])
 }
 
-func textInRange(text string, r Range) string {
+func TextInRange(text string, r Range) string {
 	if r.Start.Line != r.End.Line {
 		return ""
 	}

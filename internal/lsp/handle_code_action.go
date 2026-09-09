@@ -21,25 +21,20 @@ func (s *Server) handleCodeAction(ctx context.Context, conn *rpc.Conn, params js
 		return actions, nil
 	}
 
-	for _, d := range p.Context.Diagnostics {
-		if d.Code != taskfile.CodeUndefinedTask {
-			continue
-		}
-
-		name := strings.TrimSpace(textInRange(doc.Text, d.Range))
-		if name == "" {
-			continue
-		}
-
+	filter := NewDiagnosticCodePredicate(taskfile.CodeUndefinedTask)
+	append_action := func(name string, diagnostic *Diagnostic) bool {
 		actions = append(actions, CodeAction{
 			Title:       fmt.Sprintf("Create task %q", name),
 			Kind:        "quickfix",
-			Diagnostics: []Diagnostic{d},
+			Diagnostics: []Diagnostic{*diagnostic},
 			Edit: &WorkspaceEdit{
 				Changes: map[string][]TextEdit{p.TextDocument.URI: {newTaskEdit(doc.Parsed, name)}},
 			},
 		})
+
+		return true
 	}
+	p.VisitDiagnosticsMatching(doc, filter, append_action)
 
 	if task, ok := doc.Parsed.TaskAt(toTFPos(p.Range.Start)); ok && task.Desc == "" {
 		at := Position{Line: task.DefLine + 1, Character: 0}

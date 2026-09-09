@@ -19,59 +19,11 @@ func (s *Server) handleSymbols(ctx context.Context, conn *rpc.Conn, params json.
 	}
 
 	for _, v := range doc.Parsed.Vars {
-		symbols = append(symbols, Symbol{
-			Name:   v.Name,
-			Detail: "property",
-			Kind:   7,
-			SelectionRange: Range{
-				Start: Position{
-					Line:      v.NameRange.Start.Line,
-					Character: v.NameRange.Start.Character,
-				},
-				End: Position{
-					Line:      v.NameRange.Start.Line,
-					Character: v.NameRange.Start.Character,
-				},
-			},
-			Range: Range{
-				Start: Position{
-					Line:      v.NameRange.Start.Line,
-					Character: v.NameRange.Start.Character,
-				},
-				End: Position{
-					Line:      v.NameRange.Start.Line,
-					Character: v.NameRange.Start.Character,
-				},
-			},
-		})
+		symbols = append(symbols, NewVarSymbol(v))
 	}
 
 	for _, task := range doc.Parsed.Tasks {
-		symbols = append(symbols, Symbol{
-			Name:   task.Name,
-			Detail: "function",
-			Kind:   12,
-			SelectionRange: Range{
-				Start: Position{
-					Line:      task.NameRange.Start.Line,
-					Character: task.NameRange.Start.Character,
-				},
-				End: Position{
-					Line:      task.NameRange.Start.Line,
-					Character: task.NameRange.Start.Character,
-				},
-			},
-			Range: Range{
-				Start: Position{
-					Line:      task.NameRange.Start.Line,
-					Character: task.NameRange.Start.Character,
-				},
-				End: Position{
-					Line:      task.NameRange.Start.Line,
-					Character: task.NameRange.Start.Character,
-				},
-			},
-		})
+		symbols = append(symbols, NewTaskSymbol(task))
 	}
 
 	return symbols, nil
