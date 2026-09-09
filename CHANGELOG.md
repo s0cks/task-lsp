@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/s0cks/task-lsp/compare/v1.1.0...v1.2.0) (2026-09-09)
+
+
+### Features
+
+* **vscode:** ✨ add vscode extension ([3b355c6](https://github.com/s0cks/task-lsp/commit/3b355c65c7a7963dac2a693b0dbf310a7789b694))
+
 ## [1.1.0](https://github.com/s0cks/task-lsp/compare/v1.0.0...v1.1.0) (2026-09-09)
 
 
