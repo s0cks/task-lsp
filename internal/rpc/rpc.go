@@ -33,6 +33,7 @@ func (id ID) MarshalJSON() ([]byte, error) {
 	if id.value == nil {
 		return []byte("null"), nil
 	}
+
 	return json.Marshal(id.value)
 }
 
@@ -41,16 +42,21 @@ func (id *ID) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return err
 	}
+
 	switch v := raw.(type) {
 	case float64:
 		id.value = int64(v)
+
 	case string:
 		id.value = v
+
 	case nil:
 		id.value = nil
+
 	default:
 		return fmt.Errorf("rpc: unsupported id type %T", raw)
 	}
+
 	return nil
 }
 
@@ -58,10 +64,13 @@ func (id ID) String() string {
 	switch v := id.value.(type) {
 	case int64:
 		return strconv.FormatInt(v, 10)
+
 	case string:
 		return v
+
 	default:
 		return ""
+
 	}
 }
 
@@ -107,14 +116,17 @@ func readMessage(r *bufio.Reader) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		line = strings.TrimRight(line, "\r\n")
 		if line == "" {
 			break
 		}
+
 		parts := strings.SplitN(line, ":", 2)
 		if len(parts) != 2 {
 			continue
 		}
+
 		name := strings.TrimSpace(parts[0])
 		value := strings.TrimSpace(parts[1])
 		if strings.EqualFold(name, "Content-Length") {
@@ -122,16 +134,20 @@ func readMessage(r *bufio.Reader) ([]byte, error) {
 			if err != nil {
 				return nil, fmt.Errorf("rpc: invalid Content-Length %q: %w", value, err)
 			}
+
 			contentLength = n
 		}
 	}
+
 	if contentLength < 0 {
 		return nil, fmt.Errorf("rpc: message missing Content-Length header")
 	}
+
 	buf := make([]byte, contentLength)
 	if _, err := io.ReadFull(r, buf); err != nil {
 		return nil, err
 	}
+
 	return buf, nil
 }
 
@@ -139,6 +155,7 @@ func writeMessage(w io.Writer, payload []byte) error {
 	if _, err := fmt.Fprintf(w, "Content-Length: %d\r\n\r\n", len(payload)); err != nil {
 		return err
 	}
+
 	_, err := w.Write(payload)
 	return err
 }
@@ -187,19 +204,25 @@ func (c *Conn) Run(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
+
 		default:
+			// do nothing
 		}
+
 		raw, err := readMessage(c.reader)
 		if err != nil {
 			if err == io.EOF {
 				return nil
 			}
+
 			return err
 		}
+
 		var env envelope
 		if err := json.Unmarshal(raw, &env); err != nil {
 			continue
 		}
+
 		go c.dispatch(ctx, env)
 	}
 }
@@ -218,6 +241,7 @@ func (c *Conn) dispatch(ctx context.Context, env envelope) {
 			})
 			return
 		}
+
 		result, rpcErr := fn(ctx, c, env.Params)
 		resp := &Response{JSONRPC: Version, ID: env.ID}
 		if rpcErr != nil {
@@ -232,7 +256,9 @@ func (c *Conn) dispatch(ctx context.Context, env envelope) {
 		} else {
 			resp.Result = json.RawMessage("null")
 		}
+
 		c.writeResponse(resp)
+
 	case env.Method != "" && env.ID == nil:
 		c.handlerMu.RLock()
 		fn, ok := c.notifyFuncs[env.Method]
@@ -240,6 +266,7 @@ func (c *Conn) dispatch(ctx context.Context, env envelope) {
 		if ok {
 			fn(ctx, c, env.Params)
 		}
+
 	case env.Method == "" && env.ID != nil:
 		key := env.ID.String()
 		c.pendingMu.Lock()
@@ -247,10 +274,12 @@ func (c *Conn) dispatch(ctx context.Context, env envelope) {
 		if ok {
 			delete(c.pending, key)
 		}
+
 		c.pendingMu.Unlock()
 		if ok {
 			ch <- &Response{JSONRPC: env.JSONRPC, ID: env.ID, Result: env.Result, Error: env.Error}
 		}
+
 	}
 }
 
@@ -259,6 +288,7 @@ func (c *Conn) writeResponse(resp *Response) {
 	if err != nil {
 		return
 	}
+
 	c.writeMu.Lock()
 	defer c.writeMu.Unlock()
 	_ = writeMessage(c.writer, data)
@@ -269,11 +299,13 @@ func (c *Conn) Notify(method string, params any) error {
 	if err != nil {
 		return err
 	}
+
 	req := &Request{JSONRPC: Version, Method: method, Params: p}
 	data, err := json.Marshal(req)
 	if err != nil {
 		return err
 	}
+
 	c.writeMu.Lock()
 	defer c.writeMu.Unlock()
 	return writeMessage(c.writer, data)
@@ -291,11 +323,13 @@ func (c *Conn) Call(ctx context.Context, method string, params any, result any) 
 	if err != nil {
 		return err
 	}
+
 	req := &Request{JSONRPC: Version, ID: &id, Method: method, Params: p}
 	data, err := json.Marshal(req)
 	if err != nil {
 		return err
 	}
+
 	c.writeMu.Lock()
 	err = writeMessage(c.writer, data)
 	c.writeMu.Unlock()
@@ -308,9 +342,11 @@ func (c *Conn) Call(ctx context.Context, method string, params any, result any) 
 		if resp.Error != nil {
 			return resp.Error
 		}
+
 		if result != nil && resp.Result != nil {
 			return json.Unmarshal(resp.Result, result)
 		}
+
 		return nil
 	case <-ctx.Done():
 		return ctx.Err()

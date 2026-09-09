@@ -68,7 +68,7 @@ func (s *Server) handleInitialize(ctx context.Context, conn *rpc.Conn, params js
 			ReferencesProvider:     true,
 			CodeActionProvider:     true,
 			CompletionProvider: &CompletionOptions{
-				TriggerCharacters: []string{":", "-"},
+				TriggerCharacters: []string{"-"},
 			},
 		},
 		ServerInfo: &ServerInfo{Name: "taskfile-lsp", Version: "0.1.0"},
@@ -161,25 +161,44 @@ func (s *Server) handleHover(ctx context.Context, conn *rpc.Conn, params json.Ra
 	if err := json.Unmarshal(params, &p); err != nil {
 		return nil, rpc.NewError(rpc.InvalidParams, err.Error())
 	}
+
 	doc, ok := s.docs.Get(p.TextDocument.URI)
 	if !ok {
 		return nil, nil
 	}
+
 	if doc.Parsed != nil {
-		if name, ok := doc.Parsed.NameOrRefAt(toTFPos(p.Position)); ok {
-			if t, ok := doc.Parsed.Tasks[name]; ok {
-				value := fmt.Sprintf("**task: %s**", t.Name)
-				if t.Desc != "" {
-					value += "\n\n" + t.Desc
+		if name, kind, ok := doc.Parsed.NameOrRefAt(toTFPos(p.Position)); ok {
+			switch kind {
+			case taskfile.EntityTask:
+				if t, ok := doc.Parsed.Tasks[name]; ok {
+					value := fmt.Sprintf("**task: %s**", t.Name)
+					if t.Desc != "" {
+						value += "\n\n" + t.Desc
+					}
+
+					return Hover{Contents: MarkupContent{Kind: MarkupMarkdown, Value: value}}, nil
 				}
-				return Hover{Contents: MarkupContent{Kind: MarkupMarkdown, Value: value}}, nil
+
+			case taskfile.EntityVar:
+				if v, ok := doc.Parsed.Vars[name]; ok {
+					value := fmt.Sprintf("**var: %s**", v.Name)
+					if v.Value != "" {
+						value += "\n\n" + v.Value
+					}
+
+					return Hover{Contents: MarkupContent{Kind: MarkupMarkdown, Value: value}}, nil
+				}
+
 			}
 		}
 	}
+
 	word := wordAt(doc.Text, p.Position)
 	if word == "" {
 		return nil, nil
 	}
+
 	return Hover{Contents: MarkupContent{Kind: MarkupMarkdown, Value: fmt.Sprintf("`%s`", word)}}, nil
 }
 
@@ -188,18 +207,22 @@ func (s *Server) handleDefinition(ctx context.Context, conn *rpc.Conn, params js
 	if err := json.Unmarshal(params, &p); err != nil {
 		return nil, rpc.NewError(rpc.InvalidParams, err.Error())
 	}
+
 	doc, ok := s.docs.Get(p.TextDocument.URI)
 	if !ok || doc.Parsed == nil {
 		return nil, nil
 	}
-	name, ok := doc.Parsed.NameOrRefAt(toTFPos(p.Position))
+
+	name, _, ok := doc.Parsed.NameOrRefAt(toTFPos(p.Position))
 	if !ok {
 		return nil, nil
 	}
+
 	task, ok := doc.Parsed.Tasks[name]
 	if !ok {
 		return nil, nil
 	}
+
 	return Location{URI: p.TextDocument.URI, Range: toRange(task.NameRange)}, nil
 }
 
@@ -208,26 +231,38 @@ func (s *Server) handleReferences(ctx context.Context, conn *rpc.Conn, params js
 	if err := json.Unmarshal(params, &p); err != nil {
 		return nil, rpc.NewError(rpc.InvalidParams, err.Error())
 	}
+
 	locs := []Location{}
 	doc, ok := s.docs.Get(p.TextDocument.URI)
 	if !ok || doc.Parsed == nil {
 		return locs, nil
 	}
-	name, ok := doc.Parsed.NameOrRefAt(toTFPos(p.Position))
+
+	name, _, ok := doc.Parsed.NameOrRefAt(toTFPos(p.Position))
 	if !ok {
 		return locs, nil
 	}
+
 	if p.Context.IncludeDeclaration {
 		if t, ok := doc.Parsed.Tasks[name]; ok {
 			locs = append(locs, Location{URI: p.TextDocument.URI, Range: toRange(t.NameRange)})
 		}
 	}
+
 	for _, r := range doc.Parsed.Refs {
 		if r.Name == name {
 			locs = append(locs, Location{URI: p.TextDocument.URI, Range: toRange(r.Range)})
 		}
 	}
+
 	return locs, nil
+}
+
+var varBodyKeywords = []CompletionItem{
+	{Label: "scalar", Kind: CompletionItemKeyword, Detail: "A scalar value"},
+	{Label: "sh", Kind: CompletionItemKeyword, Detail: "A shell command value"},
+	{Label: "ref", Kind: CompletionItemKeyword, Detail: "A reference to another variable"},
+	{Label: "map", Kind: CompletionItemKeyword, Detail: "A nested map value"},
 }
 
 var rootKeywords = []CompletionItem{
@@ -266,27 +301,40 @@ func (s *Server) handleCompletion(ctx context.Context, conn *rpc.Conn, params js
 	if err := json.Unmarshal(params, &p); err != nil {
 		return nil, rpc.NewError(rpc.InvalidParams, err.Error())
 	}
+
 	doc, ok := s.docs.Get(p.TextDocument.URI)
 	if !ok || doc.Parsed == nil {
 		return CompletionList{Items: taskBodyKeywords}, nil
 	}
+
 	lc := doc.Parsed.ContextAt(toTFPos(p.Position))
 	switch lc.Kind {
 	case "depslist":
 		return CompletionList{Items: taskNameItems(doc.Parsed)}, nil
+
 	case "cmdslist":
 		line := lineAt(doc.Text, p.Position.Line)
 		cursor := min(p.Position.Character, len(line))
 		if strings.Contains(line[:cursor], "task:") {
 			return CompletionList{Items: taskNameItems(doc.Parsed)}, nil
 		}
+
 		return CompletionList{Items: []CompletionItem{}}, nil
-	case "tasks":
+
+	case "tasks", "vars":
 		return CompletionList{Items: []CompletionItem{}}, nil
+
 	case "root":
 		return CompletionList{Items: rootKeywords}, nil
-	default:
+
+	case "taskbody":
 		return CompletionList{Items: taskBodyKeywords}, nil
+
+	case "varbody":
+		return CompletionList{Items: varBodyKeywords}, nil
+
+	default:
+		return CompletionList{Items: []CompletionItem{}}, nil
 	}
 }
 
@@ -300,6 +348,34 @@ func (s *Server) handleSymbols(ctx context.Context, conn *rpc.Conn, params json.
 	doc, ok := s.docs.Get(p.TextDocument.URI)
 	if !ok || doc.Parsed == nil {
 		return symbols, nil
+	}
+
+	for _, v := range doc.Parsed.Vars {
+		symbols = append(symbols, Symbol{
+			Name:   v.Name,
+			Detail: "property",
+			Kind:   7,
+			SelectionRange: Range{
+				Start: Position{
+					Line:      v.NameRange.Start.Line,
+					Character: v.NameRange.Start.Character,
+				},
+				End: Position{
+					Line:      v.NameRange.Start.Line,
+					Character: v.NameRange.Start.Character,
+				},
+			},
+			Range: Range{
+				Start: Position{
+					Line:      v.NameRange.Start.Line,
+					Character: v.NameRange.Start.Character,
+				},
+				End: Position{
+					Line:      v.NameRange.Start.Line,
+					Character: v.NameRange.Start.Character,
+				},
+			},
+		})
 	}
 
 	for _, task := range doc.Parsed.Tasks {

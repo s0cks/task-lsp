@@ -54,5 +54,6 @@ func (s *DocumentStore) Update(uri string, version int, text string) []taskfile.
 		d.Text = text
 		d.Parsed = parsed
 	}
+
 	return diags
 }

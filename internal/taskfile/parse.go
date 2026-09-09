@@ -1,6 +1,7 @@
 package taskfile
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 )
@@ -15,6 +16,7 @@ type frame struct {
 	indent   int
 	kind     string
 	taskName string
+	varName  string
 }
 
 func Parse(content string) (*File, []Diagnostic) {
@@ -25,6 +27,7 @@ func Parse(content string) (*File, []Diagnostic) {
 
 	f := &File{
 		Tasks:       make(map[string]*Task),
+		Vars:        make(map[string]*TaskVar),
 		Includes:    make(map[string]string),
 		lineContext: make([]LineContext, len(lines)),
 	}
@@ -44,6 +47,7 @@ func Parse(content string) (*File, []Diagnostic) {
 		for len(stack) > 1 && indent <= stack[len(stack)-1].indent {
 			stack = stack[:len(stack)-1]
 		}
+
 		top := stack[len(stack)-1]
 		f.lineContext[i] = LineContext{Kind: top.kind, TaskName: top.taskName}
 
@@ -60,8 +64,13 @@ func Parse(content string) (*File, []Diagnostic) {
 				case "tasks":
 					f.TasksLine = i
 					stack = append(stack, frame{indent: indent, kind: "tasks"})
+
 				case "includes":
 					stack = append(stack, frame{indent: indent, kind: "includes"})
+
+				case "vars":
+					stack = append(stack, frame{indent: indent, kind: "vars"})
+
 				default:
 					stack = append(stack, frame{indent: indent, kind: "other"})
 				}
@@ -70,6 +79,7 @@ func Parse(content string) (*File, []Diagnostic) {
 				if f.TaskIndent == 0 {
 					f.TaskIndent = indent
 				}
+
 				if _, exists := f.Tasks[key]; exists {
 					diags = append(diags, Diagnostic{
 						Range:    Range{Start: Position{i, keyStart}, End: Position{i, keyEnd}},
@@ -84,28 +94,113 @@ func Parse(content string) (*File, []Diagnostic) {
 						DefLine:   i,
 						EndLine:   i,
 					}
+
 					f.Order = append(f.Order, key)
 				}
+
 				stack = append(stack, frame{indent: indent, kind: "taskbody", taskName: key})
+
+			case "vars":
+				trimmedVal := strings.TrimSpace(value)
+				if _, exists := f.Vars[key]; exists {
+					diags = append(diags, Diagnostic{
+						Range: Range{
+							Start: Position{i, keyStart},
+							End:   Position{i, keyEnd},
+						},
+						Severity: SeverityError,
+						Code:     CodeDuplicateVar,
+						Message:  fmt.Sprintf("var %q is already defined", key),
+					})
+				} else {
+					v := &TaskVar{
+						Name: key,
+						NameRange: Range{
+							Start: Position{i, keyStart},
+							End:   Position{i, keyEnd},
+						},
+					}
+
+					if trimmedVal != "" {
+						v.Kind = TaskVarScalarKind
+						v.Value = stripInlineComment(trimmedVal)
+					}
+
+					f.Vars[key] = v
+				}
+
+				if trimmedVal != "" {
+					stack = append(stack, frame{indent: indent, kind: "other"})
+				} else {
+					stack = append(stack, frame{indent: indent, kind: "varbody", varName: key})
+				}
+
+			case "varbody":
+				v := f.Vars[top.varName]
+				switch key {
+				case "sh":
+					if v != nil {
+						v.Kind = TaskVarShellKind
+						v.Value = stripInlineComment(strings.TrimSpace(value))
+					}
+
+				case "ref":
+					clean := stripInlineComment(strings.TrimSpace(value))
+					name := strings.TrimPrefix(clean, ".")
+					start := valueOffset(keyEnd, spacing)
+					if strings.HasPrefix(clean, ".") {
+						start++
+					}
+
+					if v != nil {
+						v.Kind = TaskVarRefKind
+						v.Value = name
+					}
+
+					if name != "" {
+						f.Refs = append(f.Refs, Ref{
+							Name:  name,
+							Owner: top.varName,
+							Kind:  RefVar,
+							Range: Range{
+								Start: Position{i, start},
+								End:   Position{i, start + len(name)},
+							},
+						})
+					}
+
+				case "map":
+					if v != nil {
+						v.Kind = TaskVarMapKind
+					}
+				}
+
+				stack = append(stack, frame{indent: indent, kind: "other"})
 
 			case "taskbody":
 				owner := top.taskName
 				if f.BodyIndent == 0 {
 					f.BodyIndent = indent
 				}
+
 				switch key {
 				case "desc":
 					if t, ok := f.Tasks[owner]; ok {
 						t.Desc = strings.Trim(strings.TrimSpace(value), `"'`)
 					}
+
 					stack = append(stack, frame{indent: indent, kind: "other", taskName: owner})
+
 				case "deps":
 					if strings.TrimSpace(value) != "" {
 						parseInlineRefs(raw, i, valueOffset(keyEnd, spacing), value, owner, RefDep, f)
 					}
+
 					stack = append(stack, frame{indent: indent, kind: "depslist", taskName: owner})
+
 				case "cmds":
 					stack = append(stack, frame{indent: indent, kind: "cmdslist", taskName: owner})
+
 				default:
 					stack = append(stack, frame{indent: indent, kind: "other", taskName: owner})
 				}
@@ -117,6 +212,7 @@ func Parse(content string) (*File, []Diagnostic) {
 			default:
 				stack = append(stack, frame{indent: indent, kind: "other", taskName: top.taskName})
 			}
+
 			continue
 		}
 
@@ -126,9 +222,12 @@ func Parse(content string) (*File, []Diagnostic) {
 			switch top.kind {
 			case "depslist":
 				addListRef(rest, restStart, i, top.taskName, RefDep, f)
+
 			case "cmdslist":
 				addListRef(rest, restStart, i, top.taskName, RefCall, f)
+
 			}
+
 			continue
 		}
 	}
@@ -139,21 +238,26 @@ func Parse(content string) (*File, []Diagnostic) {
 		for end > t.DefLine && strings.TrimSpace(lines[end]) == "" {
 			end--
 		}
+
 		t.EndLine = end
 	}
+
 	for idx, name := range f.Order {
 		if idx+1 >= len(f.Order) {
 			continue
 		}
+
 		cur := f.Tasks[name]
 		next := f.Tasks[f.Order[idx+1]]
 		if next.DefLine-1 < cur.EndLine {
 			cur.EndLine = next.DefLine - 1
 		}
 	}
+
 	if f.TaskIndent == 0 {
 		f.TaskIndent = 2
 	}
+
 	if f.BodyIndent == 0 {
 		f.BodyIndent = f.TaskIndent + 2
 	}
@@ -162,6 +266,20 @@ func Parse(content string) (*File, []Diagnostic) {
 		if strings.Contains(r.Name, ":") {
 			continue
 		}
+
+		if r.Kind == RefVar {
+			if _, ok := f.Vars[r.Name]; !ok {
+				diags = append(diags, Diagnostic{
+					Range:    r.Range,
+					Severity: SeverityWarning,
+					Code:     CodeUndefinedVar,
+					Message:  fmt.Sprintf("var %q not found", r.Name),
+				})
+			}
+
+			continue
+		}
+
 		if _, ok := f.Tasks[r.Name]; !ok {
 			diags = append(diags, Diagnostic{
 				Range:    r.Range,
@@ -169,8 +287,10 @@ func Parse(content string) (*File, []Diagnostic) {
 				Code:     CodeUndefinedTask,
 				Message:  "task \"" + r.Name + "\" not found",
 			})
+
 			continue
 		}
+
 		if r.Kind == RefDep && r.Name == r.Owner {
 			diags = append(diags, Diagnostic{
 				Range:    r.Range,
@@ -192,6 +312,7 @@ func stripInlineComment(s string) string {
 	if idx := strings.Index(s, " #"); idx >= 0 {
 		return s[:idx]
 	}
+
 	return s
 }
 
@@ -200,16 +321,19 @@ func parseInlineRefs(raw string, lineIndex int, valueStart int, value string, ow
 	if strings.HasPrefix(inner, "[") && strings.HasSuffix(inner, "]") {
 		inner = inner[1 : len(inner)-1]
 	}
+
 	searchFrom := valueStart
 	for _, part := range strings.Split(inner, ",") {
 		name := strings.Trim(strings.TrimSpace(part), `"'`)
 		if name == "" {
 			continue
 		}
+
 		idx := strings.Index(raw[searchFrom:], name)
 		if idx < 0 {
 			continue
 		}
+
 		start := searchFrom + idx
 		end := start + len(name)
 		f.Refs = append(f.Refs, Ref{
@@ -234,6 +358,7 @@ func addListRef(rest string, restStart int, lineIndex int, owner string, kind Re
 		if loc == nil {
 			return
 		}
+
 		name := strings.Trim(rest[loc[2]:loc[3]], `"'`)
 		start := restStart + loc[2]
 		f.Refs = append(f.Refs, Ref{
@@ -249,6 +374,7 @@ func addListRef(rest string, restStart int, lineIndex int, owner string, kind Re
 		if idx < 0 || sub == "" {
 			return
 		}
+
 		name := strings.Trim(sub, `"'`)
 		start := restStart + idx
 		f.Refs = append(f.Refs, Ref{
@@ -262,6 +388,7 @@ func addListRef(rest string, restStart int, lineIndex int, owner string, kind Re
 	if name == "" {
 		return
 	}
+
 	idx := strings.Index(rest, name)
 	if idx < 0 {
 		idx = 0
@@ -269,7 +396,9 @@ func addListRef(rest string, restStart int, lineIndex int, owner string, kind Re
 
 	start := restStart + idx
 	f.Refs = append(f.Refs, Ref{
-		Name: name, Owner: owner, Kind: RefDep,
+		Name:  name,
+		Owner: owner,
+		Kind:  RefDep,
 		Range: Range{Start: Position{lineIndex, start}, End: Position{lineIndex, start + len(name)}},
 	})
 }

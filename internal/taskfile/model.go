@@ -11,6 +11,8 @@ const (
 
 const (
 	CodeDuplicateTask  = "duplicate-task"
+	CodeDuplicateVar   = "duplicate-var"
+	CodeUndefinedVar   = "undefined-var"
 	CodeUndefinedTask  = "undefined-task"
 	CodeSelfDependency = "self-dependency"
 )
@@ -37,6 +39,7 @@ type RefKind int
 const (
 	RefDep RefKind = iota
 	RefCall
+	RefVar
 )
 
 type Ref struct {
@@ -59,8 +62,26 @@ type LineContext struct {
 	TaskName string
 }
 
+type TaskVarKind int
+
+const (
+	TaskVarScalarKind TaskVarKind = iota
+	TaskVarShellKind
+	TaskVarRefKind
+	TaskVarMapKind
+)
+
+type TaskVar struct {
+	Name      string
+	Kind      TaskVarKind
+	Owner     string
+	Value     string
+	NameRange Range
+}
+
 type File struct {
 	Tasks      map[string]*Task
+	Vars       map[string]*TaskVar
 	Order      []string
 	Refs       []Ref
 	Includes   map[string]string
@@ -75,6 +96,7 @@ func (f *File) ContextAt(pos Position) LineContext {
 	if pos.Line < 0 || pos.Line >= len(f.lineContext) {
 		return LineContext{Kind: "root"}
 	}
+
 	return f.lineContext[pos.Line]
 }
 
@@ -82,21 +104,59 @@ func inRange(r Range, pos Position) bool {
 	if pos.Line != r.Start.Line || pos.Line != r.End.Line {
 		return false
 	}
+
 	return pos.Character >= r.Start.Character && pos.Character <= r.End.Character
 }
 
-func (f *File) NameOrRefAt(pos Position) (string, bool) {
+func (f *File) LookupVar(scope, name string) (*TaskVar, bool) {
+	for i := range f.Vars {
+		if f.Vars[i].Name == name && f.Vars[i].Owner == scope {
+			return f.Vars[i], true
+		}
+	}
+
+	for i := range f.Vars {
+		if f.Vars[i].Name == name && f.Vars[i].Owner == "" {
+			return f.Vars[i], true
+		}
+	}
+
+	return nil, false
+}
+
+type EntityKind int
+
+const (
+	EntityTask EntityKind = iota
+	EntityVar
+)
+
+func (f *File) NameOrRefAt(pos Position) (string, EntityKind, bool) {
 	for _, ref := range f.Refs {
 		if inRange(ref.Range, pos) {
-			return ref.Name, true
+			switch ref.Kind {
+			case RefDep, RefCall:
+				return ref.Name, EntityTask, true
+
+			case RefVar:
+				return ref.Name, EntityVar, true
+			}
 		}
 	}
+
 	for _, name := range f.Order {
 		if t, ok := f.Tasks[name]; ok && inRange(t.NameRange, pos) {
-			return t.Name, true
+			return t.Name, EntityTask, true
 		}
 	}
-	return "", false
+
+	for name, v := range f.Vars {
+		if inRange(v.NameRange, pos) {
+			return name, EntityVar, true
+		}
+	}
+
+	return "", 0, false
 }
 
 func (f *File) TaskAt(pos Position) (*Task, bool) {
@@ -106,5 +166,6 @@ func (f *File) TaskAt(pos Position) (*Task, bool) {
 			return t, true
 		}
 	}
+
 	return nil, false
 }
