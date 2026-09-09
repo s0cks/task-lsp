@@ -2,7 +2,11 @@
 name: Test task-lsp
 on:
   push:
+    paths:
+    - cmd/
+    - internal/
     branches:
+    - main
     - develop
   pull_request:
     branches:
