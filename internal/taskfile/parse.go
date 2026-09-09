@@ -65,6 +65,9 @@ func Parse(content string) (*File, []Diagnostic) {
 					f.TasksLine = i
 					stack = append(stack, frame{indent: indent, kind: "tasks"})
 
+				case "method":
+					stack = append(stack, frame{indent: indent, kind: "method"})
+
 				case "includes":
 					stack = append(stack, frame{indent: indent, kind: "includes"})
 
@@ -99,6 +102,9 @@ func Parse(content string) (*File, []Diagnostic) {
 				}
 
 				stack = append(stack, frame{indent: indent, kind: "taskbody", taskName: key})
+
+			case "method":
+				stack = append(stack, frame{indent: indent, kind: "other"})
 
 			case "vars":
 				trimmedVal := strings.TrimSpace(value)

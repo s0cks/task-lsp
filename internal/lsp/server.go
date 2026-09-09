@@ -258,6 +258,12 @@ func (s *Server) handleReferences(ctx context.Context, conn *rpc.Conn, params js
 	return locs, nil
 }
 
+var methodKeywords = []CompletionItem{
+	{Label: "checksum", Kind: CompletionItemKeyword, Detail: ""},
+	{Label: "timestamp", Kind: CompletionItemKeyword, Detail: ""},
+	{Label: "none", Kind: CompletionItemKeyword, Detail: ""},
+}
+
 var varBodyKeywords = []CompletionItem{
 	{Label: "scalar", Kind: CompletionItemKeyword, Detail: "A scalar value"},
 	{Label: "sh", Kind: CompletionItemKeyword, Detail: "A shell command value"},
@@ -266,6 +272,7 @@ var varBodyKeywords = []CompletionItem{
 }
 
 var rootKeywords = []CompletionItem{
+	{Label: "method", Kind: CompletionItemKeyword},
 	{Label: "version", Kind: CompletionItemKeyword},
 	{Label: "tasks", Kind: CompletionItemKeyword},
 	{Label: "includes", Kind: CompletionItemKeyword},
@@ -286,6 +293,10 @@ var taskBodyKeywords = []CompletionItem{
 	{Label: "status", Kind: CompletionItemKeyword, Detail: "Commands that decide if this task is up to date"},
 	{Label: "preconditions", Kind: CompletionItemKeyword, Detail: "Conditions checked before running"},
 	{Label: "silent", Kind: CompletionItemKeyword, Detail: "Suppress command echo"},
+	{Label: "dotenv", Kind: CompletionItemKeyword, Detail: "Load environment variables from .env files"},
+	{Label: "summary", Kind: CompletionItemKeyword, Detail: "Detailed description shown in --summary"},
+	{Label: "prompt", Kind: CompletionItemKeyword, Detail: "Prompts shown before task execution"},
+	{Label: "aliases", Kind: CompletionItemKeyword, Detail: "Alternative names for the task"},
 }
 
 func taskNameItems(f *taskfile.File) []CompletionItem {
@@ -332,6 +343,9 @@ func (s *Server) handleCompletion(ctx context.Context, conn *rpc.Conn, params js
 
 	case "varbody":
 		return CompletionList{Items: varBodyKeywords}, nil
+
+	case "method":
+		return CompletionList{Items: methodKeywords}, nil
 
 	default:
 		return CompletionList{Items: []CompletionItem{}}, nil
