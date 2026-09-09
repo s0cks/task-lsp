@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/s0cks/task-lsp/compare/v1.2.1...v1.2.2) (2026-09-09)
+
+
+### Bug Fixes
+
+* **vscode:** 🐛 try to fix pnpm versioning again ([b3b3c7b](https://github.com/s0cks/task-lsp/commit/b3b3c7b2f48f50697c7ff9096c6a48f72e169ecf))
+
 ## [1.2.1](https://github.com/s0cks/task-lsp/compare/v1.2.0...v1.2.1) (2026-09-09)
 
 
