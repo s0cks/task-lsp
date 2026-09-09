@@ -1,0 +1,54 @@
+---
+name: Release task-lsp
+on:
+  push:
+    branches:
+    - main
+  release:
+    types:
+    - published
+permissions:
+  contents: write
+  pull-requests: write
+  packages: write
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      releases_created: ${{ steps.release.outputs.releases_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+    - uses: googleapis/release-please-action@v4
+      id: release
+  compile:
+    runs-on: ubuntu-latest
+    needs:
+    - release-please
+    if: ${{ github.event_name == 'release' || needs.release-please.outputs.releases_created == 'true' }}
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: "1.23"
+    - name: Test
+      run: |
+        go test -v ./...
+    - name: Build
+      run: |
+        VERSION="${{ needs.release-please.outputs.version }}"
+        if [ -z "$VERSION" ]; then
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${VERSION#v}"
+        fi
+
+        go build -ldflags="-X main.Version=$VERSION -s -w" \
+          -o taskfile-lsp-linux-amd64 \
+          cmd/taskfile-lsp/main.go
+    - name: Upload Artifacts to Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ needs.release-please.outputs.tag_name || github.event.release.tag_name }}
+        files: taskfile-lsp-linux-amd64

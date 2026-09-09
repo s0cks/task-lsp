@@ -1,0 +1,21 @@
+---
+commit-msg:
+  commands:
+    conventional-commits:
+      run: cog verify --file {1}
+pre-commit:
+  commands:
+    go-fmt:
+      glob: "*.go"
+      run: gofmt -w {staged_files}
+      stage_fixed: true
+    yaml-format:
+      glob: "*.{yaml,yml}"
+      run: yamlfmt {staged_files}
+      stage_fixed: true
+    hadolint-format:
+      glob: "**/Dockerfile*"
+      run: hadolint {staged_files}
+    gitleaks:
+      glob: "*"
+      run: gitleaks protect --staged --verbose
