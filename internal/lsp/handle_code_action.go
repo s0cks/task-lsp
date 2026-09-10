@@ -3,11 +3,16 @@ package lsp
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"strings"
 	"taskfile-lsp/internal/rpc"
 	"taskfile-lsp/internal/taskfile"
 )
+
+type CodeActionsGenerator func(doc *Document, file *taskfile.File, params *CodeActionParams) ([]CodeAction, error)
+
+var codeActionGenerators = []CodeActionsGenerator{
+	CreateUndefinedTaskCodeAction,
+	GenRefactorTaskActions,
+}
 
 func (s *Server) handleCodeAction(ctx context.Context, conn *rpc.Conn, params json.RawMessage) (any, *rpc.Error) {
 	var p CodeActionParams
@@ -21,33 +26,13 @@ func (s *Server) handleCodeAction(ctx context.Context, conn *rpc.Conn, params js
 		return actions, nil
 	}
 
-	filter := NewDiagnosticCodePredicate(taskfile.CodeUndefinedTask)
-	append_action := func(name string, diagnostic *Diagnostic) bool {
-		actions = append(actions, CodeAction{
-			Title:       fmt.Sprintf("Create task %q", name),
-			Kind:        "quickfix",
-			Diagnostics: []Diagnostic{*diagnostic},
-			Edit: &WorkspaceEdit{
-				Changes: map[string][]TextEdit{p.TextDocument.URI: {newTaskEdit(doc.Parsed, name)}},
-			},
-		})
+	for _, gen := range codeActionGenerators {
+		new_actions, err := gen(doc, doc.Parsed, &p)
+		if err != nil {
+			return nil, rpc.NewErrorf(rpc.InternalError, "failed to generate code actions: %v", err)
+		}
 
-		return true
-	}
-	p.VisitDiagnosticsMatching(doc, filter, append_action)
-
-	if task, ok := doc.Parsed.TaskAt(toTFPos(p.Range.Start)); ok && task.Desc == "" {
-		at := Position{Line: task.DefLine + 1, Character: 0}
-		actions = append(actions, CodeAction{
-			Title: "Add description",
-			Kind:  "refactor",
-			Edit: &WorkspaceEdit{
-				Changes: map[string][]TextEdit{p.TextDocument.URI: {{
-					Range:   Range{Start: at, End: at},
-					NewText: strings.Repeat(" ", doc.Parsed.BodyIndent) + "desc: \"\"\n",
-				}}},
-			},
-		})
+		actions = append(actions, new_actions...)
 	}
 
 	return actions, nil

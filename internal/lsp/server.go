@@ -69,7 +69,7 @@ func (s *Server) publish(conn *rpc.Conn, uri string, version int, raw []taskfile
 	}
 }
 
-func newTaskEdit(f *taskfile.File, name string) TextEdit {
+func NewTaskEdit(f *taskfile.File, name string) TextEdit {
 	indent := strings.Repeat(" ", f.TaskIndent)
 	body := strings.Repeat(" ", f.BodyIndent)
 	cmdIndent := strings.Repeat(" ", f.BodyIndent+2)

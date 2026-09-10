@@ -22,3 +22,7 @@ type Error struct {
 func (e *Error) Error() string { return fmt.Sprintf("rpc error %d: %s", e.Code, e.Message) }
 
 func NewError(code int, message string) *Error { return &Error{Code: code, Message: message} }
+
+func NewErrorf(code int, format string, args ...any) *Error {
+	return NewError(code, fmt.Errorf(format, args...).Error())
+}
