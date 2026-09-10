@@ -149,3 +149,33 @@ TEST_F(TestLexer, Test_NextToken_Vars) {
   ASSERT_TRUE(IsVarsTokenNext(&lex));
   ASSERT_TRUE(IsLexerFinished(&lex));
 }
+
+TEST_F(TestLexer, Test_NextToken_Desc_Quoted) {
+  static const auto kTestDocument =
+      "desc: \"Hello World\""
+      "\n";
+
+  Lexer lex;
+  memset(&lex, 0, sizeof(Lexer));
+  ASSERT_NO_FATAL_FAILURE(InitLexer(&lex, kTestDocument));
+  ASSERT_STREQ(lex.source, kTestDocument);
+  ASSERT_EQ(lex.rpos, 0);
+
+  ASSERT_TRUE(IsDescTokenNext(&lex, "Hello World"));
+  ASSERT_TRUE(IsLexerFinished(&lex));
+}
+
+TEST_F(TestLexer, Test_NextToken_Desc_Unquoted) {
+  static const auto kTestDocument =
+      "desc: Hello World"
+      "\n";
+
+  Lexer lex;
+  memset(&lex, 0, sizeof(Lexer));
+  ASSERT_NO_FATAL_FAILURE(InitLexer(&lex, kTestDocument));
+  ASSERT_STREQ(lex.source, kTestDocument);
+  ASSERT_EQ(lex.rpos, 0);
+
+  ASSERT_TRUE(IsDescTokenNext(&lex, "Hello World"));
+  ASSERT_TRUE(IsLexerFinished(&lex));
+}

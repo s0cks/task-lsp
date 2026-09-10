@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "common.h"
+
 #define LEXPOS(L)     \
   ((Pos){             \
       .row = L->line, \
@@ -122,6 +124,49 @@ static inline Token LexNumber(Lexer* lex) {
   return NewTokenAtPos(kNumberToken, STRVIEW(buf), LEXPOS(lex));
 }
 
+static inline bool TryLexString(Lexer* lex, StrView* str) {
+  SkipWhitespace(lex);
+  if (Peek(lex) == '"')
+    Advance(lex);
+  const size_t startpos = lex->rpos;
+
+  while (Peek(lex) != '"' && Peek(lex) != '\n' && Peek(lex) != '\r' && Peek(lex) != '\0') {
+    char c = Advance(lex);
+    if (c == '\\') {
+      const char esc = Advance(lex);
+      switch (esc) {
+        case '"':
+          c = '"';
+          break;
+
+        case '\\':
+          c = '\\';
+          break;
+
+        case 'n':
+          c = '\n';
+          break;
+
+        case 't':
+          c = '\t';
+          break;
+
+        default:
+          return false;  // TODO(@s0cks): invalid escape sequence
+      }
+    }
+  }
+
+  const size_t endpos = lex->rpos;
+  const size_t len = (endpos - startpos);
+  if (Peek(lex) == '"')
+    Advance(lex);
+
+  str->len = len;
+  str->start = (char*)&lex->source[startpos];
+  return true;
+}
+
 static inline Token LexKeyOrIdent(Lexer* lex) {
   bool colon = false;
   const size_t startpos = lex->rpos;
@@ -152,6 +197,13 @@ finished:
       return NewTokenAtPos(kTasksToken, LEX_STRVIEWN_AT(lex, len, startpos), LEXPOS(lex));
     else if (strncmp(&lex->source[startpos], "vars", len) == 0)
       return NewTokenAtPos(kVarsToken, LEX_STRVIEWN_AT(lex, len, startpos), LEXPOS(lex));
+    else if (strncmp(&lex->source[startpos], "desc", len) == 0) {
+      StrView desc;
+      memset(&desc, 0, sizeof(StrView));
+      if (!TryLexString(lex, &desc))
+        return NewTokenAtPos(kInvalidToken, LEX_STRVIEWN_AT(lex, (lex->rpos - startpos), len), LEXPOS(lex));
+      return NewTokenAtPos(kDescToken, desc, LEXPOS(lex));
+    }
   }
 
   return NewTokenAtPos(kInvalidToken, LEX_STRVIEWN_AT(lex, len, startpos), LEXPOS(lex));

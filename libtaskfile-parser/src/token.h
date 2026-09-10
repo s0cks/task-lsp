@@ -29,6 +29,8 @@ typedef enum {
   kHashToken,
   kDashToken,
 
+  kDescToken,
+
   kVarsToken,
   kTasksToken,
 
@@ -48,6 +50,10 @@ typedef struct {
 
 static inline auto operator<<(std::ostream& stream, const TokenKind& rhs) -> std::ostream& {
   switch (rhs) {
+    case kStringToken:
+      return stream << "String";
+    case kDescToken:
+      return stream << "Description";
     case kInvalidToken:
       return stream << "Invalid";
     default:

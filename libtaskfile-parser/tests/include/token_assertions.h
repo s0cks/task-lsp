@@ -1,6 +1,7 @@
 #ifndef TASKFILE_PARSER_TOKEN_ASSERTIONS_H
 #define TASKFILE_PARSER_TOKEN_ASSERTIONS_H
 
+#include "gtest/gtest.h"
 #ifdef __cplusplus
 
 #include <gtest/gtest.h>
@@ -33,6 +34,25 @@ DEFINE_TOKEN_ASSERTIONS(Dash);
 DEFINE_TOKEN_ASSERTIONS(DocumentSeparator);
 DEFINE_TOKEN_ASSERTIONS(Vars);
 DEFINE_TOKEN_ASSERTIONS(Tasks);
+
+DEFINE_TOKEN_ASSERTIONS(Desc);
+
+static inline auto IsDescToken(const Token& lhs, const std::string rhs) -> ::testing::AssertionResult {
+  if (lhs.kind != kDescToken)
+    return ::testing::AssertionFailure() << "expected " << lhs << " to be a " << kDescToken << ", but was a "
+                                         << lhs.kind;
+
+  if (((std::string)lhs.data) != rhs)
+    return ::testing::AssertionFailure() << "expected " << kDescToken << " to have the message `" << rhs
+                                         << "`, but was: " << lhs.data;
+
+  return ::testing::AssertionSuccess();
+}
+
+static inline auto IsDescTokenNext(Lexer* lex, const std::string rhs) -> ::testing::AssertionResult {
+  const Token next = LexerNext(lex);
+  return IsDescToken(next, rhs);
+}
 
 DEFINE_TOKEN_ASSERTIONS(LineComment);
 
