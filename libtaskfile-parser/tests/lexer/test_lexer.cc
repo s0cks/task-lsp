@@ -59,8 +59,7 @@ TEST_F(TestLexer, Test_NextToken_Dash) {
   ASSERT_STREQ(lex.source, kTestDocument);
   ASSERT_EQ(lex.rpos, 0);
 
-  Token next = LexerNext(&lex);
-  ASSERT_TRUE(IsDashToken(next));
+  ASSERT_TRUE(IsDashTokenNext(&lex));
   ASSERT_TRUE(IsLexerFinished(&lex));
 }
 
@@ -73,8 +72,7 @@ TEST_F(TestLexer, Test_NextToken_DoubleDash) {
   ASSERT_STREQ(lex.source, kTestDocument);
   ASSERT_EQ(lex.rpos, 0);
 
-  Token next = LexerNext(&lex);
-  ASSERT_TRUE(IsInvalidToken(next));
+  ASSERT_TRUE(IsInvalidTokenNext(&lex));
   ASSERT_TRUE(IsLexerFinished(&lex));
 }
 
@@ -87,8 +85,7 @@ TEST_F(TestLexer, Test_NextToken_TripleDash) {
   ASSERT_STREQ(lex.source, kTestDocument);
   ASSERT_EQ(lex.rpos, 0);
 
-  Token next = LexerNext(&lex);
-  ASSERT_TRUE(IsDocumentSeparatorToken(next));
+  ASSERT_TRUE(IsDocumentSeparatorTokenNext(&lex));
   ASSERT_TRUE(IsLexerFinished(&lex));
 }
 
@@ -103,10 +100,7 @@ TEST_F(TestLexer, Test_NextToken_BlockComment_SingleLine) {
   ASSERT_STREQ(lex.source, kTestDocument);
   ASSERT_EQ(lex.rpos, 0);
 
-  {
-    Token next = LexerNext(&lex);
-    ASSERT_TRUE(IsBlockCommentToken(next));
-  }
+  ASSERT_TRUE(IsBlockCommentTokenNext(&lex, "# This is a test"));
   ASSERT_TRUE(IsLexerFinished(&lex));
 }
 
@@ -122,9 +116,6 @@ TEST_F(TestLexer, Test_NextToken_BlockComment_MultiLine) {
   ASSERT_STREQ(lex.source, kTestDocument);
   ASSERT_EQ(lex.rpos, 0);
 
-  {
-    Token next = LexerNext(&lex);
-    ASSERT_TRUE(IsBlockCommentToken(next, "# This is a test\n# of a multi-line block comment"));
-  }
+  ASSERT_TRUE(IsBlockCommentTokenNext(&lex, "# This is a test\n# of a multi-line block comment"));
   ASSERT_TRUE(IsLexerFinished(&lex));
 }
