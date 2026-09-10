@@ -61,6 +61,10 @@ pre-commit:
     gitleaks:
       glob: "*"
       run: gitleaks protect --staged --verbose
+    eslint:
+      glob: "*.{ts,js}"
+      root: "vscode"
+      run: pnpm lint
     vhs:
       glob: "*.tape"
       interactive: true

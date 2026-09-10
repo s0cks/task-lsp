@@ -1,13 +1,50 @@
 ---
 version: 3
+vars:
+  GO_TARGET_NAME: taskfile-lsp
+  BUILD_DIR: "{{.ROOT_DIR}}/build"
+  VSCODE_DIR: "{{.ROOT_DIR}}/vscode"
 tasks:
-  build:
-    desc: "Build the go binary"
+  go:build:
+    internal: true
     cmds:
-    - |
+    - >
       go build \
-      -o taskfile-lsp \
-      ./cmd/taskfile-lsp/main.go
-  default:
+        {{.GO_BUILD_ARGS | default "" }} \
+        -o {{.GO_TARGET_NAME}} \
+        {{.GO_SOURCE_FILE}}
+    vars:
+      GO_SOURCE_FILE: ./cmd/taskfile-lsp/main.go
+  go:build:dev:
     cmds:
-    - task: build
+    - task: go:build
+  go:build:release:
+    cmds:
+    - task: go:build
+  go:clean:
+    internal: true
+    cmds:
+    - rm -rf {{.GO_TARGET_NAME}}
+
+  vscode:clean:
+    internal: true
+    cmds:
+    - rm -rf {{.VSCODE_DIR}}/dist {{.VSCODE_DI}}/out
+
+  build:dev:
+    aliases:
+    - default
+    cmds:
+    - task: go:build:dev
+  build:release:
+    aliases:
+    - build
+    cmds:
+    - task: go:build:release
+
+  clean:
+    parallel: true
+    cmds:
+    - task: go:clean
+    - task: vscode:clean
+    - rm -rf {{.BUILD_DIR}}
