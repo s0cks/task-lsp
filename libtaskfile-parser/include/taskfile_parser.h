@@ -10,6 +10,15 @@ extern "C" {
 #include <stddef.h>
 #include <stdint.h>
 
+#define DEFINE_SEQ(Name, Type) \
+  typedef struct {             \
+    Type* values;              \
+    size_t len;                \
+    size_t cap;                \
+  } Name##Seq;
+
+#define DEFINE_NODE_SEQ(Type) DEFINE_SEQ(Type, Type##Node)
+
 #define DEFINE_NODE_VISITOR(Name)                              \
   typedef bool (*Name##Visitor)(uint64_t, Name##Node*, void*); \
   typedef bool (*Name##Predicate)(Name##Node*, void*);
@@ -82,6 +91,7 @@ typedef struct {
   Position end;
   char* message;
 } Diagnostic;
+DEFINE_SEQ(Diagnostic, Diagnostic);
 
 #define FOR_EACH_DOCUMENT_NODE_KIND(V) \
   V(Document)                          \
@@ -109,9 +119,7 @@ typedef enum {
   DocumentNodeKind kind;            \
   Position start;                   \
   Position end;                     \
-  Diagnostic* diagnostics;          \
-  size_t diagnostics_len;           \
-  size_t diagnostics_cap;
+  DiagnosticSeq diagnostics;
 // clang-format on
 
 struct _DocumentNode {
@@ -140,6 +148,7 @@ typedef struct {
   DocumentNode* from;
 } RefNode;
 DEFINE_NODE_VISITOR(Ref);
+DEFINE_NODE_SEQ(Ref);
 
 typedef struct {
   DEFINE_DOCUMENT_NODE_FIELDS;
@@ -150,6 +159,7 @@ typedef struct {
   size_t refs_cap;
 } StringNode;
 DEFINE_NODE_VISITOR(String);
+DEFINE_NODE_SEQ(String);
 
 uint64_t GetNumberOfRefsInString(StringNode* rhs);
 RefNode* GetStringRefAt(StringNode* node, uint64_t idx);
@@ -167,18 +177,13 @@ typedef struct {
   str_view dir;
   str_view checksum;
   str_view taskfile;
-
-  StringNode* aliases;
-  size_t aliases_len;
-  size_t aliases_cap;
-
-  StringNode* excludes;
-  size_t excludes_len;
-  size_t excludes_cap;
+  StringSeq aliases;
+  StringSeq excludes;
 
   // TODO(@s0cks): handle vars
 } IncludeNode;
 DEFINE_NODE_VISITOR(Include);
+DEFINE_NODE_SEQ(Include);
 
 uint64_t GetNumberOfIncludeAliases(IncludeNode* rhs);
 StringNode* GetIncludeAliasAt(IncludeNode* node, uint64_t idx);
@@ -201,12 +206,7 @@ typedef struct {
   str_view value;
 } CommandNode;
 DEFINE_NODE_VISITOR(Command);
-
-typedef struct {
-  CommandNode* values;
-  size_t len;
-  size_t cap;
-} CommandSeq;
+DEFINE_NODE_SEQ(Command);
 
 typedef struct {
   DEFINE_DOCUMENT_NODE_FIELDS;
@@ -214,12 +214,7 @@ typedef struct {
   StringNode* message;
 } PreconditionNode;
 DEFINE_NODE_VISITOR(Precondition);
-
-typedef struct {
-  PreconditionNode* values;
-  size_t len;
-  size_t cap;
-} PreconditionSeq;
+DEFINE_NODE_SEQ(Precondition);
 
 void VisitPreconditions(PreconditionSeq* seq, PreconditionVisitor vis, void* data);
 
@@ -228,6 +223,7 @@ typedef struct {
   str_view value;
 } CommentNode;
 DEFINE_NODE_VISITOR(Comment);
+DEFINE_NODE_SEQ(Comment);
 
 #define FOR_EACH_TASK_RUN_MODE(V) \
   V(Always)                       \
@@ -245,20 +241,28 @@ typedef enum {
 } TaskRunMode;
 // clang-format on
 
+typedef uint8_t TaskFlags;
+
+enum {
+  kNoTaskFlags = 0,
+  kSilentFlag = 1 << 1,
+  kGitignoreFlag = 1 << 2,
+  kInternalFlag = 1 << 3,
+};
+
 typedef struct {
   DEFINE_DOCUMENT_NODE_FIELDS;
   str_view name;
   str_view desc;
   str_view dir;
   str_view summary;
-  bool silent;
-  bool internal;
-  bool use_gitignore;
+  TaskFlags flags;
   TaskRunMode mode;
   MethodKind method;
   str_view interval;
 
   CommandSeq status;
+  PreconditionSeq preconditions;
 
   // TODO(@s0cks):
   // - add aliases
@@ -266,11 +270,41 @@ typedef struct {
   // - add sources
   // - add generates
 
-  StringNode* dotenv;
-  size_t dotenv_len;
-  size_t dotenv_cap;
+  StringSeq dotenvs;
 } TaskNode;
 DEFINE_NODE_VISITOR(Task);
+DEFINE_NODE_SEQ(Task);
+
+static inline bool HasTaskFlags(TaskNode* node, const TaskFlags rhs) {
+  return node && (node->flags & rhs) == rhs;
+}
+
+static inline void SetTaskFlags(TaskNode* node, TaskFlags rhs) {
+  if (!node)
+    return;
+  node->flags = rhs;
+}
+
+static inline void ClearTaskFlags(TaskNode* node) {
+  return SetTaskFlags(node, kNoTaskFlags);
+}
+
+#define DEFINE_TASK_FLAG(Name)                              \
+  static inline void SetTask##Name##Flag(TaskNode* node) {  \
+    if (!node)                                              \
+      return;                                               \
+    return SetTaskFlags(node, node->flags | k##Name##Flag); \
+  }                                                         \
+  static inline bool HasTask##Name##Flag(TaskNode* node) {  \
+    return node && HasTaskFlags(node, k##Name##Flag);       \
+  }                                                         \
+  static inline bool IsTask##Name(TaskNode* rhs) {          \
+    return HasTask##Name##Flag(rhs);                        \
+  }
+
+DEFINE_TASK_FLAG(Silent);
+DEFINE_TASK_FLAG(Gitignore);
+DEFINE_TASK_FLAG(Internal);
 
 uint64_t GetNumberOfDotenvsInTask(TaskNode* rhs);
 StringNode* GetTaskDotenvAt(TaskNode* node, uint64_t idx);
@@ -314,6 +348,7 @@ typedef struct {
   };
 } VarNode;
 DEFINE_NODE_VISITOR(Var);
+DEFINE_NODE_SEQ(Var);
 
 static inline bool IsVarSecret(VarNode* rhs) {
   return rhs && rhs->secret;

@@ -1,42 +1,27 @@
 #include "common.h"
+#include "src/seq.h"
 #include "taskfile_parser.h"
 
 uint64_t GetNumberOfIncludeAliases(IncludeNode* rhs) {
-  return rhs && rhs->aliases ? rhs->aliases_len : 0;
+  return GetNumberOfStringsInSeq(&rhs->aliases);
 }
 
 StringNode* GetIncludeAliasAt(IncludeNode* node, uint64_t idx) {
-  return node && node->aliases && idx < node->aliases_len ? &node->aliases[idx] : NULL;
+  return GetStringInSeqAt(&node->aliases, idx);
 }
 
 void VisitIncludeAliases(IncludeNode* node, StringVisitor vis, void* data) {
-  if (!node || !node->aliases || node->aliases_len == 0)
-    return;
-
-  for (size_t i = 0; i < node->aliases_len; i++) {
-    StringNode* alias = &node->aliases[i];
-    ASSERT(alias);
-    if (!vis(i, alias, data))
-      return;
-  }
+  return VisitStringsInSeq(&node->aliases, vis, data);
 }
 
 uint64_t GetNumberOfIncludeExcludes(IncludeNode* rhs) {
-  return rhs && rhs->excludes ? rhs->excludes_len : 0;
+  return GetNumberOfStringsInSeq(&rhs->excludes);
 }
 
 StringNode* GetIncludeExcludeAt(IncludeNode* node, uint64_t idx) {
-  return node && node->excludes && idx < node->excludes_len ? &node->excludes[idx] : NULL;
+  return GetStringInSeqAt(&node->excludes, idx);
 }
 
 void VisitIncludeExcludes(IncludeNode* node, StringVisitor vis, void* data) {
-  if (!node || !node->excludes || node->excludes_len == 0)
-    return;
-
-  for (size_t i = 0; i < node->excludes_len; i++) {
-    StringNode* exclude = &node->excludes[i];
-    ASSERT(exclude);
-    if (!vis(i, exclude, data))
-      return;
-  }
+  return VisitStringsInSeq(&node->excludes, vis, data);
 }
