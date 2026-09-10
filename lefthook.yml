@@ -51,6 +51,9 @@ pre-commit:
       glob: "**/Dockerfile*"
       run: hadolint {staged_files}
       stage_fixed: true
+    vale:
+      glob: "*.md"
+      run: vale {staged_files}
     gitleaks:
       glob: "*"
       run: gitleaks protect --staged --verbose
