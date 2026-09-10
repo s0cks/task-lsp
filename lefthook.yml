@@ -9,7 +9,15 @@ commit-msg:
     conventional-commits:
       run: cog verify --file {1}
 pre-commit:
+  parallel: true
   commands:
+    clang-format:
+      glob: "*.{h,c,hpp,cpp,cc}"
+      run: clang-format -i {staged_files}
+      stage_fixed: true
+    clang-tidy:
+      glob: "*.{h,c,hpp,cpp,cc}"
+      run: clang-tidy -p build {staged_files}
     go-fmt:
       glob: "*.go"
       run: gofmt -w {staged_files}
