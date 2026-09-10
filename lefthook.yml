@@ -61,3 +61,11 @@ pre-commit:
     gitleaks:
       glob: "*"
       run: gitleaks protect --staged --verbose
+    vhs:
+      glob: "*.tape"
+      interactive: true
+      stage_fixed: true
+      run: |
+        for file in {staged_files}; do
+          vhs "$file" && git add "${file%.tape}.gif"
+        done
