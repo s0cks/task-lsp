@@ -2,7 +2,7 @@
 
 > A [language server protocol](https://microsoft.github.io/language-server-protocol/) (LSP) for [Task](https://taskfile.dev/) Taskfiles.
 
-![Example Document Symbols](./assets/lsp_document_symbols.gif)
+![Example Document Symbols](./assets/lsp-document-symbols.gif)
 
 ## Features
 
@@ -34,15 +34,15 @@ Release binaries follow the format:
 
 For example:
 
-|    OS   |  Arch | Name                           |
-|:-------:|:-----:|:-------------------------------|
+|   OS    | Arch  | Name                           |
+| :-----: | :---: | :----------------------------- |
 |  Linux  | amd64 | taskfile-lsp-linux-amd64       |
 |  Linux  | arm64 | taskfile-lsp-linux-arm64       |
 |  MacOS  | amd64 | taskfile-lsp-macos-amd64       |
 |  MacOS  | arm64 | taskfile-lsp-macos-arm64       |
 | Windows | amd64 | taskfile-lsp-windows-amd64.exe |
 
-### Linux / MacOS
+### Linux and macOS
 
 Download using curl:
 
@@ -77,13 +77,13 @@ Then place it in your `$PATH`:
 mv taskfile-lsp ~/.local/bin
 ```
 
-Alternatively, system-wide:
+For system-wide installs:
 
 ```sh
 mv taskfile-lsp /usr/local/bin
 ```
 
-### From Source
+### From source
 
 Clone the repository:
 
@@ -106,15 +106,13 @@ Finally, install it:
 mv taskfile-lsp ~/.local/bin
 ```
 
-> Make sure `~/.local/bin` is included in your `$PATH`
+> Make sure `~/.local/bin` is in your `$PATH`
 
-## Editor Setup
+## Editor setup
 
 ### Neovim
 
-Neovim is supported mainly using `nvim-lspconfig`
-
-#### nvim-lspconfig
+#### Using nvim-lspconfig
 
 ```lua
 vim.lsp.config('taskfile', {

@@ -49,7 +49,7 @@ pre-commit:
       stage_fixed: true
     rumdl-lint:
       glob: "*.md"
-      run: rumdl check {staged_files}
+      run: rumdl check --fix {staged_files}
       stage_fixed: true
     hadolint-format:
       glob: "**/Dockerfile*"
