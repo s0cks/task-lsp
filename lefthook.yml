@@ -18,6 +18,9 @@ pre-commit:
     clang-tidy:
       glob: "*.{h,c,hpp,cpp,cc}"
       run: clang-tidy -p build {staged_files}
+    iwyu:
+      glob: "*.{h,c,hpp,cpp,cc}"
+      run: include-what-you-use -p build {staged_files}
     go-fmt:
       glob: "*.go"
       run: gofmt -w {staged_files}
