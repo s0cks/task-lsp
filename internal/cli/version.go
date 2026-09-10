@@ -2,12 +2,13 @@ package cli
 
 import (
 	"fmt"
+	"taskfile-lsp/internal/lsp"
 
 	"github.com/spf13/cobra"
 )
 
 func HandleVersion(cmd *cobra.Command, args []string) error {
-	fmt.Printf("%s\n", "0.0.0")
+	fmt.Printf("v%s\n", lsp.Version)
 	return nil
 }
 

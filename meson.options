@@ -1,0 +1,19 @@
+option('enable_tracing', 
+  type: 'boolean', 
+  value: false, 
+  description: 'Enable profiling (w/ Tracy)',
+)
+
+option(
+  'enable_testing',
+  type: 'boolean',
+  value: true,
+  description: 'Enable unit tests using GTest',
+)
+
+option(
+  'enable_graphviz',
+  type: 'boolean',
+  value: false,
+  description: 'Enable graphviz support',
+)

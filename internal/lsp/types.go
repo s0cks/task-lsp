@@ -1,6 +1,9 @@
 package lsp
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"strings"
+)
 
 type Position struct {
 	Line      int `json:"line"`
@@ -60,29 +63,6 @@ type DidCloseTextDocumentParams struct {
 type DidSaveTextDocumentParams struct {
 	TextDocument TextDocumentIdentifier `json:"textDocument"`
 	Text         *string                `json:"text,omitempty"`
-}
-
-type DiagnosticSeverity int
-
-const (
-	SeverityError DiagnosticSeverity = iota + 1
-	SeverityWarning
-	SeverityInformation
-	SeverityHint
-)
-
-type Diagnostic struct {
-	Range    Range              `json:"range"`
-	Severity DiagnosticSeverity `json:"severity,omitempty"`
-	Code     string             `json:"code,omitempty"`
-	Source   string             `json:"source,omitempty"`
-	Message  string             `json:"message"`
-}
-
-type PublishDiagnosticsParams struct {
-	URI         string       `json:"uri"`
-	Version     *int         `json:"version,omitempty"`
-	Diagnostics []Diagnostic `json:"diagnostics"`
 }
 
 type MarkupKind string
@@ -188,6 +168,36 @@ type CodeActionParams struct {
 	Context      CodeActionContext      `json:"context"`
 }
 
+func (p *CodeActionParams) VisitDiagnostics(doc *Document, vis DiagnosticVisitor) {
+	for _, d := range p.Context.Diagnostics {
+		name := strings.TrimSpace(TextInRange(doc.Text, d.Range))
+		if name == "" {
+			continue
+		}
+
+		if !vis(name, &d) {
+			return
+		}
+	}
+}
+
+func (p *CodeActionParams) VisitDiagnosticsMatching(doc *Document, predicate DiagnosticPredicate, vis DiagnosticVisitor) {
+	for _, d := range p.Context.Diagnostics {
+		name := strings.TrimSpace(TextInRange(doc.Text, d.Range))
+		if name == "" {
+			continue
+		}
+
+		if !predicate(name, &d) {
+			continue
+		}
+
+		if !vis(name, &d) {
+			return
+		}
+	}
+}
+
 type SymbolsParams struct {
 	TextDocument TextDocumentIdentifier `json:"textDocument"`
 }
@@ -206,12 +216,4 @@ type CodeAction struct {
 	Kind        string         `json:"kind,omitempty"`
 	Diagnostics []Diagnostic   `json:"diagnostics,omitempty"`
 	Edit        *WorkspaceEdit `json:"edit,omitempty"`
-}
-
-type Symbol struct {
-	Name           string `json:"name"`
-	Detail         string `json:"detail"`
-	Kind           int    `json:"kind"`
-	Range          Range  `json:"range"`
-	SelectionRange Range  `json:"selectionRange"`
 }
