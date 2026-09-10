@@ -52,6 +52,8 @@ type Ref struct {
 type Task struct {
 	Name      string
 	Desc      string
+	Summary   string
+	Label     string
 	NameRange Range
 	DefLine   int
 	EndLine   int

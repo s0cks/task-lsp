@@ -15,12 +15,12 @@ func (s *Server) handleReferences(ctx context.Context, conn *rpc.Conn, params js
 	locs := []Location{}
 	doc, ok := s.docs.Get(p.TextDocument.URI)
 	if !ok || doc.Parsed == nil {
-		return locs, nil
+		return locs, rpc.NewErrorf(rpc.InternalError, "document is unparsed")
 	}
 
 	name, _, ok := doc.Parsed.NameOrRefAt(toTFPos(p.Position))
 	if !ok {
-		return locs, nil
+		return locs, rpc.NewErrorf(rpc.InternalError, "failed to find reference at pos: %v", p.Position)
 	}
 
 	if p.Context.IncludeDeclaration {

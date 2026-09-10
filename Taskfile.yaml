@@ -7,14 +7,10 @@ vars:
 tasks:
   go:build:
     internal: true
-    cmds:
-    - >
-      go build \
-        {{.GO_BUILD_ARGS | default "" }} \
-        -o {{.GO_TARGET_NAME}} \
-        {{.GO_SOURCE_FILE}}
     vars:
       GO_SOURCE_FILE: ./cmd/taskfile-lsp/main.go
+    cmds:
+    - go build {{.GO_BUILD_ARGS | default "" }} -o {{.GO_TARGET_NAME}} {{.GO_SOURCE_FILE}}
   go:build:dev:
     cmds:
     - task: go:build

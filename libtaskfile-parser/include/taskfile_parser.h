@@ -379,8 +379,7 @@ typedef struct {
   StrView interval;
   ShellOpts* set;
   ShOpts* shopt;
-  StrViewSeq
-    requires;
+  StrViewSeq reqs;
 
   CommandSeq status;
   PreconditionSeq preconditions;

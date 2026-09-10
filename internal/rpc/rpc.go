@@ -207,6 +207,23 @@ func (c *Conn) writeResponse(resp *Response) {
 	_ = writeMessage(c.writer, data)
 }
 
+type LogMessageParams struct {
+	Type    int    `json:"type"`
+	Message string `json:"message"`
+}
+
+func (c *Conn) Log(messageType int, message string) error {
+	params := LogMessageParams{
+		Type:    messageType,
+		Message: message,
+	}
+	return c.Notify("window/logMessage", params)
+}
+
+func (c *Conn) Logf(messageType int, format string, args ...any) error {
+	return c.Log(messageType, fmt.Sprintf(format, args...))
+}
+
 func (c *Conn) Notify(method string, params any) error {
 	p, err := json.Marshal(params)
 	if err != nil {
