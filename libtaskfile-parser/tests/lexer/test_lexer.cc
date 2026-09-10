@@ -92,7 +92,7 @@ TEST_F(TestLexer, Test_NextToken_TripleDash) {
   ASSERT_TRUE(IsLexerFinished(&lex));
 }
 
-TEST_F(TestLexer, Test_NextToken_SingleLineComment) {
+TEST_F(TestLexer, Test_NextToken_BlockComment_SingleLine) {
   static const auto kTestDocument =
       "# This is a test\n"
       "\n";
@@ -106,6 +106,25 @@ TEST_F(TestLexer, Test_NextToken_SingleLineComment) {
   {
     Token next = LexerNext(&lex);
     ASSERT_TRUE(IsBlockCommentToken(next));
+  }
+  ASSERT_TRUE(IsLexerFinished(&lex));
+}
+
+TEST_F(TestLexer, Test_NextToken_BlockComment_MultiLine) {
+  static const auto kTestDocument =
+      "# This is a test\n"
+      "# of a multi-line block comment\n"
+      "\n";
+
+  Lexer lex;
+  memset(&lex, 0, sizeof(Lexer));
+  ASSERT_NO_FATAL_FAILURE(InitLexer(&lex, kTestDocument));
+  ASSERT_STREQ(lex.source, kTestDocument);
+  ASSERT_EQ(lex.rpos, 0);
+
+  {
+    Token next = LexerNext(&lex);
+    ASSERT_TRUE(IsBlockCommentToken(next, "# This is a test\n# of a multi-line block comment"));
   }
   ASSERT_TRUE(IsLexerFinished(&lex));
 }

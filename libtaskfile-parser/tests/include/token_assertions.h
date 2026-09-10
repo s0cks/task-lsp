@@ -11,7 +11,7 @@
 static inline auto IsTokenKind(const Token& lhs, const TokenKind rhs) -> ::testing::AssertionResult {
   if (lhs.kind != rhs)
     return ::testing::AssertionFailure() << "expected " << lhs << " to be a " << rhs << ", but was a " << lhs.kind;
-  return ::testing::AssertionSuccess();
+  return ::testing::AssertionSuccess() << lhs << " is a " << rhs;
 }
 
 static inline auto IsEofToken(const Token& rhs) -> ::testing::AssertionResult {
@@ -36,6 +36,17 @@ static inline auto IsLineCommentToken(const Token& rhs) -> ::testing::AssertionR
 
 static inline auto IsBlockCommentToken(const Token& rhs) -> ::testing::AssertionResult {
   return IsTokenKind(rhs, kBlockCommentToken);
+}
+
+static inline auto IsBlockCommentToken(const Token& lhs, const std::string message) -> testing::AssertionResult {
+  if (lhs.kind != kBlockCommentToken)
+    return ::testing::AssertionFailure() << "expected token to be a " << kBlockCommentToken << ", but was: " << lhs;
+
+  if (((std::string)lhs.data) != message)
+    return ::testing::AssertionFailure() << "expected " << kBlockCommentToken << " to have the message `" << message
+                                         << "` but was: " << lhs.data;
+
+  return ::testing::AssertionSuccess();
 }
 
 #endif  // __cplusplus

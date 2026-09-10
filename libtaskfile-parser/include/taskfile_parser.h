@@ -94,9 +94,17 @@ typedef struct {
   Pos end;
 } Range;
 
-typedef struct {
+typedef struct _StrView {
   char* start;
   size_t len;
+
+#ifdef __cplusplus
+
+  operator std::string() const {
+    return {start, len};
+  }
+
+#endif  // __cplusplus
 } StrView;
 
 typedef struct {
@@ -572,6 +580,10 @@ static inline auto operator<<(std::ostream& stream, const Range& rhs) -> std::os
   stream << "end=" << rhs.end;
   stream << "}";
   return stream;
+}
+
+static inline auto operator<<(std::ostream& stream, const StrView& rhs) -> std::ostream& {
+  return stream << std::string(rhs.start, rhs.len);
 }
 #endif  // __cplusplus
 // NOLINTEND(modernize-use-using,modernize-use-trailing-return-type,cppcoreguidelines-pro-type-cstyle-cast)

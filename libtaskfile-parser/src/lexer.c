@@ -54,8 +54,12 @@ void InitLexer(Lexer* lex, const char* source) {
   lex->col = 1;
 }
 
+static inline char PeekWithOffset(Lexer* lex, const size_t offset) {
+  return lex->source[lex->rpos + offset];
+}
+
 static inline char Peek(Lexer* lex) {
-  return lex->source[lex->rpos];
+  return PeekWithOffset(lex, 0);
 }
 
 static inline char Advance(Lexer* lex) {
@@ -129,7 +133,15 @@ static inline Token ParseCommentTokenAt(Lexer* lex, Pos start) {
     const char next = Peek(lex);
     switch (next) {
       case '\r':
+        Advance(lex);
+        continue;
       case '\n':
+        if (PeekWithOffset(lex, 1) != '#')
+          goto finished;
+
+        Advance(lex);  // skip newline
+        Advance(lex);  // skip #
+        continue;
       case '\0':
         goto finished;
       default:
@@ -138,7 +150,7 @@ static inline Token ParseCommentTokenAt(Lexer* lex, Pos start) {
   } while (true);
 finished:
   const size_t endpos = lex->rpos;
-  const size_t len = (endpos - startpos) - 1;
+  const size_t len = (endpos - startpos);
   return NewTokenAtPos(kBlockCommentToken, LEX_STRVIEWN_AT(lex, len, startpos), LEXPOS(lex));
 }
 
