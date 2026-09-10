@@ -13,7 +13,7 @@ typedef struct {
   const char* source;
   Token last_token;
   Token curr_token;
-  int rpos;
+  size_t rpos;
   int line;
   int col;
 } Lexer;

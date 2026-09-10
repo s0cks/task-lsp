@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 
+#include "gtest/gtest.h"
 #include "lexer.h"
+#include "token.h"
 #include "token_assertions.h"
 
 using namespace ::testing;
@@ -29,17 +31,23 @@ TEST_F(TestLexer, Test_Init) {
   ASSERT_EQ(lex.rpos, 0);
 }
 
+static inline auto IsLexerFinished(Lexer* lex) -> ::testing::AssertionResult {
+  const Token next = LexerNext(lex);
+  if (next.kind != kEofToken)
+    return AssertionFailure() << "expected next token to be an EOF, but was: " << next;
+  const size_t expected_rpos = lex->source ? strlen(lex->source) : 0;
+  if (lex->source && lex->rpos != expected_rpos)
+    return AssertionFailure() << "expected Lexer to be at " << expected_rpos << " but was at " << lex->rpos;
+  return AssertionSuccess();
+}
+
 TEST_F(TestLexer, Test_NextToken_EmptySourceEof) {
   Lexer lex;
   memset(&lex, 0, sizeof(Lexer));
   ASSERT_NO_FATAL_FAILURE(InitLexer(&lex, nullptr));
   ASSERT_EQ(lex.source, nullptr);
   ASSERT_EQ(lex.rpos, 0);
-
-  Token next = LexerNext(&lex);
-  ASSERT_TRUE(IsEofToken(next));
-  ASSERT_EQ(lex.source, nullptr);
-  ASSERT_EQ(lex.rpos, 0);
+  ASSERT_TRUE(IsLexerFinished(&lex));
 }
 
 TEST_F(TestLexer, Test_NextToken_Dash) {
@@ -53,14 +61,7 @@ TEST_F(TestLexer, Test_NextToken_Dash) {
 
   Token next = LexerNext(&lex);
   ASSERT_TRUE(IsDashToken(next));
-
-  {
-    Token next = LexerNext(&lex);
-    ASSERT_TRUE(IsEofToken(next));
-  }
-
-  ASSERT_STREQ(lex.source, kTestDocument);
-  ASSERT_EQ(lex.rpos, strlen(kTestDocument));
+  ASSERT_TRUE(IsLexerFinished(&lex));
 }
 
 TEST_F(TestLexer, Test_NextToken_DoubleDash) {
@@ -74,14 +75,7 @@ TEST_F(TestLexer, Test_NextToken_DoubleDash) {
 
   Token next = LexerNext(&lex);
   ASSERT_TRUE(IsInvalidToken(next));
-
-  {
-    Token next = LexerNext(&lex);
-    ASSERT_TRUE(IsEofToken(next));
-  }
-
-  ASSERT_STREQ(lex.source, kTestDocument);
-  ASSERT_EQ(lex.rpos, strlen(kTestDocument));
+  ASSERT_TRUE(IsLexerFinished(&lex));
 }
 
 TEST_F(TestLexer, Test_NextToken_TripleDash) {
@@ -95,14 +89,7 @@ TEST_F(TestLexer, Test_NextToken_TripleDash) {
 
   Token next = LexerNext(&lex);
   ASSERT_TRUE(IsDocumentSeparatorToken(next));
-
-  {
-    Token next = LexerNext(&lex);
-    ASSERT_TRUE(IsEofToken(next));
-  }
-
-  ASSERT_STREQ(lex.source, kTestDocument);
-  ASSERT_EQ(lex.rpos, strlen(kTestDocument));
+  ASSERT_TRUE(IsLexerFinished(&lex));
 }
 
 TEST_F(TestLexer, Test_NextToken_SingleLineComment) {
@@ -120,12 +107,5 @@ TEST_F(TestLexer, Test_NextToken_SingleLineComment) {
     Token next = LexerNext(&lex);
     ASSERT_TRUE(IsBlockCommentToken(next));
   }
-
-  {
-    Token next = LexerNext(&lex);
-    ASSERT_TRUE(IsEofToken(next));
-  }
-
-  ASSERT_STREQ(lex.source, kTestDocument);
-  ASSERT_EQ(lex.rpos, strlen(kTestDocument));
+  ASSERT_TRUE(IsLexerFinished(&lex));
 }
