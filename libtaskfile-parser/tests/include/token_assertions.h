@@ -14,59 +14,45 @@ static inline auto IsTokenKind(const Token& lhs, const TokenKind rhs) -> ::testi
   return ::testing::AssertionSuccess() << lhs << " is a " << rhs;
 }
 
-static inline auto IsEofToken(const Token& rhs) -> ::testing::AssertionResult {
-  return IsTokenKind(rhs, kEofToken);
-}
-
-static inline auto IsEofTokenNext(Lexer* lex) -> ::testing::AssertionResult {
+static inline auto IsTokenKindNext(Lexer* lex, const TokenKind rhs) -> ::testing::AssertionResult {
   const Token next = LexerNext(lex);
-  return IsEofToken(next);
+  return IsTokenKind(next, rhs);
 }
 
-static inline auto IsDashToken(const Token& rhs) -> ::testing::AssertionResult {
-  return IsTokenKind(rhs, kDashToken);
+#define DEFINE_TOKEN_ASSERTIONS(Name)                                                  \
+  static inline auto Is##Name##Token(const Token& rhs) -> ::testing::AssertionResult { \
+    return IsTokenKind(rhs, k##Name##Token);                                           \
+  }                                                                                    \
+  static inline auto Is##Name##TokenNext(Lexer* lex) -> ::testing::AssertionResult {   \
+    return IsTokenKindNext(lex, k##Name##Token);                                       \
+  }
+
+DEFINE_TOKEN_ASSERTIONS(Eof);
+DEFINE_TOKEN_ASSERTIONS(Invalid);
+DEFINE_TOKEN_ASSERTIONS(Dash);
+DEFINE_TOKEN_ASSERTIONS(DocumentSeparator);
+DEFINE_TOKEN_ASSERTIONS(Vars);
+DEFINE_TOKEN_ASSERTIONS(Tasks);
+
+DEFINE_TOKEN_ASSERTIONS(LineComment);
+
+static inline auto IsLineCommentToken(const Token& lhs, const std::string message) -> testing::AssertionResult {
+  if (lhs.kind != kLineCommentToken)
+    return ::testing::AssertionFailure() << "expected token to be a " << kLineCommentToken << ", but was: " << lhs;
+
+  if (((std::string)lhs.data) != message)
+    return ::testing::AssertionFailure() << "expected " << kLineCommentToken << " to have the message `" << message
+                                         << "` but was: " << lhs.data;
+
+  return ::testing::AssertionSuccess();
 }
 
-static inline auto IsDashTokenNext(Lexer* lex) -> ::testing::AssertionResult {
+static inline auto IsLineCommentTokenNext(Lexer* lex, const std::string message) -> testing::AssertionResult {
   const Token next = LexerNext(lex);
-  return IsDashToken(next);
+  return IsLineCommentToken(next, message);
 }
 
-static inline auto IsInvalidToken(const Token& rhs) -> ::testing::AssertionResult {
-  return IsTokenKind(rhs, kInvalidToken);
-}
-
-static inline auto IsInvalidTokenNext(Lexer* lex) -> ::testing::AssertionResult {
-  const Token next = LexerNext(lex);
-  return IsInvalidToken(next);
-}
-
-static inline auto IsDocumentSeparatorToken(const Token& rhs) -> ::testing::AssertionResult {
-  return IsTokenKind(rhs, kDocumentSeparatorToken);
-}
-
-static inline auto IsDocumentSeparatorTokenNext(Lexer* lex) -> ::testing::AssertionResult {
-  const Token next = LexerNext(lex);
-  return IsDocumentSeparatorToken(next);
-}
-
-static inline auto IsLineCommentToken(const Token& rhs) -> ::testing::AssertionResult {
-  return IsTokenKind(rhs, kLineCommentToken);
-}
-
-static inline auto IsLineCommentTokenNext(Lexer* lex) -> ::testing::AssertionResult {
-  const Token next = LexerNext(lex);
-  return IsLineCommentToken(next);
-}
-
-static inline auto IsBlockCommentToken(const Token& rhs) -> ::testing::AssertionResult {
-  return IsTokenKind(rhs, kBlockCommentToken);
-}
-
-static inline auto IsBlockCommentTokenNext(Lexer* lex) -> ::testing::AssertionResult {
-  const Token next = LexerNext(lex);
-  return IsBlockCommentToken(next);
-}
+DEFINE_TOKEN_ASSERTIONS(BlockComment);
 
 static inline auto IsBlockCommentToken(const Token& lhs, const std::string message) -> testing::AssertionResult {
   if (lhs.kind != kBlockCommentToken)
@@ -83,6 +69,8 @@ static inline auto IsBlockCommentTokenNext(Lexer* lex, const std::string message
   const Token next = LexerNext(lex);
   return IsBlockCommentToken(next, message);
 }
+
+#undef DEFINE_TOKEN_ASSERTIONS
 
 #endif  // __cplusplus
 

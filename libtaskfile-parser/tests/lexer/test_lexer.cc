@@ -31,7 +31,7 @@ TEST_F(TestLexer, Test_Init) {
   ASSERT_EQ(lex.rpos, 0);
 }
 
-static inline auto IsLexerFinished(Lexer* lex) -> ::testing::AssertionResult {
+static inline auto IsLexerFinished(Lexer* lex) -> AssertionResult {
   const Token next = LexerNext(lex);
   if (next.kind != kEofToken)
     return AssertionFailure() << "expected next token to be an EOF, but was: " << next;
@@ -117,5 +117,35 @@ TEST_F(TestLexer, Test_NextToken_BlockComment_MultiLine) {
   ASSERT_EQ(lex.rpos, 0);
 
   ASSERT_TRUE(IsBlockCommentTokenNext(&lex, "# This is a test\n# of a multi-line block comment"));
+  ASSERT_TRUE(IsLexerFinished(&lex));
+}
+
+TEST_F(TestLexer, Test_NextToken_Tasks) {
+  static const auto kTestDocument =
+      "tasks:"
+      "\n";
+
+  Lexer lex;
+  memset(&lex, 0, sizeof(Lexer));
+  ASSERT_NO_FATAL_FAILURE(InitLexer(&lex, kTestDocument));
+  ASSERT_STREQ(lex.source, kTestDocument);
+  ASSERT_EQ(lex.rpos, 0);
+
+  ASSERT_TRUE(IsTasksTokenNext(&lex));
+  ASSERT_TRUE(IsLexerFinished(&lex));
+}
+
+TEST_F(TestLexer, Test_NextToken_Vars) {
+  static const auto kTestDocument =
+      "vars:"
+      "\n";
+
+  Lexer lex;
+  memset(&lex, 0, sizeof(Lexer));
+  ASSERT_NO_FATAL_FAILURE(InitLexer(&lex, kTestDocument));
+  ASSERT_STREQ(lex.source, kTestDocument);
+  ASSERT_EQ(lex.rpos, 0);
+
+  ASSERT_TRUE(IsVarsTokenNext(&lex));
   ASSERT_TRUE(IsLexerFinished(&lex));
 }

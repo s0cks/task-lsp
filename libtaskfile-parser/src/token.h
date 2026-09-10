@@ -23,10 +23,15 @@ typedef enum {
 #define DEFINE_KIND(Name) k##Name##Token,
   FOR_EACH_TOKEN_KIND(DEFINE_KIND)
 #undef DEFINE_KIND
+
   kArrowToken,
   kPipeToken,
   kHashToken,
   kDashToken,
+
+  kVarsToken,
+  kTasksToken,
+
   kEofToken,
   kTotalNumberOfTokenKinds,
 } TokenKind;

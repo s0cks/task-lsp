@@ -6,8 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "src/token.h"
-
 #define LEXPOS(L)     \
   ((Pos){             \
       .row = L->line, \
@@ -124,6 +122,41 @@ static inline Token LexNumber(Lexer* lex) {
   return NewTokenAtPos(kNumberToken, STRVIEW(buf), LEXPOS(lex));
 }
 
+static inline Token LexKeyOrIdent(Lexer* lex) {
+  bool colon = false;
+  const size_t startpos = lex->rpos;
+  do {
+    const char next = Peek(lex);
+    switch (next) {
+      case '\r':
+        Advance(lex);
+        continue;
+      case ':':
+        colon = true;
+        goto finished;
+      case '\n':
+      case '#':
+      case '\0':
+        goto finished;
+      default:
+        Advance(lex);
+    }
+  } while (true);
+finished:
+  const size_t endpos = lex->rpos;
+  const size_t len = (endpos - startpos);
+
+  if (colon) {
+    Advance(lex);
+    if (strncmp(&lex->source[startpos], "tasks", len) == 0)
+      return NewTokenAtPos(kTasksToken, LEX_STRVIEWN_AT(lex, len, startpos), LEXPOS(lex));
+    else if (strncmp(&lex->source[startpos], "vars", len) == 0)
+      return NewTokenAtPos(kVarsToken, LEX_STRVIEWN_AT(lex, len, startpos), LEXPOS(lex));
+  }
+
+  return NewTokenAtPos(kInvalidToken, LEX_STRVIEWN_AT(lex, len, startpos), LEXPOS(lex));
+}
+
 static inline Token ParseCommentTokenAt(Lexer* lex, Pos start) {
   StrView empty;
   memset(&empty, 0, sizeof(StrView));
@@ -152,6 +185,10 @@ finished:
   const size_t endpos = lex->rpos;
   const size_t len = (endpos - startpos);
   return NewTokenAtPos(kBlockCommentToken, LEX_STRVIEWN_AT(lex, len, startpos), LEXPOS(lex));
+}
+
+static inline bool IsKeyChar(const char c) {
+  return isalpha(c) || c == '_' || c == '-';
 }
 
 Token LexerNext(Lexer* lex) {
@@ -197,6 +234,9 @@ try_again:
         return NewTokenAtPos(kDashToken, LEX_STRVIEW1_AT(lex, rpos), LEXPOS(lex));
       return NewTokenAtPos(kInvalidToken, LEX_STRVIEWN_AT(lex, len, rpos), LEXPOS(lex));
   }
+
+  if (IsKeyChar(c))
+    return LexKeyOrIdent(lex);
 
   return NewTokenAtPos(kInvalidToken, LEX_STRVIEW(lex), LEXPOS(lex));
 }
