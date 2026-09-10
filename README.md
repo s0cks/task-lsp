@@ -1,6 +1,6 @@
 # taskfile-lsp
 
-> A [language server protocol](https://microsoft.github.io/language-server-protocol/) (LSP) for [Task](https://taskfile.dev/) Taskfiles.
+A [language-server-protocol](https://microsoft.github.io/language-server-protocol/) (LSP) implementation for [Taskfiles](https://taskfile.dev/).
 
 ![Example Document Symbols](./assets/lsp-document-symbols.gif)
 
@@ -24,104 +24,14 @@ Planned Features:
 
 ## Installation
 
-### Binary
-
-You can download the latest from the [Releases](https://github.com/s0cks/task-lsp/releases) page or by using one of the following tools:
-
-Release binaries follow the format:
-
-`taskfile-lsp-<os>-<arch>`
-
-For example:
-
-|   OS    | Arch  | Name                           |
-| :-----: | :---: | :----------------------------- |
-|  Linux  | amd64 | taskfile-lsp-linux-amd64       |
-|  Linux  | arm64 | taskfile-lsp-linux-arm64       |
-|  MacOS  | amd64 | taskfile-lsp-macos-amd64       |
-|  MacOS  | arm64 | taskfile-lsp-macos-arm64       |
-| Windows | amd64 | taskfile-lsp-windows-amd64.exe |
-
-### Linux and macOS
-
-Download using curl:
-
-```sh
-curl \
-  -L https://github.com/s0cks/task-lsp/releases/latest/download/taskfile-lsp-linux-amd64 \
-  -o taskfile-lsp
-```
-
-Or using wget:
-
-```sh
-wget https://github.com/s0cks/task-lsp/releases/latest/download/taskfile-lsp-linux-amd64 \
-  -O taskfile-lsp
-```
-
-Or using httpie:
-
-```sh
-https --download https://github.com/s0cks/task-lsp/releases/latest/download/taskfile-lsp-linux-amd64
-```
-
-Then, mark the binary as executable:
-
-```sh
-chmod +x taskfile-lsp
-```
-
-Then place it in your `$PATH`:
-
-```sh
-mv taskfile-lsp ~/.local/bin
-```
-
-For system-wide installs:
-
-```sh
-mv taskfile-lsp /usr/local/bin
-```
-
-### From source
-
-Clone the repository:
-
-```sh
-git clone https://github.com/s0cks/task-lsp
-cd task-lsp/
-```
-
-Build the executable:
-
-```sh
-go build -ldflags="-s -w" \
-  -o taskfile-lsp         \
-  cmd/taskfile-lsp/main.go
-```
-
-Finally, install it:
-
-```sh
-mv taskfile-lsp ~/.local/bin
-```
-
-> Make sure `~/.local/bin` is in your `$PATH`
+Check out the [install guide](https://github.com/s0cks/task-lsp/wiki/InstallGuide) in the wiki for how to install.
 
 ## Editor setup
 
-### Neovim
+Check out the [editor setup guide](https://github.com/s0cks/task-lsp/wiki/EditorSetup) in the wiki for how to configure
+for your editor.
 
-#### Using nvim-lspconfig
-
-```lua
-vim.lsp.config('taskfile', {
-  cmd = { 'taskfile-lsp' },
-  filetypes = { 'yaml.taskfile', 'taskfile' },
-  root_markers = { 'Taskfile.yaml', 'Taskfile.yml' },
-})
-vim.lsp.enable('taskfile')
-```
+> `task-lsp` should be able to work for any editor that supports the [language-server-protocol](https://microsoft.github.io/language-server-protocol/) (LSP).
 
 ## Credits
 

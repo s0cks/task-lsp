@@ -4,3 +4,4 @@ Taskfile
 Neovim
 wget
 httpie
+VSCode
