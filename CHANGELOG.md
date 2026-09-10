@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/s0cks/task-lsp/compare/v1.4.0...v1.4.1) (2026-09-10)
+
+
+### Bug Fixes
+
+* **vscode:** 🐛 fix pnpm locking? ([f11de05](https://github.com/s0cks/task-lsp/commit/f11de05e5b001bff2d77dc4a3694fecddb9b85cc))
+
 ## [1.4.0](https://github.com/s0cks/task-lsp/compare/v1.3.0...v1.4.0) (2026-09-10)
 
 
