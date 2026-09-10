@@ -8,6 +8,10 @@ commit-msg:
   commands:
     conventional-commits:
       run: cog verify --file {1}
+post-checkout:
+  commands:
+    vale-sync:
+      run: vale sync
 pre-commit:
   parallel: true
   commands:
