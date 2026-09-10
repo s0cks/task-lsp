@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/s0cks/task-lsp/compare/v1.3.0...v1.4.0) (2026-09-10)
+
+
+### Features
+
+* **cli:** ✨ cleanup version command and add info command ([11d569d](https://github.com/s0cks/task-lsp/commit/11d569dcd7025d9d6b2c7494457b658f48d21d5a))
+
 ## [1.3.0](https://github.com/s0cks/task-lsp/compare/v1.2.2...v1.3.0) (2026-09-10)
 
 
