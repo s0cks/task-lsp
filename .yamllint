@@ -1,6 +1,9 @@
 ---
 # vim: filetype=yaml :
 extends: default
+ignore: |
+  pnpm-lock.yaml
+  node_modules/
 rules:
   key-ordering: disable
   line-length:
