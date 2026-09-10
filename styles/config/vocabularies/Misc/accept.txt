@@ -1,0 +1,6 @@
+taskfile-lsp
+Taskfiles
+Taskfile
+Neovim
+wget
+httpie
