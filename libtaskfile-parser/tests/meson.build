@@ -28,4 +28,9 @@ foreach suite : test_suites
     dependencies: base_test_deps + get_variable('test_' + suite + '_deps', []),
     install: false,
   )
+  test(
+    suite + ' tests',
+    test_exec,
+    protocol: 'gtest',
+  )
 endforeach

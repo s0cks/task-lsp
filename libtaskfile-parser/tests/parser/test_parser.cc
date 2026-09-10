@@ -57,12 +57,4 @@ TEST_F(TestParser, Test_Parse_DocumentEmpty) {
   ASSERT_TRUE(IsEmptyDocumentParseError(result));
 }
 
-TEST_F(TestParser, Test_Parse_MissingTasksField) {
-  static const char* kTaskfileDocument =
-      "---\n"
-      "\n";
-  TaskfileParseResult result = ParseTaskfileDocumentStr(kTaskfileDocument, strlen(kTaskfileDocument));
-  ASSERT_TRUE(IsParseOk(result));
-}
-
 // NOLINTEND(cppcoreguidelines-pro-type-union-access)

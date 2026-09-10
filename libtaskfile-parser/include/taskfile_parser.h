@@ -12,6 +12,10 @@ extern "C" {
 #include <stddef.h>
 #include <stdint.h>
 
+// ╭───────────╮
+// │ ShellOpts │
+// ╰───────────╯
+
 // clang-format off
 typedef uint8_t ShellOpts;
 enum AllShellOpts {
@@ -34,6 +38,11 @@ static inline ShellOpts SetShellOpts(const ShellOpts lhs, const ShellOpts rhs) {
 static inline bool TestShellOpts(const ShellOpts lhs, const ShellOpts rhs) {
   return (lhs & rhs) == rhs;
 }
+// ──────────────────────────────────────────────────────────────────────
+
+// ╭────────╮
+// │ ShOpts │
+// ╰────────╯
 
 // clang-format off
 typedef uint8_t ShOpts;
@@ -53,6 +62,7 @@ static inline ShOpts SetShOpts(const ShOpts lhs, const ShOpts rhs) {
 static inline bool TestShOpts(const ShOpts lhs, const ShOpts rhs) {
   return (lhs & rhs) == rhs;
 }
+// ──────────────────────────────────────────────────────────────────────
 
 #define DEFINE_SEQ(Name, Type) \
   typedef struct {             \
@@ -63,10 +73,15 @@ static inline bool TestShOpts(const ShOpts lhs, const ShOpts rhs) {
 
 #define DEFINE_NODE_SEQ(Type) DEFINE_SEQ(Type, Type##Node)
 
-#define DEFINE_NODE_VISITOR(Name)                              \
-  typedef bool (*Name##Visitor)(uint64_t, Name##Node*, void*); \
-  typedef bool (*Name##Predicate)(Name##Node*, void*);
+#define DEFINE_VISITOR(Name, Type)                       \
+  typedef bool (*Name##Visitor)(uint64_t, Type*, void*); \
+  typedef bool (*Name##Predicate)(Type*, void*);
 
+#define DEFINE_NODE_VISITOR(Name) DEFINE_VISITOR(Name, Name##Node)
+
+// ╭────────╮
+// │ Method │
+// ╰────────╯
 #define FOR_EACH_METHOD_KIND(V) \
   V(None)                       \
   V(Checksum)                   \
@@ -81,6 +96,7 @@ typedef enum {
   kDefaultMethodKind = kChecksumMethodKind,
 } MethodKind;
 // clang-format on
+// ──────────────────────────────────────────────────────────────────────
 
 typedef struct _DocumentNode DocumentNode;
 
@@ -157,6 +173,7 @@ typedef struct {
   Range range;
   char* message;
 } Diagnostic;
+DEFINE_VISITOR(Diagnostic, Diagnostic);
 DEFINE_SEQ(Diagnostic, Diagnostic);
 
 // clang-format off
@@ -211,11 +228,38 @@ static inline bool StringHasRefs(StringNode* rhs) {
   return GetNumberOfRefsInString(rhs) > 0;
 }
 
+// ╭─────────╮
+// │ If Node │
+// ╰─────────╯
+
+// clang-format off
+#define FOR_EACH_CONDITION_KIND(V) \
+  V(Shell)                       \
+  V(GoTemplate)
+
+typedef enum {
+  kInvalidCond = 0,
+#define DEFINE_KIND(Name) k##Name##Cond,
+  FOR_EACH_CONDITION_KIND(DEFINE_KIND)
+#undef DEFINE_KIND
+  kTotalNumberOfConditionKinds,
+} ConditionKind;
+// clang-format on
+
+typedef struct {
+  ConditionKind kind;
+  StringNode* expr;
+} Condition;
+
 typedef struct {
   DEFINE_DOCUMENT_NODE_FIELDS;
-  StringNode* expr;
-  // TODO(@s0cks): should prolly handle sh vs Go templates
+  Condition cond;
 } IfNode;
+// ──────────────────────────────────────────────────────────────────────
+
+// ╭──────────────╮
+// │ Include Node │
+// ╰──────────────╯
 
 // TODO(@s0cks): compress to IncludeFlags
 typedef struct {
@@ -249,11 +293,15 @@ void VisitIncludeExcludes(IncludeNode* node, StringVisitor vis, void* data);
 static inline bool IncludeHasExcludes(IncludeNode* rhs) {
   return GetNumberOfIncludeExcludes(rhs) > 0;
 }
+// ──────────────────────────────────────────────────────────────────────
 
 // TODO(@s0cks): handle loops
 
 // TODO(@s0cks): handle defer
 
+// ╭──────────────╮
+// │ Command Node │
+// ╰──────────────╯
 typedef struct {
   DEFINE_DOCUMENT_NODE_FIELDS;
   StringNode cmd;
@@ -266,7 +314,11 @@ typedef struct {
 } CommandNode;
 DEFINE_NODE_VISITOR(Command);
 DEFINE_NODE_SEQ(Command);
+// ──────────────────────────────────────────────────────────────────────
 
+// ╭───────────────────╮
+// │ Precondition Node │
+// ╰───────────────────╯
 typedef struct {
   DEFINE_DOCUMENT_NODE_FIELDS;
   CommandNode* command;
@@ -274,16 +326,22 @@ typedef struct {
 } PreconditionNode;
 DEFINE_NODE_VISITOR(Precondition);
 DEFINE_NODE_SEQ(Precondition);
+// ──────────────────────────────────────────────────────────────────────
 
-void VisitPreconditions(PreconditionSeq* seq, PreconditionVisitor vis, void* data);
-
+// ╭──────────────╮
+// │ Comment Node │
+// ╰──────────────╯
 typedef struct {
   DEFINE_DOCUMENT_NODE_FIELDS;
   StrView value;
 } CommentNode;
 DEFINE_NODE_VISITOR(Comment);
 DEFINE_NODE_SEQ(Comment);
+// ──────────────────────────────────────────────────────────────────────
 
+// ╭───────────╮
+// │ Task Node │
+// ╰───────────╯
 #define FOR_EACH_TASK_RUN_MODE(V) \
   V(Always)                       \
   V(Once)                         \
@@ -375,7 +433,11 @@ void VisitTaskDotenvs(TaskNode* node, StringVisitor vis, void* data);
 static inline bool TaskHasDotenvs(TaskNode* rhs) {
   return GetNumberOfDotenvsInTask(rhs) > 0;
 }
+// ──────────────────────────────────────────────────────────────────────
 
+// ╭──────────╮
+// │ Var Node │
+// ╰──────────╯
 #define FOR_EACH_DOCUMENT_VAR_NODE_KIND(V) \
   V(Scalar)                                \
   V(Shell)                                 \
@@ -415,6 +477,7 @@ DEFINE_NODE_SEQ(Var);
 static inline bool IsVarSecret(VarNode* rhs) {
   return rhs && rhs->secret;
 }
+// ──────────────────────────────────────────────────────────────────────
 
 static inline bool IsNodeKind(DocumentNode* node, const DocumentNodeKind kind) {
   return node && node->kind == kind;
@@ -523,10 +586,7 @@ bool NodeHasDiagnosticsForLevel(DocumentNode* rhs, const DiagnosticLevel level);
 FOR_EACH_DIAGNOSTIC_LEVEL(DEFINE_LEVEL_CHECK)
 #undef DEFINE_LEVEL_CHECK
 
-typedef bool (*DiagnosticVisitor)(uint64_t, Diagnostic*, void*);
 void VisitNodeDiagnostics(DocumentNode* node, DiagnosticVisitor vis, void* data);
-
-typedef bool (*DiagnosticPredicate)(const uint64_t, Diagnostic*, void*);
 void VisitNodeDiagnosticsMatching(DocumentNode* node, DiagnosticPredicate predicate, DiagnosticVisitor vis, void* data);
 
 #define _DEFINE_VISIT_DOCUMENT_FIELD_VALUES(Name, Type)                      \
@@ -546,6 +606,9 @@ DEFINE_VISIT_DOCUMENT_FIELD_VALUES(Var);
 
 void FreeDocumentNode(DocumentNode* node);
 
+// ╭───────╮
+// │ Parse │
+// ╰───────╯
 typedef struct {
   bool success;
   union {
@@ -562,6 +625,7 @@ static inline bool TaskfileParseResultIsOk(TaskfileParseResult* rhs) {
 
 char* TaskfileParseResultToStr(TaskfileParseResult* rhs);
 void FreeTaskfileParseResult(TaskfileParseResult* rhs);
+// ──────────────────────────────────────────────────────────────────────
 
 #ifdef __cplusplus
 };
