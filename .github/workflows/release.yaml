@@ -84,9 +84,7 @@ jobs:
     - name: Install Toolchain (Windows)
       if: matrix.runner == 'windows-latest'
       run: |
-        pip install \
-          meson \
-          ninja
+        pip install meson ninja
     - name: Setup Go
       uses: actions/setup-go@v5
       with:
