@@ -13,10 +13,13 @@ Document* NewDocument(const char* path) {
     doc->kind = kDocumentKind;
     doc->diagnostics = NULL;
     doc->diagnostics_len = doc->diagnostics_cap = 0;
+
     doc->tasks = NULL;
     doc->tasks_len = doc->tasks_cap = 0;
+
     doc->comments = NULL;
     doc->comments_len = doc->comments_cap = 0;
+
     doc->path = path ? strdup(path) : NULL;
   }
 
@@ -72,10 +75,51 @@ Diagnostic* GetNodeDiagnosticAt(DocumentNode* node, const uint64_t idx) {
   return node && node->diagnostics && node->diagnostics_len <= idx ? &node->diagnostics[idx] : NULL;
 }
 
+uint64_t GetNumberOfIncludesInDocument(Document* doc) {
+  return doc && doc->includes ? doc->includes_len : 0;
+}
+
+IncludeNode* GetDocumentIncludeAt(Document* doc, const uint64_t idx) {
+  return doc && doc->includes && idx < doc->includes_len ? &doc->includes[idx] : NULL;
+}
+
+void VisitDocumentIncludes(Document* doc, IncludeVisitor vis, void* data) {
+  if (!doc || !doc->includes || doc->includes_len == 0)
+    return;
+
+  for (size_t i = 0; i < doc->includes_len; i++) {
+    IncludeNode* node = &doc->includes[i];
+    ASSERT(node);
+    if (!vis(i, node, data))
+      return;
+  }
+}
+
+uint64_t GetNumberOfDotenvsInDocument(Document* doc) {
+  return doc && doc->dotenv ? doc->dotenv_len : 0;
+}
+
+StringNode* GetDocumentDotenvAt(Document* doc, uint64_t idx) {
+  return doc && doc->dotenv && idx < doc->dotenv_len ? &doc->dotenv[idx] : NULL;
+}
+
+void VisitDocumentDotenvs(Document* doc, StringVisitor vis, void* data) {
+  if (!doc || !doc->dotenv || doc->dotenv_len == 0)
+    return;
+
+  for (size_t i = 0; i < doc->dotenv_len; i++) {
+    StringNode* dotenv = &doc->dotenv[i];
+    ASSERT(dotenv);
+    if (!vis(i, dotenv, data))
+      return;
+  }
+}
+
 void VisitNodeDiagnostics(DocumentNode* node, DiagnosticVisitor vis, void* data) {
   if (!node || !vis || !node->diagnostics || node->diagnostics_len == 0)
     return;
 }
+
 void VisitNodeDiagnosticsMatching(DocumentNode* node, DiagnosticPredicate predicate, DiagnosticVisitor vis,
                                   void* data) {
   if (!node || !predicate || !vis || !node->diagnostics || node->diagnostics_len == 0)
