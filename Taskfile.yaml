@@ -21,6 +21,9 @@ tasks:
   go:build:release:
     cmds:
     - task: go:build
+  go:test:
+    cmds:
+    - go test ./...
   go:clean:
     internal: true
     cmds:
@@ -31,16 +34,46 @@ tasks:
     cmds:
     - rm -rf {{.VSCODE_DIR}}/dist {{.VSCODE_DI}}/out
 
+  meson:test:
+    cmds:
+    - meson test -C {{ .BUILD_DIR }}
+  meson:build:
+    cmds:
+    - |
+      meson setup {{ .BUILD_DIR }} \
+        --reconfigure \
+        --buildtype={{ .BUILD_TYPE | default "debug" }}
+    - meson compile {{ .BUILD_ARGS | default "" }} -C {{ .BUILD_DIR }}
+  meson:install:
+    cmds:
+    - meson install -C {{ .BUILD_DIR }}
+
   build:dev:
     aliases:
     - default
     cmds:
+    - task: meson:build
     - task: go:build:dev
   build:release:
     aliases:
     - build
     cmds:
+    - task: meson:build
+      vars:
+        BUILD_TYPE: release
+        BUILD_ARGS: "--clean"
     - task: go:build:release
+
+  test:
+    cmds:
+    - task: meson:test
+    - task: go:test
+
+  install:
+    deps:
+    - build:release
+    cmds:
+    - task: meson:install
 
   clean:
     parallel: true

@@ -1,5 +1,5 @@
 project(
-  'hypha',
+  'taskfile-lsp',
   ['c', 'cpp'],
   version: files('VERSION'),
   default_options: ['c_std=c23,c2x'],

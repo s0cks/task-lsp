@@ -23,8 +23,14 @@ pre-commit:
       glob: "*.{h,c,hpp,cpp,cc}"
       run: clang-tidy -p build {staged_files}
     iwyu:
-      glob: "*.{h,c,hpp,cpp,cc}"
-      run: include-what-you-use -p build {staged_files}
+      glob: "*.{h,c}"
+      run: |
+        include-what-you-use \
+          -Xiwyu --no_fwd_decls \
+          -Xiwyu --max_line_length=120 \
+          -std=c23 \
+          -Iinclude \
+          {staged_files}
     go-fmt:
       glob: "*.go"
       run: gofmt -w {staged_files}

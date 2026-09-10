@@ -10,6 +10,34 @@ extern "C" {
 #include <stddef.h>
 #include <stdint.h>
 
+#define DEFINE_SEQ(Name, Type) \
+  typedef struct {             \
+    Type* values;              \
+    size_t len;                \
+    size_t cap;                \
+  } Name##Seq;
+
+#define DEFINE_NODE_SEQ(Type) DEFINE_SEQ(Type, Type##Node)
+
+#define DEFINE_NODE_VISITOR(Name)                              \
+  typedef bool (*Name##Visitor)(uint64_t, Name##Node*, void*); \
+  typedef bool (*Name##Predicate)(Name##Node*, void*);
+
+#define FOR_EACH_METHOD_KIND(V) \
+  V(None)                       \
+  V(Checksum)                   \
+  V(Timestamp)
+
+// clang-format off
+typedef enum {
+#define DEFINE_KIND(Name) k##Name##MethodKind,
+  FOR_EACH_METHOD_KIND(DEFINE_KIND)
+#undef DEFINE_KIND
+  kTotalNumberOfMethodKinds,
+  kDefaultMethodKind = kChecksumMethodKind,
+} MethodKind;
+// clang-format on
+
 typedef struct _DocumentNode DocumentNode;
 
 typedef struct {
@@ -63,6 +91,7 @@ typedef struct {
   Position end;
   char* message;
 } Diagnostic;
+DEFINE_SEQ(Diagnostic, Diagnostic);
 
 #define FOR_EACH_DOCUMENT_NODE_KIND(V) \
   V(Document)                          \
@@ -70,7 +99,10 @@ typedef struct {
   V(Command)                           \
   V(Var)                               \
   V(Task)                              \
-  V(Comment)
+  V(Comment)                           \
+  V(String)                            \
+  V(Include)                           \
+  V(Precondition)
 
 // clang-format off
 typedef enum {
@@ -87,9 +119,7 @@ typedef enum {
   DocumentNodeKind kind;            \
   Position start;                   \
   Position end;                     \
-  Diagnostic* diagnostics;          \
-  size_t diagnostics_len;           \
-  size_t diagnostics_cap;
+  DiagnosticSeq diagnostics;
 // clang-format on
 
 struct _DocumentNode {
@@ -117,21 +147,172 @@ typedef struct {
   DocumentNode* to;
   DocumentNode* from;
 } RefNode;
+DEFINE_NODE_VISITOR(Ref);
+DEFINE_NODE_SEQ(Ref);
+
+typedef struct {
+  DEFINE_DOCUMENT_NODE_FIELDS;
+  str_view value;
+
+  RefNode* refs;
+  size_t refs_len;
+  size_t refs_cap;
+} StringNode;
+DEFINE_NODE_VISITOR(String);
+DEFINE_NODE_SEQ(String);
+
+uint64_t GetNumberOfRefsInString(StringNode* rhs);
+RefNode* GetStringRefAt(StringNode* node, uint64_t idx);
+void VisitStringRefs(StringNode* node, RefVisitor vis, void* data);
+
+static inline bool StringHasRefs(StringNode* rhs) {
+  return GetNumberOfRefsInString(rhs) > 0;
+}
+
+typedef struct {
+  DEFINE_DOCUMENT_NODE_FIELDS;
+  bool optional;
+  bool flatten;
+  bool internal;
+  str_view dir;
+  str_view checksum;
+  str_view taskfile;
+  StringSeq aliases;
+  StringSeq excludes;
+
+  // TODO(@s0cks): handle vars
+} IncludeNode;
+DEFINE_NODE_VISITOR(Include);
+DEFINE_NODE_SEQ(Include);
+
+uint64_t GetNumberOfIncludeAliases(IncludeNode* rhs);
+StringNode* GetIncludeAliasAt(IncludeNode* node, uint64_t idx);
+void VisitIncludeAliases(IncludeNode* node, StringVisitor vis, void* data);
+
+static inline bool IncludeHasAliases(IncludeNode* rhs) {
+  return GetNumberOfIncludeAliases(rhs) > 0;
+}
+
+uint64_t GetNumberOfIncludeExcludes(IncludeNode* rhs);
+StringNode* GetIncludeExcludeAt(IncludeNode* node, uint64_t idx);
+void VisitIncludeExcludes(IncludeNode* node, StringVisitor vis, void* data);
+
+static inline bool IncludeHasExcludes(IncludeNode* rhs) {
+  return GetNumberOfIncludeExcludes(rhs) > 0;
+}
 
 typedef struct {
   DEFINE_DOCUMENT_NODE_FIELDS;
   str_view value;
 } CommandNode;
+DEFINE_NODE_VISITOR(Command);
+DEFINE_NODE_SEQ(Command);
+
+typedef struct {
+  DEFINE_DOCUMENT_NODE_FIELDS;
+  CommandNode* command;
+  StringNode* message;
+} PreconditionNode;
+DEFINE_NODE_VISITOR(Precondition);
+DEFINE_NODE_SEQ(Precondition);
+
+void VisitPreconditions(PreconditionSeq* seq, PreconditionVisitor vis, void* data);
 
 typedef struct {
   DEFINE_DOCUMENT_NODE_FIELDS;
   str_view value;
 } CommentNode;
+DEFINE_NODE_VISITOR(Comment);
+DEFINE_NODE_SEQ(Comment);
+
+#define FOR_EACH_TASK_RUN_MODE(V) \
+  V(Always)                       \
+  V(Once)                         \
+  V(WhenChanged)
+
+// clang-format off
+typedef enum {
+  kInvalidTaskRunMode,
+#define DEFINE_KIND(Name) kTaskRun##Name##Mode,
+  FOR_EACH_TASK_RUN_MODE(DEFINE_KIND)
+#undef DEFINE_KIND
+  kTotalNumberOfTaskRunModes,
+  kDefaultTaskRunMode = kTaskRunAlwaysMode,
+} TaskRunMode;
+// clang-format on
+
+typedef uint8_t TaskFlags;
+
+enum {
+  kNoTaskFlags = 0,
+  kSilentFlag = 1 << 1,
+  kGitignoreFlag = 1 << 2,
+  kInternalFlag = 1 << 3,
+};
 
 typedef struct {
   DEFINE_DOCUMENT_NODE_FIELDS;
   str_view name;
+  str_view desc;
+  str_view dir;
+  str_view summary;
+  TaskFlags flags;
+  TaskRunMode mode;
+  MethodKind method;
+  str_view interval;
+
+  CommandSeq status;
+  PreconditionSeq preconditions;
+
+  // TODO(@s0cks):
+  // - add aliases
+  // - add prompts
+  // - add sources
+  // - add generates
+
+  StringSeq dotenvs;
 } TaskNode;
+DEFINE_NODE_VISITOR(Task);
+DEFINE_NODE_SEQ(Task);
+
+static inline bool HasTaskFlags(TaskNode* node, const TaskFlags rhs) {
+  return node && (node->flags & rhs) == rhs;
+}
+
+static inline void SetTaskFlags(TaskNode* node, TaskFlags rhs) {
+  if (!node)
+    return;
+  node->flags = rhs;
+}
+
+static inline void ClearTaskFlags(TaskNode* node) {
+  return SetTaskFlags(node, kNoTaskFlags);
+}
+
+#define DEFINE_TASK_FLAG(Name)                              \
+  static inline void SetTask##Name##Flag(TaskNode* node) {  \
+    if (!node)                                              \
+      return;                                               \
+    return SetTaskFlags(node, node->flags | k##Name##Flag); \
+  }                                                         \
+  static inline bool HasTask##Name##Flag(TaskNode* node) {  \
+    return node && HasTaskFlags(node, k##Name##Flag);       \
+  }                                                         \
+  static inline bool IsTask##Name(TaskNode* rhs) {          \
+    return HasTask##Name##Flag(rhs);                        \
+  }
+
+DEFINE_TASK_FLAG(Silent);
+DEFINE_TASK_FLAG(Gitignore);
+DEFINE_TASK_FLAG(Internal);
+
+uint64_t GetNumberOfDotenvsInTask(TaskNode* rhs);
+StringNode* GetTaskDotenvAt(TaskNode* node, uint64_t idx);
+void VisitTaskDotenvs(TaskNode* node, StringVisitor vis, void* data);
+
+static inline bool TaskHasDotenvs(TaskNode* rhs) {
+  return GetNumberOfDotenvsInTask(rhs) > 0;
+}
 
 #define FOR_EACH_DOCUMENT_VAR_NODE_KIND(V) \
   V(Scalar)                                \
@@ -153,6 +334,7 @@ typedef struct {
   DEFINE_DOCUMENT_NODE_FIELDS;
   str_view name;
   VarNodeKind var_kind;
+  bool secret;
   union {
     struct {
       DocumentNode* value;
@@ -165,6 +347,12 @@ typedef struct {
     };
   };
 } VarNode;
+DEFINE_NODE_VISITOR(Var);
+DEFINE_NODE_SEQ(Var);
+
+static inline bool IsVarSecret(VarNode* rhs) {
+  return rhs && rhs->secret;
+}
 
 static inline bool IsNodeKind(DocumentNode* node, const DocumentNodeKind kind) {
   return node && node->kind == kind;
@@ -205,10 +393,32 @@ FOR_EACH_REF_KIND(DEFINE_TYPE_CHECK);
 typedef struct _Document Document;
 bool IsFragmentDocument(Document* rhs);
 char* GetDocumentPath(Document* doc);
+
 uint64_t GetNumberOfTasksInDocument(Document* rhs);
 TaskNode* GetDocumentTaskAt(Document* doc, const uint64_t idx);
+
+static inline bool DocumentHasTasks(Document* rhs) {
+  return GetNumberOfTasksInDocument(rhs) > 0;
+}
+
 uint64_t GetNumberOfCommentsInDocument(Document* rhs);
 CommentNode* GetDocumentCommentAt(Document* doc, const uint64_t idx);
+
+uint64_t GetNumberOfIncludesInDocument(Document* doc);
+IncludeNode* GetDocumentIncludeAt(Document* doc, const uint64_t idx);
+void VisitDocumentIncludes(Document* doc, IncludeVisitor vis, void* data);
+
+static inline bool DocumentHasIncludes(Document* rhs) {
+  return GetNumberOfIncludesInDocument(rhs) > 0;
+}
+
+uint64_t GetNumberOfDotenvsInDocument(Document* doc);
+StringNode* GetDocumentDotenvAt(Document* doc, uint64_t idx);
+void VisitDocumentDotenvs(Document* doc, StringVisitor vis, void* data);
+
+static inline bool DocumentHasDotenvs(Document* rhs) {
+  return GetNumberOfDotenvsInDocument(rhs) > 0;
+}
 
 Diagnostic* NewDiagnosticForNode(DocumentNode* node, const DiagnosticLevel level, const Position start,
                                  const Position end, const char* fmt, ...);

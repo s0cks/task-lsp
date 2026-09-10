@@ -1,9 +1,11 @@
 #include "document.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "common.h"
+#include "seq.h"
 #include "taskfile_parser.h"
 
 Document* NewDocument(const char* path) {
@@ -11,12 +13,13 @@ Document* NewDocument(const char* path) {
   if (doc) {
     memset(doc, 0, sizeof(Document));
     doc->kind = kDocumentKind;
-    doc->diagnostics = NULL;
-    doc->diagnostics_len = doc->diagnostics_cap = 0;
+
     doc->tasks = NULL;
     doc->tasks_len = doc->tasks_cap = 0;
+
     doc->comments = NULL;
     doc->comments_len = doc->comments_cap = 0;
+
     doc->path = path ? strdup(path) : NULL;
   }
 
@@ -47,49 +50,70 @@ CommentNode* GetDocumentCommentAt(Document* doc, const uint64_t idx) {
   return doc && doc->comments && idx <= doc->comments_len ? &doc->comments[idx] : NULL;
 }
 
-bool HasDiagnostics(DocumentNode* rhs) {
-  return rhs && rhs->diagnostics && rhs->diagnostics_len > 0;
-}
-
 bool HasDiagnosticsForLevel(DocumentNode* rhs, const DiagnosticLevel level) {
-  if (!rhs || !rhs->diagnostics || rhs->diagnostics_len == 0)
-    return false;
-
-  for (size_t i = 0; i < rhs->diagnostics_len; i++) {
-    Diagnostic* diagnostic = &rhs->diagnostics[i];
-    if (diagnostic->level == level)
-      return true;
-  }
-
+  fprintf(stderr, "%s not implemented", __PRETTY_FUNCTION__);
   return false;
 }
 
 uint64_t GetNumberOfDiagnosticsForNode(DocumentNode* node) {
-  return node && node->diagnostics ? node->diagnostics_len : 0;
+  return node ? GetNumberOfDiagnosticsInSeq(&node->diagnostics) : 0;
 }
 
 Diagnostic* GetNodeDiagnosticAt(DocumentNode* node, const uint64_t idx) {
-  return node && node->diagnostics && node->diagnostics_len <= idx ? &node->diagnostics[idx] : NULL;
+  return node ? GetDiagnosticInSeqAt(&node->diagnostics, idx) : NULL;
+}
+
+uint64_t GetNumberOfIncludesInDocument(Document* doc) {
+  return doc && doc->includes ? doc->includes_len : 0;
+}
+
+IncludeNode* GetDocumentIncludeAt(Document* doc, const uint64_t idx) {
+  return doc && doc->includes && idx < doc->includes_len ? &doc->includes[idx] : NULL;
+}
+
+void VisitDocumentIncludes(Document* doc, IncludeVisitor vis, void* data) {
+  if (!doc || !doc->includes || doc->includes_len == 0)
+    return;
+
+  for (size_t i = 0; i < doc->includes_len; i++) {
+    IncludeNode* node = &doc->includes[i];
+    ASSERT(node);
+    if (!vis(i, node, data))
+      return;
+  }
+}
+
+uint64_t GetNumberOfDotenvsInDocument(Document* doc) {
+  return doc && doc->dotenv ? doc->dotenv_len : 0;
+}
+
+StringNode* GetDocumentDotenvAt(Document* doc, uint64_t idx) {
+  return doc && doc->dotenv && idx < doc->dotenv_len ? &doc->dotenv[idx] : NULL;
+}
+
+void VisitDocumentDotenvs(Document* doc, StringVisitor vis, void* data) {
+  if (!doc || !doc->dotenv || doc->dotenv_len == 0)
+    return;
+
+  for (size_t i = 0; i < doc->dotenv_len; i++) {
+    StringNode* dotenv = &doc->dotenv[i];
+    ASSERT(dotenv);
+    if (!vis(i, dotenv, data))
+      return;
+  }
 }
 
 void VisitNodeDiagnostics(DocumentNode* node, DiagnosticVisitor vis, void* data) {
-  if (!node || !vis || !node->diagnostics || node->diagnostics_len == 0)
+  if (!node)
     return;
+  return VisitDiagnosticsInSeq(&node->diagnostics, vis, data);
 }
+
 void VisitNodeDiagnosticsMatching(DocumentNode* node, DiagnosticPredicate predicate, DiagnosticVisitor vis,
                                   void* data) {
-  if (!node || !predicate || !vis || !node->diagnostics || node->diagnostics_len == 0)
+  if (!node || !predicate || !vis)
     return;
-
-  for (size_t i = 0; i < node->diagnostics_len; i++) {
-    Diagnostic* diagnostic = &node->diagnostics[i];
-    ASSERT(diagnostic);
-    if (!predicate(i, diagnostic, data))
-      continue;
-
-    if (!vis(i, diagnostic, data))
-      return;
-  }
+  return VisitMatchingDiagnosticsInSeq(&node->diagnostics, predicate, vis, data);
 }
 
 #define DEFINE_VISIT_DOCUMENT_FIELD(Name, Type, Field)                                                           \
