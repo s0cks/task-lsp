@@ -1,5 +1,5 @@
 build/
-styles/
+.styles/
 bind/
 .task/
 .rumdl_cache/
