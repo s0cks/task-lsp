@@ -39,6 +39,10 @@ pre-commit:
     yaml-lint:
       glob: "*.{yaml,yml}"
       run: yamllint {staged_files}
+    rumdl-format:
+      glob: "*.md"
+      run: rumdl fmt {staged_files}
+      stage_fixed: true
     hadolint-format:
       glob: "**/Dockerfile*"
       run: hadolint {staged_files}
