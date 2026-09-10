@@ -379,6 +379,8 @@ typedef struct {
   StrView interval;
   ShellOpts* set;
   ShOpts* shopt;
+  StrViewSeq
+    requires;
 
   CommandSeq status;
   PreconditionSeq preconditions;
@@ -389,6 +391,7 @@ typedef struct {
   // - add sources
   // - add generates
 
+  StringNode* label;
   StringSeq dotenvs;
   StringSeq platforms;
 } TaskNode;
