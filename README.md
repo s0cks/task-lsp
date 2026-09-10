@@ -37,6 +37,6 @@ for your editor.
 
 - The [task](https://taskfile.dev) team :heart_hands:
 
-## LICENSE
+## License
 
 See [LICENSE](/LICENSE)
