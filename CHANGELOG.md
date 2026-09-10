@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.3.0](https://github.com/s0cks/task-lsp/compare/v1.2.2...v1.3.0) (2026-09-10)
+
+
+### Features
+
+* **cli:** ✨ get version from the build ([7e171c3](https://github.com/s0cks/task-lsp/commit/7e171c3ac5086b6af181d9396ecc5325e5ed4c20))
+* **parser:** ✨ initial commit for C based parser ([a448257](https://github.com/s0cks/task-lsp/commit/a4482578715d82c5693fa727743dc865c4f0fef4))
+
+
+### Bug Fixes
+
+* **vscode:** 🐛 attempt to fix pnpm versioning again ([793f262](https://github.com/s0cks/task-lsp/commit/793f262ca7fa5a4e48ae867047f7253c6b78ea74))
+
 ## [1.2.2](https://github.com/s0cks/task-lsp/compare/v1.2.1...v1.2.2) (2026-09-09)
 
 
