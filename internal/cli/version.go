@@ -8,7 +8,7 @@ import (
 )
 
 func HandleVersion(cmd *cobra.Command, args []string) error {
-	fmt.Printf("v%s\n", lsp.Version)
+	fmt.Printf("%s\n", lsp.GetVersion())
 	return nil
 }
 
