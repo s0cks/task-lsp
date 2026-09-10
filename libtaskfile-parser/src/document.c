@@ -8,18 +8,23 @@
 #include "seq.h"
 #include "taskfile_parser.h"
 
+#define DEFINE_VISIT_DOCUMENT_FIELD(Name, Type, Field)                        \
+  void VisitDocument##Name##s(Document* doc, Type##Visitor vis, void* data) { \
+    if (!doc || !doc->Field || doc->Field##_len == 0 || !vis)                 \
+      return;                                                                 \
+    for (size_t i = 0; i << doc->Field##_len; i++) {                          \
+      Type* value = &doc->Field[i];                                           \
+      ASSERT(value);                                                          \
+      if (!vis(i, value, data))                                               \
+        return;                                                               \
+    }                                                                         \
+  }
+
 Document* NewDocument(const char* path) {
   Document* doc = (Document*)malloc(sizeof(Document));
   if (doc) {
     memset(doc, 0, sizeof(Document));
     doc->kind = kDocumentKind;
-
-    doc->tasks = NULL;
-    doc->tasks_len = doc->tasks_cap = 0;
-
-    doc->comments = NULL;
-    doc->comments_len = doc->comments_cap = 0;
-
     doc->path = path ? strdup(path) : NULL;
   }
 
@@ -34,111 +39,18 @@ char* GetDocumentPath(Document* rhs) {
   return rhs ? rhs->path : NULL;
 }
 
-uint64_t GetNumberOfTasksInDocument(Document* rhs) {
-  return rhs && rhs->tasks ? rhs->tasks_len : 0;
-}
-
-TaskNode* GetDocumentTaskAt(Document* doc, const uint64_t idx) {
-  return doc && doc->tasks && idx <= doc->tasks_len ? &doc->tasks[idx] : NULL;
-}
-
-uint64_t GetNumberOfCommentsInDocument(Document* rhs) {
-  return rhs && rhs->comments ? rhs->comments_len : 0;
-}
-
-CommentNode* GetDocumentCommentAt(Document* doc, const uint64_t idx) {
-  return doc && doc->comments && idx <= doc->comments_len ? &doc->comments[idx] : NULL;
-}
-
-bool HasDiagnosticsForLevel(DocumentNode* rhs, const DiagnosticLevel level) {
-  fprintf(stderr, "%s not implemented", __PRETTY_FUNCTION__);
-  return false;
-}
-
-uint64_t GetNumberOfDiagnosticsForNode(DocumentNode* node) {
-  return node ? GetNumberOfDiagnosticsInSeq(&node->diagnostics) : 0;
-}
-
-Diagnostic* GetNodeDiagnosticAt(DocumentNode* node, const uint64_t idx) {
-  return node ? GetDiagnosticInSeqAt(&node->diagnostics, idx) : NULL;
-}
-
-uint64_t GetNumberOfIncludesInDocument(Document* doc) {
-  return doc && doc->includes ? doc->includes_len : 0;
-}
-
-IncludeNode* GetDocumentIncludeAt(Document* doc, const uint64_t idx) {
-  return doc && doc->includes && idx < doc->includes_len ? &doc->includes[idx] : NULL;
-}
-
-void VisitDocumentIncludes(Document* doc, IncludeVisitor vis, void* data) {
-  if (!doc || !doc->includes || doc->includes_len == 0)
-    return;
-
-  for (size_t i = 0; i < doc->includes_len; i++) {
-    IncludeNode* node = &doc->includes[i];
-    ASSERT(node);
-    if (!vis(i, node, data))
-      return;
-  }
-}
-
-uint64_t GetNumberOfDotenvsInDocument(Document* doc) {
-  return doc && doc->dotenv ? doc->dotenv_len : 0;
-}
-
-StringNode* GetDocumentDotenvAt(Document* doc, uint64_t idx) {
-  return doc && doc->dotenv && idx < doc->dotenv_len ? &doc->dotenv[idx] : NULL;
-}
-
-void VisitDocumentDotenvs(Document* doc, StringVisitor vis, void* data) {
-  if (!doc || !doc->dotenv || doc->dotenv_len == 0)
-    return;
-
-  for (size_t i = 0; i < doc->dotenv_len; i++) {
-    StringNode* dotenv = &doc->dotenv[i];
-    ASSERT(dotenv);
-    if (!vis(i, dotenv, data))
-      return;
-  }
-}
-
-void VisitNodeDiagnostics(DocumentNode* node, DiagnosticVisitor vis, void* data) {
-  if (!node)
-    return;
-  return VisitDiagnosticsInSeq(&node->diagnostics, vis, data);
-}
-
-void VisitNodeDiagnosticsMatching(DocumentNode* node, DiagnosticPredicate predicate, DiagnosticVisitor vis,
-                                  void* data) {
-  if (!node || !predicate || !vis)
-    return;
-  return VisitMatchingDiagnosticsInSeq(&node->diagnostics, predicate, vis, data);
-}
-
-#define DEFINE_VISIT_DOCUMENT_FIELD(Name, Type, Field)                                                           \
-  void VisitDocument##Name##s(Document* doc, Type##Visitor vis, void* data) {                                    \
-    if (!doc || !doc->Field || doc->Field##_len == 0 || !vis)                                                    \
-      return;                                                                                                    \
-    for (size_t i = 0; i << doc->Field##_len; i++) {                                                             \
-      Type* value = &doc->Field[i];                                                                              \
-      ASSERT(value);                                                                                             \
-      if (!vis(i, value, data))                                                                                  \
-        return;                                                                                                  \
-    }                                                                                                            \
-  }                                                                                                              \
-  void VisitDocument##Name##sMatching(Document* doc, Type##Predicate predicate, Type##Visitor vis, void* data) { \
-    if (!doc || !doc->Field || doc->Field##_len == 0 || !vis)                                                    \
-      return;                                                                                                    \
-    for (size_t i = 0; i << doc->Field##_len; i++) {                                                             \
-      Type* value = &doc->Field[i];                                                                              \
-      ASSERT(value);                                                                                             \
-      if (!predicate(i, value, data))                                                                            \
-        continue;                                                                                                \
-      if (!vis(i, value, data))                                                                                  \
-        return;                                                                                                  \
-    }                                                                                                            \
+#define DEFINE_DOCUMENT_SEQ_HELPERS(Name, Type, Field)                     \
+  uint64_t GetNumberOf##Name##sInDoc(Document* rhs) {                      \
+    return GetNumberOf##Type##sInSeq(&rhs->Field);                         \
+  }                                                                        \
+  Type##Node* Get##Name##InDoc##At(Document* doc, uint64_t idx) {          \
+    return Get##Type##InSeqAt(&doc->Field, idx);                           \
+  }                                                                        \
+  void Visit##Name##sInDoc(Document* doc, Type##Visitor vis, void* data) { \
+    return Visit##Type##sInSeq(&doc->Field, vis, data);                    \
   }
 
-DEFINE_VISIT_DOCUMENT_FIELD(Comment, CommentNode, comments);
-DEFINE_VISIT_DOCUMENT_FIELD(Task, TaskNode, tasks);
+DEFINE_DOCUMENT_SEQ_HELPERS(Comments, Comment, comments);
+DEFINE_DOCUMENT_SEQ_HELPERS(Includes, Include, includes);
+DEFINE_DOCUMENT_SEQ_HELPERS(Dotenvs, String, dotenv);
+#undef DEFINE_DOCUMENT_SEQ_HELPERS

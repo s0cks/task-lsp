@@ -6,6 +6,9 @@
 #include "taskfile_parser.h"
 
 char* TaskfileParseResultToStr(TaskfileParseResult* rhs) {
+  if (!rhs)
+    return NULL;
+
   static const char* kSuccessMessage = "success";
   static const char* kErrorFormat = "error: %s";
   if (TaskfileParseResultIsOk(rhs))

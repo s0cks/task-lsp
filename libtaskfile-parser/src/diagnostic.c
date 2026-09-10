@@ -7,15 +7,13 @@
 #include "seq.h"
 #include "taskfile_parser.h"
 
-Diagnostic* NewDiagnosticForNode(DocumentNode* node, const DiagnosticLevel level, const Position start,
-                                 const Position end, const char* fmt, ...) {
+Diagnostic* NewDiagnosticForNode(DocumentNode* node, const DiagnosticLevel level, const Range range, const char* fmt,
+                                 ...) {
   ASSERT(node);
   Diagnostic* diagnostic = AppendNewDiagnosticInSeq(&node->diagnostics);
   if (diagnostic) {
-    diagnostic->owner = node;
     diagnostic->level = level;
-    memmove(&diagnostic->start, &start, sizeof(Position));
-    memmove(&diagnostic->end, &end, sizeof(Position));
+    memmove(&diagnostic->range, &range, sizeof(Range));
 
     char* message = NULL;
     if (fmt != NULL) {

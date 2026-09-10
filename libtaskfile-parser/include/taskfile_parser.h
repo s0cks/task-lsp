@@ -3,12 +3,56 @@
 
 // NOLINTBEGIN(modernize-use-using,modernize-use-trailing-return-type,cppcoreguidelines-pro-type-cstyle-cast)
 #ifdef __cplusplus
+#include <iostream>
+
 extern "C" {
 #endif  // __cplusplus
 
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
+
+// clang-format off
+typedef uint8_t ShellOpts;
+enum AllShellOpts {
+  kNoShellOpts            = 0,
+  kAllExportShellOpt      = 1 << 1,
+  kErrExitShellOpt        = 1 << 2,
+  kNoExecShellOpt         = 1 << 3,
+  kNoGlobShellOpt         = 1 << 4,
+  kNoUnsetShellOpt        = 1 << 5,
+  kXTraceShellOpt         = 1 << 6,
+  kPipeFailShellOpt       = 1 << 7,
+  kTotalNumberOfShellOpts = 7,
+};
+// clang-format on
+
+static inline ShellOpts SetShellOpts(const ShellOpts lhs, const ShellOpts rhs) {
+  return lhs | rhs;
+}
+
+static inline bool TestShellOpts(const ShellOpts lhs, const ShellOpts rhs) {
+  return (lhs & rhs) == rhs;
+}
+
+// clang-format off
+typedef uint8_t ShOpts;
+enum AllShOpts {
+  kNoShOpts            = 0,
+  kExpandAliasesShOpt  = 1 << 1,
+  kGlobStarShOpt       = 1 << 2,
+  kNullGlobShOpt       = 1 << 3,
+  kTotalNumberOfShOpts = 3,
+};
+// clang-format on
+
+static inline ShOpts SetShOpts(const ShOpts lhs, const ShOpts rhs) {
+  return lhs | rhs;
+}
+
+static inline bool TestShOpts(const ShOpts lhs, const ShOpts rhs) {
+  return (lhs & rhs) == rhs;
+}
 
 #define DEFINE_SEQ(Name, Type) \
   typedef struct {             \
@@ -43,31 +87,23 @@ typedef struct _DocumentNode DocumentNode;
 typedef struct {
   int row;
   int col;
-} Position;
+} Pos;
+
+typedef struct {
+  Pos start;
+  Pos end;
+} Range;
 
 typedef struct {
   char* start;
   size_t len;
-} str_view;
-
-#define FOR_EACH_TOKEN_KIND(V)
-
-// clang-format off
-typedef enum {
-  kInvalidToken = 0,
-#define DEFINE_KIND(Name) k##Name##Token,
-  FOR_EACH_TOKEN_KIND(DEFINE_KIND)
-#undef DEFINE_KIND
-  kTotalNumberOfTokenKinds,
-} TokenKind;
-// clang-format on
+} StrView;
 
 typedef struct {
-  TokenKind kind;
-  str_view data;
-  Position start;
-  Position end;
-} Token;
+  StrView* values;
+  size_t len;
+  size_t cap;
+} StrViewSeq;
 
 #define FOR_EACH_DIAGNOSTIC_LEVEL(V) \
   V(Info)                            \
@@ -84,15 +120,6 @@ typedef enum {
 } DiagnosticLevel;
 // clang-format on
 
-typedef struct {
-  DocumentNode* owner;
-  DiagnosticLevel level;
-  Position start;
-  Position end;
-  char* message;
-} Diagnostic;
-DEFINE_SEQ(Diagnostic, Diagnostic);
-
 #define FOR_EACH_DOCUMENT_NODE_KIND(V) \
   V(Document)                          \
   V(Ref)                               \
@@ -102,7 +129,10 @@ DEFINE_SEQ(Diagnostic, Diagnostic);
   V(Comment)                           \
   V(String)                            \
   V(Include)                           \
-  V(Precondition)
+  V(Precondition)                      \
+  V(If)                                \
+  V(Set)                               \
+  V(Diagnostic)
 
 // clang-format off
 typedef enum {
@@ -114,11 +144,18 @@ typedef enum {
 } DocumentNodeKind;
 // clang-format on
 
+typedef struct {
+  DiagnosticLevel level;
+  Range range;
+  char* message;
+} Diagnostic;
+DEFINE_SEQ(Diagnostic, Diagnostic);
+
 // clang-format off
 #define DEFINE_DOCUMENT_NODE_FIELDS \
   DocumentNodeKind kind;            \
-  Position start;                   \
-  Position end;                     \
+  Pos start;                        \
+  Pos end;                          \
   DiagnosticSeq diagnostics;
 // clang-format on
 
@@ -142,7 +179,7 @@ typedef enum {
 
 typedef struct {
   DEFINE_DOCUMENT_NODE_FIELDS;
-  str_view name;
+  StrView name;
   RefKind ref_kind;
   DocumentNode* to;
   DocumentNode* from;
@@ -152,11 +189,8 @@ DEFINE_NODE_SEQ(Ref);
 
 typedef struct {
   DEFINE_DOCUMENT_NODE_FIELDS;
-  str_view value;
-
-  RefNode* refs;
-  size_t refs_len;
-  size_t refs_cap;
+  StrView value;
+  RefSeq refs;
 } StringNode;
 DEFINE_NODE_VISITOR(String);
 DEFINE_NODE_SEQ(String);
@@ -171,12 +205,19 @@ static inline bool StringHasRefs(StringNode* rhs) {
 
 typedef struct {
   DEFINE_DOCUMENT_NODE_FIELDS;
+  StringNode* expr;
+  // TODO(@s0cks): should prolly handle sh vs Go templates
+} IfNode;
+
+// TODO(@s0cks): compress to IncludeFlags
+typedef struct {
+  DEFINE_DOCUMENT_NODE_FIELDS;
   bool optional;
   bool flatten;
   bool internal;
-  str_view dir;
-  str_view checksum;
-  str_view taskfile;
+  StrView dir;
+  StrView checksum;
+  StrView taskfile;
   StringSeq aliases;
   StringSeq excludes;
 
@@ -201,9 +242,19 @@ static inline bool IncludeHasExcludes(IncludeNode* rhs) {
   return GetNumberOfIncludeExcludes(rhs) > 0;
 }
 
+// TODO(@s0cks): handle loops
+
+// TODO(@s0cks): handle defer
+
 typedef struct {
   DEFINE_DOCUMENT_NODE_FIELDS;
-  str_view value;
+  StringNode cmd;
+  ShellOpts* set;
+  ShOpts* shopt;
+  bool silent;
+  bool ignore_error;
+  StrViewSeq platforms;
+  StrView timeout;  // TODO(@s0cks): convert to Time expr node
 } CommandNode;
 DEFINE_NODE_VISITOR(Command);
 DEFINE_NODE_SEQ(Command);
@@ -220,7 +271,7 @@ void VisitPreconditions(PreconditionSeq* seq, PreconditionVisitor vis, void* dat
 
 typedef struct {
   DEFINE_DOCUMENT_NODE_FIELDS;
-  str_view value;
+  StrView value;
 } CommentNode;
 DEFINE_NODE_VISITOR(Comment);
 DEFINE_NODE_SEQ(Comment);
@@ -252,14 +303,16 @@ enum {
 
 typedef struct {
   DEFINE_DOCUMENT_NODE_FIELDS;
-  str_view name;
-  str_view desc;
-  str_view dir;
-  str_view summary;
+  StrView name;
+  StrView desc;
+  StrView dir;
+  StrView summary;
   TaskFlags flags;
   TaskRunMode mode;
   MethodKind method;
-  str_view interval;
+  StrView interval;
+  ShellOpts* set;
+  ShOpts* shopt;
 
   CommandSeq status;
   PreconditionSeq preconditions;
@@ -271,6 +324,7 @@ typedef struct {
   // - add generates
 
   StringSeq dotenvs;
+  StringSeq platforms;
 } TaskNode;
 DEFINE_NODE_VISITOR(Task);
 DEFINE_NODE_SEQ(Task);
@@ -332,7 +386,7 @@ typedef enum {
 
 typedef struct {
   DEFINE_DOCUMENT_NODE_FIELDS;
-  str_view name;
+  StrView name;
   VarNodeKind var_kind;
   bool secret;
   union {
@@ -420,17 +474,17 @@ static inline bool DocumentHasDotenvs(Document* rhs) {
   return GetNumberOfDotenvsInDocument(rhs) > 0;
 }
 
-Diagnostic* NewDiagnosticForNode(DocumentNode* node, const DiagnosticLevel level, const Position start,
-                                 const Position end, const char* fmt, ...);
+Diagnostic* NewDiagnosticForNode(DocumentNode* node, const DiagnosticLevel level, const Range range, const char* fmt,
+                                 ...);
 
-#define DEFINE_NEW_DIAGNOSTIC(Name)                                                                                    \
-  static inline Diagnostic* New##Name##DiagnosticForNode(DocumentNode* node, const Position start, const Position end, \
-                                                         const char* fmt, ...) {                                       \
-    va_list args;                                                                                                      \
-    va_start(args, fmt);                                                                                               \
-    Diagnostic* diagnostic = NewDiagnosticForNode(node, k##Name##Level, start, end, fmt, args);                        \
-    va_end(args);                                                                                                      \
-    return diagnostic;                                                                                                 \
+#define DEFINE_NEW_DIAGNOSTIC(Name)                                                                              \
+  static inline Diagnostic* New##Name##DiagnosticForNode(DocumentNode* node, const Range range, const char* fmt, \
+                                                         ...) {                                                  \
+    va_list args;                                                                                                \
+    va_start(args, fmt);                                                                                         \
+    Diagnostic* diagnostic = NewDiagnosticForNode(node, k##Name##Level, range, fmt, args);                       \
+    va_end(args);                                                                                                \
+    return diagnostic;                                                                                           \
   }
 FOR_EACH_DIAGNOSTIC_LEVEL(DEFINE_NEW_DIAGNOSTIC);
 #undef DEFINE_NEW_DIAGNOSTIC
@@ -492,7 +546,7 @@ typedef struct {
   };
 } TaskfileParseResult;
 
-TaskfileParseResult ParseTaskfileDocument(const char* data, const size_t data_len);
+TaskfileParseResult ParseTaskfileDocumentStr(const char* data, const size_t data_len);
 
 static inline bool TaskfileParseResultIsOk(TaskfileParseResult* rhs) {
   return rhs && rhs->success;
@@ -503,6 +557,22 @@ void FreeTaskfileParseResult(TaskfileParseResult* rhs);
 
 #ifdef __cplusplus
 };
+
+static inline auto operator<<(std::ostream& stream, const Pos& rhs) -> std::ostream& {
+  stream << "Pos{";
+  stream << "row=" << rhs.row << ", ";
+  stream << "col=" << rhs.col;
+  stream << "}";
+  return stream;
+}
+
+static inline auto operator<<(std::ostream& stream, const Range& rhs) -> std::ostream& {
+  stream << "Range{";
+  stream << "start=" << rhs.start << ", ";
+  stream << "end=" << rhs.end;
+  stream << "}";
+  return stream;
+}
 #endif  // __cplusplus
 // NOLINTEND(modernize-use-using,modernize-use-trailing-return-type,cppcoreguidelines-pro-type-cstyle-cast)
 

@@ -20,7 +20,7 @@
     };                                                                   \
   })
 
-TaskfileParseResult ParseTaskfileDocument(const char* data, const size_t data_len) {
+TaskfileParseResult ParseTaskfileDocumentStr(const char* data, const size_t data_len) {
   if (!data || data_len == 0)
     PARSE_ERROR("document is empty");
 

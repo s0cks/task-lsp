@@ -5,6 +5,8 @@
 
 #include <assert.h>
 
+#ifndef ASSERT
+
 #define ASSERT(x)       assert((x))
 #define ASSERT_EQ(a, b) ASSERT(a == b)
 #define ASSERT_NE(a, b) ASSERT(a != b)
@@ -20,5 +22,7 @@
 #define ASSERT_LT(a, b)
 
 #endif  // TASKFILE_PARSER_DEBUG
+
+#endif  // ASSERT
 
 #endif  // TASKFILE_PARSER_COMMON_H

@@ -8,23 +8,14 @@ struct _Document {
 
   char* path;
 
-  StringNode* dotenv;
-  size_t dotenv_len;
-  size_t dotenv_cap;
-
-  IncludeNode* includes;
-  size_t includes_len;
-  size_t includes_cap;
-
-  CommentNode* comments;
-  size_t comments_len;
-  size_t comments_cap;
-
-  TaskNode* tasks;
-  size_t tasks_len;
-  size_t tasks_cap;
-
   bool fragment;
+
+  ShellOpts* set;
+  ShOpts* shopt;
+  StringSeq dotenv;
+  IncludeSeq includes;
+  CommentSeq comments;
+  TaskSeq tasks;
 };
 
 Document* NewDocument(const char* path);

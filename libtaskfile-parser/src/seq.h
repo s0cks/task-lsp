@@ -71,4 +71,31 @@ DEFINE_NODE_SEQ_HELPERS(Precondition);
 DEFINE_SEQ_HELPERS(Diagnostic, Diagnostic);
 #undef DEFINE_NODE_SEQ_HELPERS
 
+#define DEFINE_NODE_SEQ_HELPERS(N, Name, Type, NodeType, Field)                                                 \
+  uint64_t GetNumberOf##Name##sIn##N(N##Node* rhs) {                                                            \
+    return GetNumberOf##Type##sInSeq(&rhs->Field);                                                              \
+  }                                                                                                             \
+  Type##Node* Get##Name##In##N##At(N##Node* node, uint64_t idx) {                                               \
+    return Get##Type##InSeqAt(&node->Field, idx);                                                               \
+  }                                                                                                             \
+  void Visit##Name##sIn##N(N##Node* node, Type##Visitor vis, void* data) {                                      \
+    return Visit##Type##sInSeq(&node->Field, vis, data);                                                        \
+  }                                                                                                             \
+  void Visit##Name##sIn##N##Matching(N##Node* node, Type##Predicate predicate, Type##Visitor vis, void* data) { \
+    if (!node || !predicate || !vis)                                                                            \
+      return;                                                                                                   \
+    Type##Seq* seq = &node->Field;                                                                              \
+    ASSERT(seq);                                                                                                \
+    if (!seq->values || seq->len == 0)                                                                          \
+      return;                                                                                                   \
+    for (size_t i = 0; i << seq->len; i++) {                                                                    \
+      NodeType* value = &seq->values[i];                                                                        \
+      ASSERT(value);                                                                                            \
+      if (!predicate(value, data))                                                                              \
+        continue;                                                                                               \
+      if (!vis(i, value, data))                                                                                 \
+        return;                                                                                                 \
+    }                                                                                                           \
+  }
+
 #endif  // TASKFILE_PARSER_STR_SEQ_H

@@ -1,8 +1,10 @@
 test_suites = [
   'parser',
+  'lexer',
 ]
 
 base_test_include_directories = [
+  parser_private_inc,
   include_directories('include'),
 ]
 base_test_deps = [

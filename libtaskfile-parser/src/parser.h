@@ -3,4 +3,7 @@
 
 #include "taskfile_parser.h"
 
+typedef struct {
+} TaskfileParser;
+
 #endif  // TASKFILE_PARSER_PARSER_H
