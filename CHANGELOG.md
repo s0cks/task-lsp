@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.12.3](https://github.com/s0cks/task-lsp/compare/lsp-v1.12.2...lsp-v1.12.3) (2026-09-11)
+
+
+### Bug Fixes
+
+* **lsp:** 🐛 jesus christ ([8db0999](https://github.com/s0cks/task-lsp/commit/8db099945814a65972f8867984e130a4d5c7c4ec))
+
 ## [1.12.2](https://github.com/s0cks/task-lsp/compare/lsp-v1.12.1...lsp-v1.12.2) (2026-09-11)
 
 
