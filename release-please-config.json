@@ -1,25 +1,22 @@
 {
   "group-pull-request-title-pattern": "chore(main): release packages ${version}",
   "separate-pull-requests": true,
+  "include-component-in-tag": true,
   "packages": {
     "docs": {
       "release-type": "node",
       "package-name": "docs",
-      "include-component-in-tag": true,
-      "skip-github-release": true,
       "skip-changelog": true,
       "initial-version": "1.0.0"
     },
     "docker/build-env": {
       "release-type": "simple",
       "package-name": "build-env",
-      "initial-version": "1.0.0",
-      "include-component-in-tag": true
+      "initial-version": "1.0.0"
     },
     ".": {
       "release-type": "go",
       "package-name": "lsp",
-      "include-component-in-tag": true,
       "extra-files": [
         "VERSION"
       ],
