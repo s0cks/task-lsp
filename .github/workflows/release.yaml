@@ -14,9 +14,26 @@ permissions:
   contents: write
   pull-requests: write
   packages: write
+  id-token: write
 jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      go_release_created: ${{ steps.release.outputs['.--release_created'] }}
+      go_tag: ${{ steps.release.outputs['.--tag_name'] }}
+      go_version: ${{ steps.release.outputs['.--version'] }}
+      docker_release_created: ${{ steps.release.outputs['docker/build-env--release_created'] }}
+      docker_tag: ${{ steps.release.outputs['docker/build-env--tag_name'] }}
+      docs_release_created: ${{ steps.release.outputs['docs--release_created'] }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
   test:
     runs-on: ubuntu-latest
+    needs:
+      - release-please
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -47,24 +64,10 @@ jobs:
         run: |
           export CGO_ENABLED=1
           go test -v ./...
-  release-please:
-    runs-on: ubuntu-latest
-    needs:
-      - test
-    outputs:
-      go_release_created: ${{ steps.release.outputs['.--release_created'] }}
-      go_tag: ${{ steps.release.outputs['.--tag_name'] }}
-      go_version: ${{ steps.release.outputs['.--version'] }}
-      docker_release_created: ${{ steps.release.outputs['docker/build-env--release_created'] }}
-      docker_tag: ${{ steps.release.outputs['docker/build-env--tag_name'] }}
-    steps:
-      - uses: googleapis/release-please-action@v4
-        id: release
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
   release-lsp:
     needs:
       - release-please
+      - test
     if: ${{ github.event_name == 'release' || needs.release-please.outputs.go_release_created == 'true' }}
     strategy:
       matrix:
@@ -210,3 +213,39 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+  publish-docs:
+    runs-on: ubuntu-latest
+    needs:
+      - release-please
+    if: |
+      github.event_name == 'push' &&
+      startsWith(github.event.head_commit.message, 'chore(main): release docs')
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          cache-dependency-path: 'docs/pnpm-lock.yaml'
+      - name: Install dependencies
+        working-directory: ./docs
+        run: pnpm install --frozen-lockfile
+      - name: Build project
+        working-directory: ./docs
+        run: pnpm run build
+      - name: Upload production artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './docs/dist'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

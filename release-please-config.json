@@ -1,6 +1,14 @@
 {
   "separate-pull-requests": true,
   "packages": {
+    "docs": {
+      "release-type": "node",
+      "package-name": "docs",
+      "include-component-in-tag": true,
+      "skip-github-release": true,
+      "skip-changelog": true,
+      "always-update": true
+    },
     "docker/build-env": {
       "release-type": "simple",
       "package-name": "build-env",
