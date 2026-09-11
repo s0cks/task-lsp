@@ -21,7 +21,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
       - name: Install Toolchain (Linux)
-        if: matrix.runner == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -36,11 +35,6 @@ jobs:
       - name: Build libtaskfile-parser
         shell: bash
         run: |
-          VERSION="${{ needs.release-please.outputs.go_version }}"
-          if [ -z "$VERSION" ]; then
-            VERSION="${{ github.event.release.tag_name }}"
-            VERSION="${VERSION#v}"
-          fi
           if [ "${{ matrix.runner }}" = "windows-latest" ]; then
             export CC=clang
             export CXX=clang++
