@@ -12,6 +12,7 @@ type CliVersionHandler func() error
 
 func handleInfoJson() error {
 	info := map[string]any{}
+	info["name"] = "taskfile-lsp"
 	info["version"] = lsp.GetVersion()
 
 	bytes, err := json.MarshalIndent(info, "", "  ")
@@ -24,6 +25,7 @@ func handleInfoJson() error {
 }
 
 func handleInfoPretty() error {
+	fmt.Printf("name: %s\n", "taskfile-lsp")
 	fmt.Printf("version: %s\n", lsp.GetVersion())
 	return nil
 }
