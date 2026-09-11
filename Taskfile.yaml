@@ -10,71 +10,72 @@ tasks:
     vars:
       GO_SOURCE_FILE: ./cmd/taskfile-lsp/main.go
     cmds:
-    - go build {{.GO_BUILD_ARGS | default "" }} -o {{.GO_TARGET_NAME}} {{.GO_SOURCE_FILE}}
+      - go build {{.GO_BUILD_ARGS | default "" }} -o {{.GO_TARGET_NAME}} {{.GO_SOURCE_FILE}}
   go-build-dev:
     cmds:
-    - task: go-build
+      - task: go-build
   go-build-release:
     cmds:
-    - task: go-build
+      - task: go-build
   go-test:
     cmds:
-    - go test ./...
+      - go test ./...
   go-clean:
     internal: true
     cmds:
-    - rm -rf {{.GO_TARGET_NAME}}
+      - rm -rf {{.GO_TARGET_NAME}}
 
   vscode-clean:
     internal: true
     cmds:
-    - rm -rf {{.VSCODE_DIR}}/dist {{.VSCODE_DI}}/out
+      - rm -rf {{.VSCODE_DIR}}/dist {{.VSCODE_DI}}/out
 
   meson-test:
     cmds:
-    - meson test -C {{ .BUILD_DIR }}
+      - meson test -C {{ .BUILD_DIR }}
   meson-build:
+    desc: "Build the parser using meson"
     cmds:
-    - |
-      meson setup {{ .BUILD_DIR }} \
-        --reconfigure \
-        --buildtype={{ .BUILD_TYPE | default "debug" }}
-    - meson compile {{ .BUILD_ARGS | default "" }} -C {{ .BUILD_DIR }}
+      - |
+        meson setup {{ .BUILD_DIR }} \
+          --reconfigure \
+          --buildtype={{ .BUILD_TYPE | default "debug" }}
+      - meson compile {{ .BUILD_ARGS | default "" }} -C {{ .BUILD_DIR }}
   meson-install:
     cmds:
-    - meson install -C {{ .BUILD_DIR }}
+      - meson install -C {{ .BUILD_DIR }}
 
-  build:dev:
+  build-dev:
     aliases:
-    - default
+      - default
     cmds:
-    - task: meson-build
-    - task: go-build-dev
+      - task: meson-build
+      - task: go-build-dev
 
   build-release:
     aliases:
-    - build
+      - build
     cmds:
-    - task: meson-build
-      vars:
-        BUILD_TYPE: release
-        BUILD_ARGS: "--clean"
-    - task: go-build-release
+      - task: meson-build
+        vars:
+          BUILD_TYPE: release
+          BUILD_ARGS: "--clean"
+      - task: go-build-release
 
   test:
     cmds:
-    - task: meson-test
-    - task: go-test
+      - task: meson-test
+      - task: go-test
 
   install:
     deps:
-    - build-release
+      - build-release
     cmds:
-    - task: meson-install
+      - task: meson-install
 
   clean:
     parallel: true
     cmds:
-    - task: go-clean
-    - task: vscode-clean
-    - rm -rf {{.BUILD_DIR}}
+      - task: go-clean
+      - task: vscode-clean
+      - rm -rf {{.BUILD_DIR}}

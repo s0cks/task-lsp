@@ -1,6 +1,7 @@
 package lsp
 
 import (
+	"log"
 	"sync"
 
 	"taskfile-lsp/internal/taskfile"
@@ -15,16 +16,18 @@ type Document struct {
 }
 
 type DocumentStore struct {
+	log  *log.Logger
 	mu   sync.RWMutex
 	docs map[string]*Document
 }
 
-func NewDocumentStore() *DocumentStore {
-	return &DocumentStore{docs: make(map[string]*Document)}
+func NewDocumentStore(log *log.Logger) *DocumentStore {
+	return &DocumentStore{log: log, docs: make(map[string]*Document)}
 }
 
 func (s *DocumentStore) Open(doc *Document) []taskfile.Diagnostic {
-	parsed, diags := taskfile.Parse(doc.Text)
+	parser := taskfile.Parser{Log: s.log}
+	parsed, diags := parser.Parse(doc.Text)
 	doc.Parsed = parsed
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -46,7 +49,8 @@ func (s *DocumentStore) Get(uri string) (*Document, bool) {
 }
 
 func (s *DocumentStore) Update(uri string, version int, text string) []taskfile.Diagnostic {
-	parsed, diags := taskfile.Parse(text)
+	parser := taskfile.Parser{Log: s.log}
+	parsed, diags := parser.Parse(text)
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if d, ok := s.docs[uri]; ok {

@@ -15,7 +15,7 @@ type Server struct {
 }
 
 func NewServer(logger *log.Logger) *Server {
-	return &Server{docs: NewDocumentStore(), log: logger}
+	return &Server{docs: NewDocumentStore(logger), log: logger}
 }
 
 func (s *Server) Register(conn *rpc.Conn) {

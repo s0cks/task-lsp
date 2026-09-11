@@ -2,6 +2,7 @@ package taskfile
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"strings"
 )
@@ -19,7 +20,11 @@ type frame struct {
 	varName  string
 }
 
-func Parse(content string) (*File, []Diagnostic) {
+type Parser struct {
+	Log *log.Logger
+}
+
+func (parser *Parser) Parse(content string) (*File, []Diagnostic) {
 	lines := strings.Split(content, "\n")
 	for i, l := range lines {
 		lines[i] = strings.TrimRight(l, "\r")
@@ -209,6 +214,7 @@ func Parse(content string) (*File, []Diagnostic) {
 
 				default:
 					stack = append(stack, frame{indent: indent, kind: "other", taskName: owner})
+
 				}
 
 			case "includes":
@@ -217,6 +223,7 @@ func Parse(content string) (*File, []Diagnostic) {
 
 			default:
 				stack = append(stack, frame{indent: indent, kind: "other", taskName: top.taskName})
+
 			}
 
 			continue
@@ -268,7 +275,10 @@ func Parse(content string) (*File, []Diagnostic) {
 		f.BodyIndent = f.TaskIndent + 2
 	}
 
+	parser.Log.Printf("refs:")
 	for _, r := range f.Refs {
+		parser.Log.Printf(" - %s (%s) %v", r.Name, r.Kind.String(), r.Range)
+
 		if strings.Contains(r.Name, ":") {
 			continue
 		}

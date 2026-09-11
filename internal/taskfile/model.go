@@ -42,6 +42,22 @@ const (
 	RefVar
 )
 
+func (k RefKind) String() string {
+	switch k {
+	case RefDep:
+		return "dep"
+
+	case RefCall:
+		return "call"
+
+	case RefVar:
+		return "var"
+
+	default:
+		return "unknown"
+	}
+}
+
 type Ref struct {
 	Name  string
 	Owner string

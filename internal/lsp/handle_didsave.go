@@ -14,7 +14,8 @@ func (s *Server) handleDidSave(ctx context.Context, conn *rpc.Conn, params json.
 	}
 
 	if doc, ok := s.docs.Get(p.TextDocument.URI); ok {
-		_, diags := taskfile.Parse(doc.Text)
+		parser := taskfile.Parser{Log: s.log}
+		_, diags := parser.Parse(doc.Text)
 		s.publish(conn, doc.URI, doc.Version, diags)
 	}
 }
