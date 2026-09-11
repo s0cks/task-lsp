@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/s0cks/task-lsp/compare/v1.5.0...v1.5.1) (2026-09-11)
+
+
+### Bug Fixes
+
+* **release-please:** 🐛 hopefully fix release-please workflow ([64e3d11](https://github.com/s0cks/task-lsp/commit/64e3d11f10c5d78f6d8ef56ee5292a40ca81c1dd))
+
 ## [1.5.0](https://github.com/s0cks/task-lsp/compare/v1.4.1...v1.5.0) (2026-09-11)
 
 
