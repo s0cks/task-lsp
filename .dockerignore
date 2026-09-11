@@ -18,6 +18,7 @@ bind/
 build/
 build2/
 docker/
+docs/
 lefthook.yml
 release-please-config.json
 wiki/
