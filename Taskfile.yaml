@@ -5,6 +5,13 @@ vars:
   BUILD_DIR: "{{.ROOT_DIR}}/build"
   VSCODE_DIR: "{{.ROOT_DIR}}/vscode"
 tasks:
+  vhs:
+    silent: true
+    desc: Render a vhs .tape file
+    requires:
+      vars: [VHS_FILE]
+    cmds:
+      - vhs "{{.VHS_FILE}}" >/dev/null 2>&1
   go-build:
     internal: true
     vars:
@@ -62,15 +69,26 @@ tasks:
           BUILD_ARGS: "--clean"
       - task: go-build-release
 
+  build-tapes:
+    silent: true
+    aliases:
+      - tapes
+    cmds:
+      - |
+        for file in ./assets/[!_]*.tape; do
+            [ -e "$file" ] || continue
+            echo "rendering $file...."
+            task vhs VHS_FILE="$file"
+        done
+
   test:
     cmds:
       - task: meson-test
       - task: go-test
 
   install:
-    deps:
-      - build-release
     cmds:
+      - task: build-release
       - task: meson-install
 
   clean:

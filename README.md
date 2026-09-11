@@ -2,25 +2,23 @@
 
 A [language-server-protocol](https://microsoft.github.io/language-server-protocol/) (LSP) implementation for [Taskfiles](https://taskfile.dev/).
 
-![Example Document Symbols](./assets/lsp-document-symbols.gif)
-
 ## Features
 
-Working features:
-
-- Completion --- Complete task names, definitions and fields.
-- Diagnostics --- Detect invalid task references.
-- Document symbols --- Browse tasks and other declarations from your editor's symbol picker.
-- Hover documentation --- Show task descriptions when hovering over task references.
+|       Feature       |                             Description                             |                             Preview                              |
+| :-----------------: | :-----------------------------------------------------------------: | :--------------------------------------------------------------: |
+|     Completion      |              Complete task and var names, fields, etc               |          ![Completion Preview](./assets/completion.gif)          |
+|     Diagnostics     |                   Detect invalid task references                    | ![Diagnostics Preview](./assets/diagnostic-invalid-task-ref.gif) |
+|  Document Symbols   | Browse tasks and other declarations from your editors symbol picker |      ![Symbols Preview](./assets/lsp-document-symbols.gif)       |
+| Hover Documentation |      Show task descriptions when hovering over task references      |          ![Hover Preview](./assets/show-task-hover.gif)          |
+|     References      |                                 TBD                                 |                               TBD                                |
 
 Planned Features:
 
 - Rename
-- Find references
 - Workspace symbols
+- Task dependency analysis
 - Formatting
 - Schema validation
-- Task dependency analysis
 
 ## Installation
 

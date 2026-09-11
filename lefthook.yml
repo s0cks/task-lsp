@@ -73,11 +73,3 @@ pre-commit:
       glob: "*.{ts,js}"
       root: "vscode"
       run: pnpm lint
-    vhs:
-      glob: "*.tape"
-      interactive: true
-      stage_fixed: true
-      run: |
-        for file in {staged_files}; do
-          vhs "$file" && git add "${file%.tape}.gif"
-        done
