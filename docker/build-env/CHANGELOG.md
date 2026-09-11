@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/s0cks/task-lsp/compare/build-env-v1.0.2...build-env-v1.0.3) (2026-09-11)
+
+
+### Bug Fixes
+
+* **build-env:** 🐛 *test* release workflow again ([827a5a9](https://github.com/s0cks/task-lsp/commit/827a5a945484142906a309d230064c7811edeaa5))
+
 ## [1.0.2](https://github.com/s0cks/task-lsp/compare/build-env-v1.0.1...build-env-v1.0.2) (2026-09-11)
 
 
