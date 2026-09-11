@@ -127,9 +127,11 @@ jobs:
             VERSION="${{ github.event.release.tag_name }}"
             VERSION="${VERSION#v}"
           fi
-          go build -ldflags="-X main.Version=$VERSION -s -w" \
+          go build \
+            -trimpath \
+            -ldflags="-s -w -X taskfile-lsp/internal/lsp.Version=$VERSION" \
             -o taskfile-lsp-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.ext }} \
-            cmd/taskfile-lsp/main.go
+            .
       - name: Build VSCode Extension
         shell: bash
         run: |

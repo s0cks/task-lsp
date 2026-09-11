@@ -5,6 +5,9 @@ tasks:
     preconditions:
       - sh: "command -v go"
         msg: "go is not installed. Please install go before building"
+    requires:
+      vars:
+        - VERSION
     cmds:
       - |
         go build \
@@ -14,13 +17,13 @@ tasks:
   build-dev:
     cmds:
       - task: build
+        vars:
+          GO_BUILD_ARGS: --tags dev -ldflags="-X taskfile-lsp/internal/lsp.Version={{.VERSION}}"
   build-release:
     cmds:
       - task: build
         vars:
-          GO_BUILD_ARGS: |
-            -trimpath \
-            -ldflags="-s -w -X main.version={{.VERSION}}"
+          GO_BUILD_ARGS: -trimpath -ldflags="-s -w -X taskfile-lsp/internal/lsp.Version={{.VERSION}}"
   test:
     preconditions:
       - sh: "command -v go"

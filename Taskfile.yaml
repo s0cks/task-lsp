@@ -24,8 +24,7 @@ tasks:
       - task: meson:build
         vars:
           BUILD_TYPE: release
-          BUILD_ARGS: |
-            --clean
+          BUILD_ARGS: --clean
       - task: go:build-release
   build-tapes:
     silent: true
