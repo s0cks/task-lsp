@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.3](https://github.com/s0cks/task-lsp/compare/lsp-v0.0.2...lsp-v0.0.3) (2026-09-11)
+
+
+### Bug Fixes
+
+* **lsp:** 🐛 now lets try release-please again ([ec3a745](https://github.com/s0cks/task-lsp/commit/ec3a745ee1a69602b292c920e00f7d5488363902))
+
 ## [0.0.2](https://github.com/s0cks/task-lsp/compare/lsp-v0.0.1...lsp-v0.0.2) (2026-09-11)
 
 
