@@ -7,7 +7,7 @@
       "include-component-in-tag": true,
       "skip-github-release": true,
       "skip-changelog": true,
-      "always-update": true
+      "versioning": "always-bump-minor"
     },
     "docker/build-env": {
       "release-type": "simple",
