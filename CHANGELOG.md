@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.1](https://github.com/s0cks/task-lsp/compare/taskfile-lsp-v1.7.0...taskfile-lsp-v1.7.1) (2026-09-11)
+
+
+### Bug Fixes
+
+* 🐛 hopefully fix release-please now? ([223a32a](https://github.com/s0cks/task-lsp/commit/223a32a41d086dcfd6d184d27722c86e6826ac9f))
+
 ## [1.7.0](https://github.com/s0cks/task-lsp/compare/taskfile-lsp-v1.6.1...taskfile-lsp-v1.7.0) (2026-09-11)
 
 
