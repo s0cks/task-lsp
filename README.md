@@ -28,11 +28,11 @@ for your editor.
 
 > `task-lsp` should be able to work for any editor that supports the [language-server-protocol](https://microsoft.github.io/language-server-protocol/) (LSP).
 
-| Editor |   Status    |
-| :----: | :---------: |
-| Neovim |    Good     |
-| VSCode | Coming Soon |
-|  Zed   |     ---     |
+| Editor | Status |
+| :----: | :----: |
+| Neovim |  Good  |
+| VSCode |  ---   |
+|  Zed   |  ---   |
 
 ## Roadmap
 
