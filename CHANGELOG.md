@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.12.1](https://github.com/s0cks/task-lsp/compare/lsp-v1.12.0...lsp-v1.12.1) (2026-09-11)
+
+
+### Bug Fixes
+
+* **lsp:** 🐛 I really hate this ([32d619c](https://github.com/s0cks/task-lsp/commit/32d619cdd348f0b3e948642d742c8ace1c9a56d5))
+
 ## [1.12.0](https://github.com/s0cks/task-lsp/compare/lsp-v1.11.0...lsp-v1.12.0) (2026-09-11)
 
 
