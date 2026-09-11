@@ -1,0 +1,119 @@
+---
+name: Release task-lsp
+on:
+  release:
+    types:
+      - published
+permissions:
+  contents: write
+  pull-requests: write
+  packages: write
+jobs:
+  release-lsp:
+    if: "startsWith(github.event.release.tag_name, 'lsp-v')"
+    strategy:
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            os: linux
+            arch: amd64
+            target: linux-x64
+            ext: ""
+          - runner: macos-14
+            os: darwin
+            arch: arm64
+            target: macos-arm64
+            ext: ""
+          - runner: macos-13
+            os: darwin
+            arch: amd64
+            target: macos-x64
+            ext: ""
+          - runner: windows-latest
+            os: windows
+            arch: amd64
+            target: win-x64
+            ext: ".exe"
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Install Toolchain (Linux)
+        if: matrix.runner == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang \
+            lld \
+            meson \
+            ninja-build
+      - name: Install Toolchain (macOS)
+        if: startsWith(matrix.runner, 'macos')
+        run: |
+          brew install \
+            meson \
+            ninja
+      - name: Install Toolchain (Windows)
+        if: matrix.runner == 'windows-latest'
+        run: |
+          pip install meson ninja
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+      - name: Setup Nodejs & pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "12.3.4"
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+          cache-dependency-path: 'vscode/pnpm-lock.yaml'
+      - name: Build libtaskfile-parser
+        shell: bash
+        run: |
+          if [ "${{ matrix.runner }}" = "windows-latest" ]; then
+            export CC=clang
+            export CXX=clang++
+          elif [ "${{ matrix.os }}" = "linux" ]; then
+            export CC=clang
+            export CXX=clang++
+            export LD=lld
+          fi
+
+          meson setup build
+          meson compile -C build
+      - name: Clean version
+        id: clean_version
+        shell: bash
+        run: |
+          RAW_TAG="${{ github.event.release.tag_name || 'latest' }}"
+          CLEAN_TAG="${RAW_TAG#lsp-v}"
+          echo "tag=$CLEAN_TAG" >> $GITHUB_OUTPUT
+      - name: Build LSP
+        shell: bash
+        run: |
+          export CGO_ENABLED=1
+          export GOOS=${{ matrix.os }}
+          export GOARCH=${{ matrix.arch }}
+
+          go build \
+            -trimpath \
+            -ldflags="-s -w -X taskfile-lsp/internal/lsp.Version=${{ steps.clean_version.outputs.tag }}" \
+            -o taskfile-lsp-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.ext }} \
+            .
+      - name: Build VSCode Extension
+        shell: bash
+        run: |
+          cd vscode
+          pnpm install --frozen-lockfile
+          npx @vscode/vsce package --target ${{ matrix.target }}
+      - name: Upload Artifacts to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: |
+            taskfile-lsp-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.ext }}
+            vscode/*.vsix

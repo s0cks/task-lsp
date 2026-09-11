@@ -1,5 +1,6 @@
 {
   "group-pull-request-title-pattern": "chore(main): release packages ${version}",
+  "separate-pull-requests": true,
   "packages": {
     "docs": {
       "release-type": "node",

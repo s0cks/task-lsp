@@ -1,0 +1,45 @@
+---
+name: Release build-env container
+on:
+  release:
+    types:
+      - published
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/build-env
+permissions:
+  contents: read
+  packages: write
+jobs:
+  release-build-env:
+    runs-on: ubuntu-latest
+    if: "startsWith(github.event.release.tag_name, 'build-env-v')"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Clean version
+        id: clean_version
+        shell: bash
+        run: |
+          RAW_TAG="${{ github.event.release.tag_name || 'latest' }}"
+          CLEAN_TAG="${RAW_TAG#build-env-v}"
+          echo "tag=$CLEAN_TAG" >> $GITHUB_OUTPUT
+      - name: Build and push Environment
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./docker/build-env/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.clean_version.outputs.tag }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
