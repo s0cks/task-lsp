@@ -1,5 +1,48 @@
 # Changelog
 
+## [1.12.0](https://github.com/s0cks/task-lsp/compare/lsp-v1.11.0...lsp-v1.12.0) (2026-09-11)
+
+
+### Features
+
+* ✨ cleanup versioning and build process around it ([dbf0bdb](https://github.com/s0cks/task-lsp/commit/dbf0bdbd57747b3e6d818de2e81d7ca9bb23b629))
+* ✨ first commit ([a837188](https://github.com/s0cks/task-lsp/commit/a83718880bdc15f23af89b6516f5b51949e18645))
+* **cli:** ✨ add extra metadata to the info command ([84da915](https://github.com/s0cks/task-lsp/commit/84da915f157177cc563052462458035757ff9a1b))
+* **cli:** ✨ cleanup version command and add info command ([11d569d](https://github.com/s0cks/task-lsp/commit/11d569dcd7025d9d6b2c7494457b658f48d21d5a))
+* **cli:** ✨ get version from the build ([7e171c3](https://github.com/s0cks/task-lsp/commit/7e171c3ac5086b6af181d9396ecc5325e5ed4c20))
+* **lexer:** ✨ add desc support with quoted and unquoted strings ([493010e](https://github.com/s0cks/task-lsp/commit/493010e9fa1a0eb01d9f9512fe58cd65b7c5f15e))
+* **lexer:** ✨ lex tasks: and vars: ([1c2558c](https://github.com/s0cks/task-lsp/commit/1c2558c27b12966e4fef5458ef2f11097d115bd5))
+* **lsp:** ✨ add basic variable support ([80e0326](https://github.com/s0cks/task-lsp/commit/80e0326ceba700180353554badfe4bb6d956b38a))
+* **lsp:** ✨ add some cleanup and some task refactor code actions for adding fields ([d0c7f04](https://github.com/s0cks/task-lsp/commit/d0c7f043f85ace8f09a9aa21a318f193138908e3))
+* **lsp:** ✨ lets try this? ([4128c91](https://github.com/s0cks/task-lsp/commit/4128c911fa03adb2de689f8b3b965c896d64f169))
+* **parser:** ✨ add seq types ([3389e21](https://github.com/s0cks/task-lsp/commit/3389e211c1e9176833db6472f64dbf00ed0a0dc7))
+* **parser:** ✨ cleanup some parse logic and implement some symbols in the lexer ([94f9284](https://github.com/s0cks/task-lsp/commit/94f9284f358465bed0abf712a523b4ff12d07439))
+* **parser:** ✨ initial commit for C based parser ([a448257](https://github.com/s0cks/task-lsp/commit/a4482578715d82c5693fa727743dc865c4f0fef4))
+* **vscode:** ✨ add vscode extension ([3b355c6](https://github.com/s0cks/task-lsp/commit/3b355c65c7a7963dac2a693b0dbf310a7789b694))
+
+
+### Bug Fixes
+
+* 🐛 fix all the things with release-please? ([0e9527e](https://github.com/s0cks/task-lsp/commit/0e9527e7e632cdf7480c8eaaa34fac65f7b1a321))
+* 🐛 fix release-please now? ([12cc160](https://github.com/s0cks/task-lsp/commit/12cc160ace8ff408ae07e16e4e41e9805c1c7712))
+* 🐛 fix release-please workflow? ([418c2ca](https://github.com/s0cks/task-lsp/commit/418c2ca6e725398fbe03358034065c885a742e51))
+* 🐛 hopefully fix a bunch of stuff with the release workflow ([493f5bc](https://github.com/s0cks/task-lsp/commit/493f5bcb0f32e9bbe88750b2e82c9d5495d59a2c))
+* 🐛 hopefully fix release-please now? ([223a32a](https://github.com/s0cks/task-lsp/commit/223a32a41d086dcfd6d184d27722c86e6826ac9f))
+* **build-env:** 🐛 fix release tag format ([7e001e0](https://github.com/s0cks/task-lsp/commit/7e001e032c801ee44d9f98fa3adc6e989f4f389f))
+* **build-env:** 🐛 hopefully fix release-please process with build-env ([8dd5f30](https://github.com/s0cks/task-lsp/commit/8dd5f30c894125523440dab0ae53e370078986ac))
+* **lsp,docker/build-env,docs:** 🐛 fix all the things? ([2dfac22](https://github.com/s0cks/task-lsp/commit/2dfac22740c90048a2a25eb1d3d0dde408296ce1))
+* **lsp:** 🐛 fix references working ([870a029](https://github.com/s0cks/task-lsp/commit/870a02911c52ac8dc542a421b933bc2c8a79c743))
+* **lsp:** 🐛 force release-please ([7204cce](https://github.com/s0cks/task-lsp/commit/7204cce11bf4f34a5b1324e53e0476650cce53e4))
+* **lsp:** 🐛 god this is horrible ([5c547fa](https://github.com/s0cks/task-lsp/commit/5c547fa7efda86188aecd076eb562a89cd6b5488))
+* **lsp:** 🐛 lets test release-please some more ([0ddca86](https://github.com/s0cks/task-lsp/commit/0ddca86354eaa02a6fdf20f11434a5800a137630))
+* **meson:** 🐛 fix meson min dep ([8872935](https://github.com/s0cks/task-lsp/commit/88729355e3982d5c732ca72d0587985c21a8a43f))
+* **meson:** 🐛 hopefully fix meson C versioning for CI ([46176d7](https://github.com/s0cks/task-lsp/commit/46176d718e647334422276be6ee8a943fe6058fb))
+* **release-please:** 🐛 hopefully fix release-please workflow ([64e3d11](https://github.com/s0cks/task-lsp/commit/64e3d11f10c5d78f6d8ef56ee5292a40ca81c1dd))
+* **vscode:** 🐛 attempt to fix pnpm versioning again ([793f262](https://github.com/s0cks/task-lsp/commit/793f262ca7fa5a4e48ae867047f7253c6b78ea74))
+* **vscode:** 🐛 fix pnpm locking? ([f11de05](https://github.com/s0cks/task-lsp/commit/f11de05e5b001bff2d77dc4a3694fecddb9b85cc))
+* **vscode:** 🐛 fix vscode plugin pnpm packageManager issue ([8f1283c](https://github.com/s0cks/task-lsp/commit/8f1283c39585c00cdda909837383379fcc7e23dd))
+* **vscode:** 🐛 try to fix pnpm versioning again ([b3b3c7b](https://github.com/s0cks/task-lsp/commit/b3b3c7b2f48f50697c7ff9096c6a48f72e169ecf))
+
 ## [1.11.0](https://github.com/s0cks/task-lsp/compare/lsp-v1.10.0...lsp-v1.11.0) (2026-09-11)
 
 
