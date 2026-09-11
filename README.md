@@ -2,23 +2,20 @@
 
 A [language-server-protocol](https://microsoft.github.io/language-server-protocol/) (LSP) implementation for [Taskfiles](https://taskfile.dev/).
 
+Get IDE features like completion, diagnostics, code actions, symbols, hover documentation & more while working with
+your Taskfiles
+
+![Demo](./assets/goto-task-definition.gif)
+
 ## Features
 
-|       Feature       |                             Description                             |                             Preview                              |
-| :-----------------: | :-----------------------------------------------------------------: | :--------------------------------------------------------------: |
-|     Completion      |              Complete task and var names, fields, etc               |          ![Completion Preview](./assets/completion.gif)          |
-|     Diagnostics     |                   Detect invalid task references                    | ![Diagnostics Preview](./assets/diagnostic-invalid-task-ref.gif) |
-|  Document Symbols   | Browse tasks and other declarations from your editors symbol picker |      ![Symbols Preview](./assets/lsp-document-symbols.gif)       |
-| Hover Documentation |      Show task descriptions when hovering over task references      |          ![Hover Preview](./assets/show-task-hover.gif)          |
-|     References      |                                 TBD                                 |                               TBD                                |
-
-Planned Features:
-
-- Rename
-- Workspace symbols
-- Task dependency analysis
-- Formatting
-- Schema validation
+|       Feature       |                             Description                             |
+| :-----------------: | :-----------------------------------------------------------------: |
+|     Completion      |              Complete task and var names, fields, etc               |
+|     Diagnostics     |                   Detect invalid task references                    |
+|  Document Symbols   | Browse tasks and other declarations from your editors symbol picker |
+| Hover Documentation |      Show task descriptions when hovering over task references      |
+|     References      |                                 TBD                                 |
 
 ## Installation
 
@@ -30,6 +27,23 @@ Check out the [editor setup guide](https://github.com/s0cks/task-lsp/wiki/Editor
 for your editor.
 
 > `task-lsp` should be able to work for any editor that supports the [language-server-protocol](https://microsoft.github.io/language-server-protocol/) (LSP).
+
+## Roadmap
+
+Planned Features:
+
+- Rename
+- Workspace symbols
+- Task dependency analysis
+- Formatting
+- Schema validation
+
+## Contributing
+
+Contributions are welcome.
+
+Please refer to the [contribution guide](https://github.com/s0cks/task-lsp/wiki/ContributingGuide) in the wiki for how
+to get started.
 
 ## Credits
 
