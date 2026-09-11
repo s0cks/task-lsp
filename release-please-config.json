@@ -3,10 +3,13 @@
   "packages": {
     "docker/build-env": {
       "release-type": "simple",
-      "package-name": "build-env"
+      "package-name": "build-env",
+      "include-component-in-tag": true
     },
     ".": {
       "release-type": "go",
+      "package-name": "taskfile-lsp",
+      "include-component-in-tag": true,
       "extra-files": [
         "VERSION"
       ],
