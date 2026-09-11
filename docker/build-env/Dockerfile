@@ -50,7 +50,6 @@ RUN apt-get update \
 # ╰────────────╯
 RUN curl -sSL "https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz" -o go-${GO_VERSION}.tar.gz \
  && tar -C /usr/local -xzf go-${GO_VERSION}.tar.gz
-
 ENV GOPATH=/go
 ENV PATH=$PATH:/usr/local/go/bin:$GOPATH/bin
 # ──────────────────────────────────────────────────────────────────────
