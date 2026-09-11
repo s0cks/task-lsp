@@ -20,12 +20,12 @@
       "extra-files": [
         "VERSION"
       ],
-      "bump-minor-pre-major": true,
-      "bump-patch-pre-major": true,
       "exclude-paths": [
         "docker/build-env",
         "docs"
-      ]
+      ],
+      "bump-minor-pre-major": true,
+      "bump-patch-pre-major": true
     }
   }
 }
