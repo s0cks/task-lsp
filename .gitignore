@@ -4,3 +4,5 @@ taskfile-lsp
 node_modules/
 dist/
 wiki/
+build/
+build2/

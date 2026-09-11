@@ -1,7 +1,7 @@
 taskfile-lsp
-Taskfiles
-Taskfile
+(?i)Taskfile(s)?
 Neovim
 wget
 httpie
-VSCode
+(?i)VSCode
+(?i)Filetype(s)?
