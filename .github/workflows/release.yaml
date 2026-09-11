@@ -35,14 +35,9 @@ jobs:
       - name: Build libtaskfile-parser
         shell: bash
         run: |
-          if [ "${{ matrix.runner }}" = "windows-latest" ]; then
-            export CC=clang
-            export CXX=clang++
-          elif [ "${{ matrix.os }}" = "linux" ]; then
-            export CC=clang
-            export CXX=clang++
-            export LD=lld
-          fi
+          export CC=clang
+          export CXX=clang++
+          export LD=lld
           meson setup build
           meson compile -C build
       - name: Test libtaskfile-parser

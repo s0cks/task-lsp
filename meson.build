@@ -3,7 +3,7 @@ project(
   ['c', 'cpp'],
   version: files('VERSION'),
   default_options: ['c_std=c23,c2x'],
-  meson_version: '>= 1.10.0',
+  meson_version: '>= 1.3.0',
 )
 add_project_arguments(
   '-DTASKFILE_PARSER_VERSION="' + meson.project_version() + '"',
