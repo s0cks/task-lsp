@@ -20,12 +20,12 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     outputs:
-      go_release_created: ${{ steps.release.outputs['taskfile-lsp--release_created'] }}
-      go_tag: ${{ steps.release.outputs['taskfile-lsp--tag_name'] }}
-      go_version: ${{ steps.release.outputs['taskfile-lsp--version'] }}
+      go_release_created: ${{ steps.release.outputs['lsp--release_created'] }}
+      go_tag: ${{ steps.release.outputs['lsp--tag_name'] }}
+      go_version: ${{ steps.release.outputs['lsp--version'] }}
 
-      docker_release_created: ${{ steps.release.outputs['docker/build-env--release_created'] }}
-      docker_tag: ${{ steps.release.outputs['docker/build-env--tag_name'] }}
+      docker_release_created: ${{ steps.release.outputs['build-env--release_created'] }}
+      docker_tag: ${{ steps.release.outputs['build-env--tag_name'] }}
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
