@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.2](https://github.com/s0cks/task-lsp/compare/lsp-v0.0.1...lsp-v0.0.2) (2026-09-11)
+
+
+### Bug Fixes
+
+* 🐛 hmm ([29d83a8](https://github.com/s0cks/task-lsp/commit/29d83a8efb7f99dfa40fdee99f803d4ade1c5cfc))
+
 ## [0.0.1](https://github.com/s0cks/task-lsp/compare/lsp-v0.0.0...lsp-v0.0.1) (2026-09-11)
 
 
