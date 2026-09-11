@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.6.1](https://github.com/s0cks/task-lsp/compare/taskfile-lsp-v1.6.0...taskfile-lsp-v1.6.1) (2026-09-11)
+
+
+### Bug Fixes
+
+* 🐛 fix release-please workflow? ([418c2ca](https://github.com/s0cks/task-lsp/commit/418c2ca6e725398fbe03358034065c885a742e51))
+* 🐛 hopefully fix release-please workflow ([20139d7](https://github.com/s0cks/task-lsp/commit/20139d7825ff1beea482ed041a6be5be637eeab8))
+
 ## [1.6.0](https://github.com/s0cks/task-lsp/compare/taskfile-lsp-v1.5.1...taskfile-lsp-v1.6.0) (2026-09-11)
 
 
