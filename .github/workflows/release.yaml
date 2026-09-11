@@ -154,6 +154,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Clean tag version
+        id: clean_version
+        shell: bash
+        run: |
+          RAW_TAG="${{ needs.release-please.outputs.docker_tag || github.event.release.tag_name }}"
+          CLEAN_TAG="${RAW_TAG#build-env-v}"
+          echo "tag=$CLEAN_TAG" >> $GITHUB_OUTPUT
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Log in to GitHub Container Registry
@@ -168,10 +175,8 @@ jobs:
           context: .
           file: ./docker/build-env/Dockerfile
           push: true
-          # yamllint disable rule:line-length
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.release-please.outputs.docker_tag || github.event.release.tag_name }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.clean_version.outputs.tag }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          # yamllint enable rule:line-length
           cache-from: type=gha
           cache-to: type=gha,mode=max
