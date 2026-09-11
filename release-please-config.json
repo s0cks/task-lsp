@@ -36,7 +36,11 @@
         "VERSION"
       ],
       "bump-minor-pre-major": true,
-      "bump-patch-pre-major": true
+      "bump-patch-pre-major": true,
+      "exclude-paths": [
+        "docker",
+        "docs"
+      ]
     }
   }
 }
