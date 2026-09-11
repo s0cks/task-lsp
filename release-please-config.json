@@ -22,7 +22,7 @@
       "bump-minor-pre-major": true,
       "bump-patch-pre-major": true,
       "exclude-paths": [
-        "docker",
+        "docker/build-env",
         "docs"
       ]
     }
