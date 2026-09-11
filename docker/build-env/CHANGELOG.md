@@ -7,6 +7,13 @@
 
 * 🐛 hopefully fix release-please workflow ([20139d7](https://github.com/s0cks/task-lsp/commit/20139d7825ff1beea482ed041a6be5be637eeab8))
 
+## [1.0.4](https://github.com/s0cks/task-lsp/compare/build-env-v1.0.3...build-env-v1.0.4) (2026-09-11)
+
+
+### Bug Fixes
+
+* 🐛 hopefully fix release-please workflow ([20139d7](https://github.com/s0cks/task-lsp/commit/20139d7825ff1beea482ed041a6be5be637eeab8))
+
 ## [1.0.3](https://github.com/s0cks/task-lsp/compare/build-env-v1.0.2...build-env-v1.0.3) (2026-09-11)
 
 
