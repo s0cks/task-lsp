@@ -2,7 +2,7 @@
   "separate-pull-requests": true,
   "packages": {
     "docker/build-env": {
-      "release-type": "docker",
+      "release-type": "simple",
       "package-name": "build-env"
     },
     ".": {
