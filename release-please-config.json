@@ -14,7 +14,7 @@
     },
     ".": {
       "release-type": "go",
-      "package-name": "taskfile-lsp",
+      "package-name": "lsp",
       "include-component-in-tag": true,
       "extra-files": [
         "VERSION"
