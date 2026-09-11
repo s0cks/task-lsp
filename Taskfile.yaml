@@ -5,42 +5,42 @@ vars:
   BUILD_DIR: "{{.ROOT_DIR}}/build"
   VSCODE_DIR: "{{.ROOT_DIR}}/vscode"
 tasks:
-  go:build:
+  go-build:
     internal: true
     vars:
       GO_SOURCE_FILE: ./cmd/taskfile-lsp/main.go
     cmds:
     - go build {{.GO_BUILD_ARGS | default "" }} -o {{.GO_TARGET_NAME}} {{.GO_SOURCE_FILE}}
-  go:build:dev:
+  go-build-dev:
     cmds:
-    - task: go:build
-  go:build:release:
+    - task: go-build
+  go-build-release:
     cmds:
-    - task: go:build
-  go:test:
+    - task: go-build
+  go-test:
     cmds:
     - go test ./...
-  go:clean:
+  go-clean:
     internal: true
     cmds:
     - rm -rf {{.GO_TARGET_NAME}}
 
-  vscode:clean:
+  vscode-clean:
     internal: true
     cmds:
     - rm -rf {{.VSCODE_DIR}}/dist {{.VSCODE_DI}}/out
 
-  meson:test:
+  meson-test:
     cmds:
     - meson test -C {{ .BUILD_DIR }}
-  meson:build:
+  meson-build:
     cmds:
     - |
       meson setup {{ .BUILD_DIR }} \
         --reconfigure \
         --buildtype={{ .BUILD_TYPE | default "debug" }}
     - meson compile {{ .BUILD_ARGS | default "" }} -C {{ .BUILD_DIR }}
-  meson:install:
+  meson-install:
     cmds:
     - meson install -C {{ .BUILD_DIR }}
 
@@ -48,32 +48,33 @@ tasks:
     aliases:
     - default
     cmds:
-    - task: meson:build
-    - task: go:build:dev
-  build:release:
+    - task: meson-build
+    - task: go-build-dev
+
+  build-release:
     aliases:
     - build
     cmds:
-    - task: meson:build
+    - task: meson-build
       vars:
         BUILD_TYPE: release
         BUILD_ARGS: "--clean"
-    - task: go:build:release
+    - task: go-build-release
 
   test:
     cmds:
-    - task: meson:test
-    - task: go:test
+    - task: meson-test
+    - task: go-test
 
   install:
     deps:
-    - build:release
+    - build-release
     cmds:
-    - task: meson:install
+    - task: meson-install
 
   clean:
     parallel: true
     cmds:
-    - task: go:clean
-    - task: vscode:clean
+    - task: go-clean
+    - task: vscode-clean
     - rm -rf {{.BUILD_DIR}}
