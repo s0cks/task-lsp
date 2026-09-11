@@ -4,71 +4,29 @@ vars:
   GO_TARGET_NAME: taskfile-lsp
   BUILD_DIR: "{{.ROOT_DIR}}/build"
   VSCODE_DIR: "{{.ROOT_DIR}}/vscode"
+  VERSION: '{{.VERSION | default "latest" }}'
+includes:
+  go: ./taskfiles/go/Taskfile.yaml
+  meson: ./taskfiles/meson/Taskfile.yaml
+  vhs: ./taskfiles/vhs/Taskfile.yaml
+  vscode: ./taskfiles/vscode/Taskfile.yaml
 tasks:
-  vhs:
-    silent: true
-    desc: Render a vhs .tape file
-    requires:
-      vars: [VHS_FILE]
-    cmds:
-      - vhs "{{.VHS_FILE}}" >/dev/null 2>&1
-  go-build:
-    internal: true
-    vars:
-      GO_SOURCE_FILE: ./cmd/taskfile-lsp/main.go
-    cmds:
-      - go build {{.GO_BUILD_ARGS | default "" }} -o {{.GO_TARGET_NAME}} {{.GO_SOURCE_FILE}}
-  go-build-dev:
-    cmds:
-      - task: go-build
-  go-build-release:
-    cmds:
-      - task: go-build
-  go-test:
-    cmds:
-      - go test ./...
-  go-clean:
-    internal: true
-    cmds:
-      - rm -rf {{.GO_TARGET_NAME}}
-
-  vscode-clean:
-    internal: true
-    cmds:
-      - rm -rf {{.VSCODE_DIR}}/dist {{.VSCODE_DI}}/out
-
-  meson-test:
-    cmds:
-      - meson test -C {{ .BUILD_DIR }}
-  meson-build:
-    desc: "Build the parser using meson"
-    cmds:
-      - |
-        meson setup {{ .BUILD_DIR }} \
-          --reconfigure \
-          --buildtype={{ .BUILD_TYPE | default "debug" }}
-      - meson compile {{ .BUILD_ARGS | default "" }} -C {{ .BUILD_DIR }}
-  meson-install:
-    cmds:
-      - meson install -C {{ .BUILD_DIR }}
-
   build-dev:
     aliases:
       - default
     cmds:
-      - task: meson-build
-      - task: go-build-dev
-
+      - task: meson:build
+      - task: go:build-dev
   build-release:
     aliases:
       - build
     cmds:
-      - task: meson-build
+      - task: meson:build
         vars:
           BUILD_TYPE: release
-          BUILD_ARGS: "--clean"
-      - task: go-build-release
-
+          BUILD_ARGS: |
+            --clean
+      - task: go:build-release
   build-tapes:
     silent: true
     aliases:
@@ -77,23 +35,22 @@ tasks:
       - |
         for file in ./assets/[!_]*.tape; do
             [ -e "$file" ] || continue
-            echo "rendering $file...."
-            task vhs VHS_FILE="$file"
+            task vhs:tape VHS_FILE="$file"
         done
 
   test:
     cmds:
-      - task: meson-test
-      - task: go-test
+      - task: meson:test
+      - task: go:test
 
   install:
+    deps:
+      - build-release
     cmds:
-      - task: build-release
-      - task: meson-install
+      - task: meson:install
 
   clean:
-    parallel: true
-    cmds:
-      - task: go-clean
-      - task: vscode-clean
-      - rm -rf {{.BUILD_DIR}}
+    deps:
+      - go:clean
+      - meson:clean
+      - vscode:clean

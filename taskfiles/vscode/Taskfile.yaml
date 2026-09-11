@@ -1,0 +1,12 @@
+---
+version: '3'
+tasks:
+  clean:
+    requires:
+      vars:
+        - VSCODE_DIR
+    cmds:
+      - |
+        rm -rf \
+          {{.VSCODE_DIR}}/dist \
+          {{.VSCODE_DIR}}/out
