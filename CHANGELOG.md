@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.5.0](https://github.com/s0cks/task-lsp/compare/v1.4.1...v1.5.0) (2026-09-11)
+
+
+### Features
+
+* **lexer:** ✨ add desc support with quoted and unquoted strings ([493010e](https://github.com/s0cks/task-lsp/commit/493010e9fa1a0eb01d9f9512fe58cd65b7c5f15e))
+* **lexer:** ✨ lex tasks: and vars: ([1c2558c](https://github.com/s0cks/task-lsp/commit/1c2558c27b12966e4fef5458ef2f11097d115bd5))
+* **lsp:** ✨ add some cleanup and some task refactor code actions for adding fields ([d0c7f04](https://github.com/s0cks/task-lsp/commit/d0c7f043f85ace8f09a9aa21a318f193138908e3))
+* **parser:** ✨ add seq types ([3389e21](https://github.com/s0cks/task-lsp/commit/3389e211c1e9176833db6472f64dbf00ed0a0dc7))
+* **parser:** ✨ cleanup some parse logic and implement some symbols in the lexer ([94f9284](https://github.com/s0cks/task-lsp/commit/94f9284f358465bed0abf712a523b4ff12d07439))
+
+
+### Bug Fixes
+
+* **lsp:** 🐛 fix references working ([870a029](https://github.com/s0cks/task-lsp/commit/870a02911c52ac8dc542a421b933bc2c8a79c743))
+* **meson:** 🐛 fix meson min dep ([8872935](https://github.com/s0cks/task-lsp/commit/88729355e3982d5c732ca72d0587985c21a8a43f))
+
 ## [1.4.1](https://github.com/s0cks/task-lsp/compare/v1.4.0...v1.4.1) (2026-09-10)
 
 
