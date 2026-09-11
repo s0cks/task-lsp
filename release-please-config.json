@@ -1,5 +1,10 @@
 {
+  "separate-pull-requests": true,
   "packages": {
+    "docker/build-env": {
+      "release-type": "docker",
+      "package-name": "build-env"
+    },
     ".": {
       "release-type": "go",
       "extra-files": [

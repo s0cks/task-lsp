@@ -1,22 +1,39 @@
 ---
-name: Publish Build Environment
 on:
   push:
     branches:
       - main
-      - develop
     paths:
       - 'docker/**/Dockerfile'
       - '.github/workflows/build-env.yaml'
+  release:
+    types:
+      - published
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}/build-env
+permissions:
+  contents: write
+  pull-requests: write
+  packages: write
 jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      releases_created: ${{ steps.release.outputs.releases_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+    needs:
+      - release-please
+    if: ${{ github.event_name == 'release' || needs.release-please.outputs.releases_created == 'true' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -34,6 +51,10 @@ jobs:
           context: .
           file: ./docker/build-env/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          # yamllint disable rule:line-length
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.release-please.outputs.tag_name || github.event.release.tag_name }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          # yamllint enable rule:line-length
           cache-from: type=gha
           cache-to: type=gha,mode=max
