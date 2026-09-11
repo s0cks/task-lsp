@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/s0cks/task-lsp/compare/taskfile-lsp-v1.7.2...taskfile-lsp-v1.8.0) (2026-09-11)
+
+
+### Features
+
+* **lsp:** ✨ lets try this? ([4128c91](https://github.com/s0cks/task-lsp/commit/4128c911fa03adb2de689f8b3b965c896d64f169))
+
 ## [1.7.2](https://github.com/s0cks/task-lsp/compare/taskfile-lsp-v1.7.1...taskfile-lsp-v1.7.2) (2026-09-11)
 
 
