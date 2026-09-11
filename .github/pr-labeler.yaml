@@ -1,0 +1,26 @@
+---
+scope:docker:
+  - changed-files:
+      - any-glob-to-any-file: 'docker/**/*'
+scope:lsp:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'cmd/**/*'
+          - 'internal/**/*'
+          - '*.go'
+scope:cli:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'internal/cli/**/*'
+scope:vscode:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'vscode/**/*'
+scope:parser:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'libtaskfile-parser/**/*'
+scope:docs:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'docs/**/*'

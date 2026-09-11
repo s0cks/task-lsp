@@ -6,9 +6,8 @@ on:
     paths:
       - cmd/
       - internal/
-    branches:
+    branches-ignore:
       - main
-      - develop
   pull_request:
     branches:
       - main
