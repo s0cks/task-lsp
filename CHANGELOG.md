@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.1](https://github.com/s0cks/task-lsp/compare/lsp-v1.9.0...lsp-v1.9.1) (2026-09-11)
+
+
+### Bug Fixes
+
+* 🐛 fix all the things with release-please? ([0e9527e](https://github.com/s0cks/task-lsp/commit/0e9527e7e632cdf7480c8eaaa34fac65f7b1a321))
+
 ## [1.9.0](https://github.com/s0cks/task-lsp/compare/lsp-v1.8.0...lsp-v1.9.0) (2026-09-11)
 
 
