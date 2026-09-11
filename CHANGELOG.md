@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.7.0](https://github.com/s0cks/task-lsp/compare/taskfile-lsp-v1.6.1...taskfile-lsp-v1.7.0) (2026-09-11)
+
+
+### Features
+
+* **cli:** ✨ add extra metadata to the info command ([84da915](https://github.com/s0cks/task-lsp/commit/84da915f157177cc563052462458035757ff9a1b))
+
+
+### Bug Fixes
+
+* **lsp:** 🐛 force release-please ([7204cce](https://github.com/s0cks/task-lsp/commit/7204cce11bf4f34a5b1324e53e0476650cce53e4))
+
 ## [1.6.1](https://github.com/s0cks/task-lsp/compare/taskfile-lsp-v1.6.0...taskfile-lsp-v1.6.1) (2026-09-11)
 
 
