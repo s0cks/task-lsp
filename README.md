@@ -34,8 +34,8 @@ Planned Features:
 
 - Rename
 - Workspace symbols
-- More code actions
 - Task dependency analysis
+- More code actions
 - Formatting
 - Schema validation
 
