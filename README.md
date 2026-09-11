@@ -48,6 +48,7 @@ to get started.
 ## Credits
 
 - The [task](https://taskfile.dev) team :heart_hands:
+- [@paulvarache](https://github.com/paulvarache) for [the original](https://github.com/paulvarache/taskfile-language-server) implementation :heart_hands:
 
 ## License
 
