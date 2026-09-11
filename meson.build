@@ -1,8 +1,13 @@
 project(
   'taskfile-lsp',
-  ['c', 'cpp'],
+  [
+    'c',
+    'cpp',
+  ],
   version: files('VERSION'),
-  default_options: ['c_std=c23,c2x'],
+  default_options: [
+    'c_std=c2x',
+  ],
   meson_version: '>= 1.3.0',
 )
 add_project_arguments(
