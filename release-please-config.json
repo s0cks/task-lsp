@@ -1,27 +1,11 @@
 {
-  "changelog-sections": [
-    {
-      "type": "feat",
-      "section": "Features"
-    },
-    {
-      "type": "fix",
-      "section": "Bug Fixes"
-    },
-    {
-      "type": "docs",
-      "section": "Documentation",
-      "hidden": false
-    }
-  ],
   "packages": {
     "docs": {
       "release-type": "node",
       "package-name": "docs",
       "include-component-in-tag": true,
       "skip-github-release": true,
-      "skip-changelog": true,
-      "versioning": "always-bump-minor"
+      "skip-changelog": true
     },
     "docker/build-env": {
       "release-type": "simple",
