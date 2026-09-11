@@ -14,4 +14,6 @@ func main() {
 		fmt.Println()
 		os.Exit(1)
 	}
+
+	// normal exit
 }
