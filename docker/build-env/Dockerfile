@@ -21,6 +21,7 @@ ARG VALE_VERSION=3.21.0
 ARG CLANG_VERSION=1:22.1.2-1ubuntu1
 ARG SOFTWARE_PROPERTIES_COMMON_VERSION=0.120
 ARG IWYU_VERSION=8.23-1build1
+ARG UBUNTU_PRO_CLIENT_VERSION=37.2ubuntu0.1
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV GO_VERSION=${GO_VERSION}
@@ -42,11 +43,9 @@ ENV VALE_VERSION=${VALE_VERSION}
 ENV CLANG_VERSION=${CLANG_VERSION}
 ENV SOFTWARE_PROPERTIES_COMMON_VERSION=${SOFTWARE_PROPERTIES_COMMON_VERSION}
 ENV IWYU_VERSION=${IWYU_VERSION}
+ENV UBUNTU_PRO_CLIENT_VERSION=${UBUNTU_PRO_CLIENT_VERSION}
 
-RUN apt-get update \
- && apt-get install -y --no-install-recommends \
-      software-properties-common=${SOFTWARE_PROPERTIES_COMMON_VERSION} \
- && add-apt-repository universe \
+RUN sed -i 's/Components: main/Components: main universe/' /etc/apt/sources.list.d/ubuntu.sources \
  && apt-get update \
  && apt-get install -y --no-install-recommends \
       curl=${CURL_VERSION} \
@@ -105,7 +104,7 @@ RUN curl -LsSf "${GOLANGCI_LINT_DOWNLOAD_URL}" \
  # │ Install vale │
  # ╰──────────────╯
 ENV VALE_DOWNLOAD_URL=https://github.com/vale-cli/vale/releases/download/v${VALE_VERSION}/vale_${VALE_VERSION}_Linux_64-bit.tar.gz
-RUN curl -LsSf "${VALE_DOWNLOAD_VERSION}" \
+RUN curl -LsSf "${VALE_DOWNLOAD_URL}" -o vale_${VALE_VERSION}_Linux_64-bit.tar.gz \
  && tar xf vale_${VALE_VERSION}_Linux_64-bit.tar.gz \
  && mv vale /usr/local/bin
 # ──────────────────────────────────────────────────────────────────────
