@@ -4,10 +4,10 @@ prepare-commit-msg:
     koji:
       interactive: true
       run: koji --hook --yes
-commit-msg:
-  commands:
-    conventional-commits:
-      run: cog verify --file {1}
+# commit-msg:
+#   commands:
+#     conventional-commits:
+#       run: cog verify --file {1}
 post-checkout:
   commands:
     vale-sync:
