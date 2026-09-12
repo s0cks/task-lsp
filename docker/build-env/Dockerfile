@@ -20,6 +20,7 @@ ARG YAMLLINT_VERSION=1.37.1-1
 ARG VALE_VERSION=3.21.0
 ARG CLANG_VERSION=1:22.1.2-1ubuntu1
 ARG SOFTWARE_PROPERTIES_COMMON_VERSION=0.120
+ARG IWYU_VERSION=8.23-1build1
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV GO_VERSION=${GO_VERSION}
@@ -40,6 +41,7 @@ ENV YAMLLINT_VERSION=${YAMLLINT_VERSION}
 ENV VALE_VERSION=${VALE_VERSION}
 ENV CLANG_VERSION=${CLANG_VERSION}
 ENV SOFTWARE_PROPERTIES_COMMON_VERSION=${SOFTWARE_PROPERTIES_COMMON_VERSION}
+ENV IWYU_VERSION=${IWYU_VERSION}
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
@@ -62,6 +64,7 @@ RUN apt-get update \
       clang-22=${CLANG_VERSION} \
       libclang-22-dev=${CLANG_VERSION} \
       clang-tidy-22=${CLANG_VERSION} \
+      iwyu=${IWYU_VERSION} \
  && rm -rf /var/lib/apt/lists/* \
  && pip3 install \
       --no-cache-dir \
