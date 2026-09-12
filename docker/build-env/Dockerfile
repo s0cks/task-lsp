@@ -22,6 +22,7 @@ ARG CLANG_VERSION=1:22.1.2-1ubuntu1
 ARG SOFTWARE_PROPERTIES_COMMON_VERSION=0.120
 ARG IWYU_VERSION=8.23-1build1
 ARG UBUNTU_PRO_CLIENT_VERSION=37.2ubuntu0.1
+ARG HADOLINT_VERSION=2.15.1
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV GO_VERSION=${GO_VERSION}
@@ -100,13 +101,22 @@ RUN curl -LsSf "${GOLANGCI_LINT_DOWNLOAD_URL}" \
  && mv golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64/golangci-lint /usr/local/bin
 # ──────────────────────────────────────────────────────────────────────
 
- # ╭──────────────╮
- # │ Install vale │
- # ╰──────────────╯
+# ╭──────────────╮
+# │ Install vale │
+# ╰──────────────╯
 ENV VALE_DOWNLOAD_URL=https://github.com/vale-cli/vale/releases/download/v${VALE_VERSION}/vale_${VALE_VERSION}_Linux_64-bit.tar.gz
 RUN curl -LsSf "${VALE_DOWNLOAD_URL}" -o vale_${VALE_VERSION}_Linux_64-bit.tar.gz \
  && tar xf vale_${VALE_VERSION}_Linux_64-bit.tar.gz \
  && mv vale /usr/local/bin
+# ──────────────────────────────────────────────────────────────────────
+
+# ╭──────────────────╮
+# │ Install hadolint │
+# ╰──────────────────╯
+ENV HADOLINT_DOWNLOAD_URL=https://github.com/hadolint/hadolint/releases/download/v${HADOLINT_VERSION}/hadolint-linux-x86_64
+RUN curl -LsSf "${HADOLINT_DOWNLOAD_URL}" \
+      -o hadolint \
+ && mv hadolint /usr/local/bin
 # ──────────────────────────────────────────────────────────────────────
 
 RUN mkdir -p /workspace
