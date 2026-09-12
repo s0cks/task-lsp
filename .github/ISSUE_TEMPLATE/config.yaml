@@ -1,0 +1,10 @@
+---
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 Read the wiki
+    url: https://github.com/s0cks/task-lsp/wiki
+    about: Read the wiki before reporting errors
+
+  - name: 📖 Read the docs
+    url: https://s0cks.github.io/task-lsp/
+    about: Read the official documentation before reporting errors
