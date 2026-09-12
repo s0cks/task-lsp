@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.5](https://github.com/s0cks/task-lsp/compare/lsp-v0.0.4...lsp-v0.0.5) (2026-09-12)
+
+
+### Bug Fixes
+
+* **lsp:** 🐛 fix lsp actions workflow? ([d92faf1](https://github.com/s0cks/task-lsp/commit/d92faf10b3cfd0bcf267e5937e749efa4ecd7a70))
+
 ## [0.0.4](https://github.com/s0cks/task-lsp/compare/lsp-v0.0.3...lsp-v0.0.4) (2026-09-12)
 
 
