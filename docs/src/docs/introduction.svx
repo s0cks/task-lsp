@@ -1,0 +1,10 @@
+---
+title: Introduction
+section: Getting Started
+---
+
+```json
+{
+  "message": "Hello World"
+}
+```
