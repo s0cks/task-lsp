@@ -1,0 +1,7 @@
+---
+services:
+  build-env:
+    build:
+      context: .
+      dockerfile: docker/build-env/Dockerfile
+    image: ghcr.io/s0cks/task-lsp/build-env:latest
