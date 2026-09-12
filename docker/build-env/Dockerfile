@@ -1,5 +1,7 @@
 ARG UBUNTU_VERSION=26.04
 FROM ubuntu:${UBUNTU_VERSION} AS builder
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 ARG GO_VERSION=1.26.4
 ARG MESON_VERSION=1.11.1
 ARG CURL_VERSION=8.18.0-1ubuntu2.5
@@ -13,6 +15,7 @@ ARG GIT_VERSION=1:2.53.0-1ubuntu1
 ARG CMAKE_VERSION=4.2.3-2ubuntu2
 ARG GTEST_VERSION=1.17.0-1build1
 ARG RUMDL_VERSION=0.2.73
+ARG GOLANGCI_LINT_VERSION=2.13.2
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV GO_VERSION=${GO_VERSION}
@@ -28,6 +31,7 @@ ENV GIT_VERSION=${GIT_VERSION}
 ENV CMAKE_VERSION=${CMAKE_VERSION}
 ENV GTEST_VERSION=${GTEST_VERSION}
 ENV RUMDL_VERSION=${RUMDL_VERSION}
+ENV GOLANGCI_LINT_VERSION=${GOLANGCI_LINT_VERSION}
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
@@ -60,13 +64,21 @@ ENV GOPATH=/go
 ENV PATH=$PATH:/usr/local/go/bin:$GOPATH/bin
 # ──────────────────────────────────────────────────────────────────────
 
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
 # ╭───────────────╮
 # │ Install rumdl │
 # ╰───────────────╯
 ENV RUMDL_DOWNLOAD_URL=https://github.com/rvben/rumdl/releases/download/v${RUMDL_VERSION}/rumdl-v${RUMDL_VERSION}-x86_64-unknown-linux-gnu.tar.gz
 RUN curl -LsSf ${RUMDL_DOWNLOAD_URL} | tar xzf - -C /usr/local/bin
+# ──────────────────────────────────────────────────────────────────────
+
+# ╭───────────────────────╮
+# │ Install golangci-lint │
+# ╰───────────────────────╯
+ENV GOLANGCI_LINT_DOWNLOAD_URL=https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz
+RUN curl -LsSf "${GOLANGCI_LINT_DOWNLOAD_URL}" \
+      -o golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz \
+ && tar xf golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz \
+ && mv golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64/golangci-lint /usr/local/bin
 # ──────────────────────────────────────────────────────────────────────
 
 RUN mkdir -p /workspace
