@@ -18,6 +18,7 @@ ARG RUMDL_VERSION=0.2.73
 ARG GOLANGCI_LINT_VERSION=2.13.2
 ARG YAMLLINT_VERSION=1.37.1-1
 ARG VALE_VERSION=3.21.0
+ARG CLANG_VERSION=1:22.1.2-1ubuntu1
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV GO_VERSION=${GO_VERSION}
@@ -36,6 +37,7 @@ ENV RUMDL_VERSION=${RUMDL_VERSION}
 ENV GOLANGCI_LINT_VERSION=${GOLANGCI_LINT_VERSION}
 ENV YAMLLINT_VERSION=${YAMLLINT_VERSION}
 ENV VALE_VERSION=${VALE_VERSION}
+ENV CLANG_VERSION=${CLANG_VERSION}
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
@@ -50,6 +52,7 @@ RUN apt-get update \
     cmake=${CMAKE_VERSION} \
     libgtest-dev=${GTEST_VERSION} \
     yamllint=${YAMLLINT_VERSION} \
+    clang-22=${CLANG_VERSION} \
  && rm -rf /var/lib/apt/lists/* \
  && pip3 install \
       --no-cache-dir \
