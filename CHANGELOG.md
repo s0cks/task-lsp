@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.4](https://github.com/s0cks/task-lsp/compare/lsp-v0.0.3...lsp-v0.0.4) (2026-09-12)
+
+
+### Bug Fixes
+
+* **lsp:** 🐛 fix lsp release-action by removing matrix values for other OSes ([258c0c3](https://github.com/s0cks/task-lsp/commit/258c0c340f24628e329b9a2afe457de197903d2b))
+
 ## [0.0.3](https://github.com/s0cks/task-lsp/compare/lsp-v0.0.2...lsp-v0.0.3) (2026-09-11)
 
 
