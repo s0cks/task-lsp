@@ -139,6 +139,7 @@ jobs:
         uses: tj-actions/changed-files@v45
         with:
           path: libtaskfile-parser
+          safe_output: false
           files: |
             **/*.h
             **/*.c
@@ -159,7 +160,7 @@ jobs:
             -std=c23 \
             -Iinclude \
             -Isrc \
-            {staged_files}
+            ${{ steps.changed.outputs.all_changed_files }}
       - name: Test
         if: ${{ steps.changed.outputs.any_changed == 'true' }}
         run: |
