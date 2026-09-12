@@ -1,0 +1,39 @@
+---
+name: Release vscode plugin
+on:
+  release:
+    types:
+      - published
+permissions:
+  contents: write
+  pull-requests: write
+  packages: write
+jobs:
+  release:
+    if: "startsWith(github.event.release.tag_name, 'vscode-v')"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Nodejs & pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "12.3.4"
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+          cache-dependency-path: 'vscode/pnpm-lock.yaml'
+      - name: Build VSCode Extension
+        shell: bash
+        run: |
+          cd vscode
+          pnpm install --frozen-lockfile
+          npx @vscode/vsce package --target ${{ matrix.target }}
+      - name: Upload Artifacts to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: |
+            vscode/*.vsix
