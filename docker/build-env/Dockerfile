@@ -16,6 +16,7 @@ ARG CMAKE_VERSION=4.2.3-2ubuntu2
 ARG GTEST_VERSION=1.17.0-1build1
 ARG RUMDL_VERSION=0.2.73
 ARG GOLANGCI_LINT_VERSION=2.13.2
+ARG YAMLLINT_VERSION=1.37.1-1
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV GO_VERSION=${GO_VERSION}
@@ -32,6 +33,7 @@ ENV CMAKE_VERSION=${CMAKE_VERSION}
 ENV GTEST_VERSION=${GTEST_VERSION}
 ENV RUMDL_VERSION=${RUMDL_VERSION}
 ENV GOLANGCI_LINT_VERSION=${GOLANGCI_LINT_VERSION}
+ENV YAMLLINT_VERSION=${YAMLLINT_VERSION}
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
@@ -45,6 +47,7 @@ RUN apt-get update \
     git=${GIT_VERSION} \
     cmake=${CMAKE_VERSION} \
     libgtest-dev=${GTEST_VERSION} \
+    yamllint=${YAMLLINT_VERSION} \
  && rm -rf /var/lib/apt/lists/* \
  && pip3 install \
       --no-cache-dir \
