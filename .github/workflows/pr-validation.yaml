@@ -170,7 +170,3 @@ jobs:
           meson setup build
           meson compile -C build
           meson test -C build
-# eslint:
-#   glob: "*.{ts,js}"
-#   root: "vscode"
-#   run: pnpm lint
