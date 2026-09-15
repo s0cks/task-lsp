@@ -1,7 +1,6 @@
 #ifndef TASKFILE_PARSER_TOKEN_ASSERTIONS_H
 #define TASKFILE_PARSER_TOKEN_ASSERTIONS_H
 
-#include "gtest/gtest.h"
 #ifdef __cplusplus
 
 #include <gtest/gtest.h>

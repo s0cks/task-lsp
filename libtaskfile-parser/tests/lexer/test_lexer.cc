@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-#include "gtest/gtest.h"
 #include "lexer.h"
+#include "seq.h"
 #include "token.h"
 #include "token_assertions.h"
 

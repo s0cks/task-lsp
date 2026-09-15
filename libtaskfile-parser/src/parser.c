@@ -112,7 +112,7 @@ static inline void PopFramesTo(Parser* p, const int indent) {
     p->stack_len--;
 }
 
-static void FlushPendingCommentAsFloating(Parser* p) {
+static inline void FlushPendingCommentAsFloating(Parser* p) {
   if (!p->has_pending_comment)
     return;
 
@@ -127,13 +127,13 @@ static void FlushPendingCommentAsFloating(Parser* p) {
   p->has_pending_comment = false;
 }
 
-static void QueuePendingComment(Parser* p, const Token tok) {
+static inline void QueuePendingComment(Parser* p, const Token tok) {
   FlushPendingCommentAsFloating(p);
   p->pending_comment = tok;
   p->has_pending_comment = true;
 }
 
-static void AttachOrFlushPendingComment(Parser* p, DocumentNode* node, const int row) {
+static inline void AttachOrFlushPendingComment(Parser* p, DocumentNode* node, const int row) {
   if (!p->has_pending_comment)
     return;
 
@@ -151,7 +151,7 @@ static void AttachOrFlushPendingComment(Parser* p, DocumentNode* node, const int
   p->has_pending_comment = false;
 }
 
-static void MaybeAttachTrailingComment(Parser* p, DocumentNode* node, const int row) {
+static inline void MaybeAttachTrailingComment(Parser* p, DocumentNode* node, const int row) {
   const Token peek = PeekTok(p);
   if (peek.kind != kLineCommentToken || peek.range.start.row != row)
     return;
@@ -197,13 +197,13 @@ static inline bool IsIdentChar(const char c) {
   return isalnum((unsigned char)c) || c == '_';
 }
 
-static Pos MaxPos(const Pos a, const Pos b) {
+static inline Pos MaxPos(const Pos a, const Pos b) {
   if (a.row != b.row)
     return a.row > b.row ? a : b;
   return a.col > b.col ? a : b;
 }
 
-static Pos PositionAtOffset(const Pos base, const StrView text, const size_t offset) {
+static inline Pos PositionAtOffset(const Pos base, const StrView text, const size_t offset) {
   Pos pos = base;
   const size_t limit = offset < text.len ? offset : text.len;
   for (size_t k = 0; k < limit; k++) {
@@ -217,8 +217,8 @@ static Pos PositionAtOffset(const Pos base, const StrView text, const size_t off
   return pos;
 }
 
-static void StampKeyedMeta(Parser* p, DocumentNode* node, const Token key_tok, const Token value_tok,
-                           const bool has_value) {
+static inline void StampKeyedMeta(Parser* p, DocumentNode* node, const Token key_tok, const Token value_tok,
+                                  const bool has_value) {
   node->key_range = key_tok.range;
   node->indent = key_tok.indent;
   node->leading_ws = key_tok.leading_ws;
@@ -227,13 +227,13 @@ static void StampKeyedMeta(Parser* p, DocumentNode* node, const Token key_tok, c
     node->value_range = value_tok.range;
 }
 
-static void StampScalarMeta(DocumentNode* node, const Token tok) {
+static inline void StampScalarMeta(DocumentNode* node, const Token tok) {
   node->style = tok.style;
   node->value_range = tok.range;
   node->indent = tok.indent;
 }
 
-static DocumentNode* ClassifyScalarValue(const Token tok) {
+static inline DocumentNode* ClassifyScalarValue(const Token tok) {
   if (tok.kind == kNumberToken) {
     NumberNode* n = (NumberNode*)calloc(1, sizeof(NumberNode));
     n->kind = kNumberKind;
@@ -273,7 +273,7 @@ static DocumentNode* ClassifyScalarValue(const Token tok) {
   return (DocumentNode*)s;
 }
 
-static void ParsePipelineInto(const StrView body, RefNode* ref, const StrView text, const Pos text_start) {
+static inline void ParsePipelineInto(const StrView body, RefNode* ref, const StrView text, const Pos text_start) {
   const size_t body_offset = (size_t)(body.start - text.start);
   size_t i = 0;
   while (i < body.len) {
@@ -324,7 +324,7 @@ static void ParsePipelineInto(const StrView body, RefNode* ref, const StrView te
   }
 }
 
-static void ScanTemplateRefsInto(StringNode* owner, const StrView text, const Pos text_start) {
+static inline void ScanTemplateRefsInto(StringNode* owner, const StrView text, const Pos text_start) {
   if (StrViewIsEmpty(text))
     return;
 
@@ -377,7 +377,7 @@ static void ScanTemplateRefsInto(StringNode* owner, const StrView text, const Po
   }
 }
 
-static void ScanEnvRefsInto(StringNode* owner, const StrView text, const Pos text_start) {
+static inline void ScanEnvRefsInto(StringNode* owner, const StrView text, const Pos text_start) {
   if (StrViewIsEmpty(text))
     return;
 
@@ -425,12 +425,13 @@ static void ScanEnvRefsInto(StringNode* owner, const StrView text, const Pos tex
   }
 }
 
-static void ScanRefsInto(StringNode* owner, const StrView text, const Pos text_start) {
+static inline void ScanRefsInto(StringNode* owner, const StrView text, const Pos text_start) {
   ScanTemplateRefsInto(owner, text, text_start);
   ScanEnvRefsInto(owner, text, text_start);
 }
 
-static StringNode BuildStyledStringNode(const StrView value, const Pos start, const Pos end, const ScalarStyle style) {
+static inline StringNode BuildStyledStringNode(const StrView value, const Pos start, const Pos end,
+                                               const ScalarStyle style) {
   StringNode s = {0};
   s.kind = kStringKind;
   s.start = start;
@@ -443,11 +444,11 @@ static StringNode BuildStyledStringNode(const StrView value, const Pos start, co
   return s;
 }
 
-static StringNode BuildStringNodeFromToken(const Token tok) {
+static inline StringNode BuildStringNodeFromToken(const Token tok) {
   return BuildStyledStringNode(TrimQuotes(tok.data), tok.range.start, tok.range.end, tok.style);
 }
 
-static StringNode BuildStringNode(const StrView value, const Pos start, const Pos end) {
+static inline StringNode BuildStringNode(const StrView value, const Pos start, const Pos end) {
   return BuildStyledStringNode(value, start, end, kPlainScalarStyle);
 }
 
@@ -457,7 +458,8 @@ typedef struct {
   Pos end;
 } SpanItem;
 
-static void SplitFlowList(const StrView raw, const Pos raw_start, SpanItem** out, size_t* out_len, size_t* out_cap) {
+static inline void SplitFlowList(const StrView raw, const Pos raw_start, SpanItem** out, size_t* out_len,
+                                 size_t* out_cap) {
   size_t i = 0;
   size_t n = raw.len;
   if (n >= 2 && raw.start[0] == '[' && raw.start[n - 1] == ']') {
@@ -501,7 +503,7 @@ static void SplitFlowList(const StrView raw, const Pos raw_start, SpanItem** out
   }
 }
 
-static RefNode MakeTaskRef(const StrView name, const Pos start, const Pos end) {
+static inline RefNode MakeTaskRef(const StrView name, const Pos start, const Pos end) {
   RefNode ref = {0};
   ref.kind = kRefKind;
   ref.ref_kind = kTaskRefKind;
@@ -528,7 +530,7 @@ static bool TryReadTaskCall(Parser* p, StrView* out_name, Pos* out_start, Pos* o
   return true;
 }
 
-static void ParseDepsListItem(Parser* p, Frame* frame) {
+static inline void ParseDepsListItem(Parser* p, Frame* frame) {
   const Token dash = NextTok(p);
   const int row = dash.range.start.row;
   const Token peek = PeekTok(p);
@@ -562,7 +564,7 @@ static void ParseDepsListItem(Parser* p, Frame* frame) {
   MaybeAttachTrailingComment(p, (DocumentNode*)ref, row);
 }
 
-static void ParseCmdsListItem(Parser* p, Frame* frame) {
+static inline void ParseCmdsListItem(Parser* p, Frame* frame) {
   const Token dash = NextTok(p);
   const int row = dash.range.start.row;
   const Token peek = PeekTok(p);
@@ -620,7 +622,7 @@ static void ParseCmdsListItem(Parser* p, Frame* frame) {
   MaybeAttachTrailingComment(p, (DocumentNode*)cmd, row);
 }
 
-static void ParseInlineDeps(Parser* p, TaskNode* task, const Token value_tok) {
+static inline void ParseInlineDeps(Parser* p, TaskNode* task, const Token value_tok) {
   SpanItem* items = NULL;
   size_t items_len = 0;
   size_t items_cap = 0;
@@ -635,8 +637,8 @@ static void ParseInlineDeps(Parser* p, TaskNode* task, const Token value_tok) {
   (void)p;
 }
 
-static void HandleVarBodyKey(Parser* p, Frame* frame, const StrView key, const Token key_tok, const Token value_tok,
-                             const bool has_value, const int indent) {
+static inline void HandleVarBodyKey(Parser* p, Frame* frame, const StrView key, const Token key_tok,
+                                    const Token value_tok, const bool has_value, const int indent) {
   VarNode* var = frame->var;
   if (StrViewEqualsCStr(key, "sh")) {
     var->var_kind = kShellVarNodeKind;
@@ -645,6 +647,7 @@ static void HandleVarBodyKey(Parser* p, Frame* frame, const StrView key, const T
     var->command->end = has_value ? value_tok.range.end : key_tok.range.end;
     if (has_value)
       var->command->cmd = BuildStringNodeFromToken(value_tok);
+
     PushFrame(p, (Frame){.indent = indent, .kind = kFrameOther});
   } else if (StrViewEqualsCStr(key, "ref")) {
     var->var_kind = kRefVarNodeKind;
@@ -655,6 +658,7 @@ static void HandleVarBodyKey(Parser* p, Frame* frame, const StrView key, const T
       target.len--;
       start.col++;
     }
+
     var->ref = (RefNode*)calloc(1, sizeof(RefNode));
     *var->ref = MakeTaskRef(target, start, value_tok.range.end);
     var->ref->ref_kind = kVarRefKind;
@@ -673,6 +677,7 @@ static void HandleVarBodyKey(Parser* p, Frame* frame, const StrView key, const T
       if (var->value->kind == kStringKind)
         ScanRefsInto((StringNode*)var->value, ((StringNode*)var->value)->value, var->value->start);
     }
+
     PushFrame(p, (Frame){.indent = indent, .kind = kFrameOther});
   } else if (StrViewEqualsCStr(key, "secret")) {
     var->secret = has_value && StrViewEqualsCStr(TrimQuotes(value_tok.data), "true");
@@ -682,8 +687,8 @@ static void HandleVarBodyKey(Parser* p, Frame* frame, const StrView key, const T
   }
 }
 
-static void HandleMapEntry(VarNode* var, const StrView key, const Token key_tok, const Token value_tok,
-                           const bool has_value) {
+static inline void HandleMapEntry(VarNode* var, const StrView key, const Token key_tok, const Token value_tok,
+                                  const bool has_value) {
   MapNode* map = (MapNode*)var->value;
   MapEntryNode* entry = AppendNewMapEntryInSeq(&map->entries);
   entry->kind = kMapEntryKind;
@@ -701,8 +706,9 @@ static void HandleMapEntry(VarNode* var, const StrView key, const Token key_tok,
     entry->value = ClassifyScalarValue(value_tok);
 }
 
-static void ParseVarOrEnvKey(Parser* p, Frame* frame, const StrView key, const Token key_tok, const Token value_tok,
-                             const bool has_value, const int indent, const int row, VarSeq* target_seq) {
+static inline void ParseVarOrEnvKey(Parser* p, Frame* frame, const StrView key, const Token key_tok,
+                                    const Token value_tok, const bool has_value, const int indent, const int row,
+                                    VarSeq* target_seq) {
   VarNode* var = NewVarNode();
   var->name = key;
   var->start = key_tok.range.start;
@@ -714,6 +720,7 @@ static void ParseVarOrEnvKey(Parser* p, Frame* frame, const StrView key, const T
     if (var->value->kind == kStringKind)
       ScanRefsInto((StringNode*)var->value, ((StringNode*)var->value)->value, var->value->start);
   }
+
   AttachOrFlushPendingComment(p, (DocumentNode*)var, row);
   MaybeAttachTrailingComment(p, (DocumentNode*)var, row);
 
@@ -728,8 +735,8 @@ static void ParseVarOrEnvKey(Parser* p, Frame* frame, const StrView key, const T
   }
 }
 
-static IncludeNode* ParseIncludeEntry(Parser* p, const StrView alias, const Token key_tok, const Token value_tok,
-                                      const bool has_value) {
+static inline IncludeNode* ParseIncludeEntry(Parser* p, const StrView alias, const Token key_tok, const Token value_tok,
+                                             const bool has_value) {
   IncludeNode* include = AppendNewIncludeInSeq(&p->doc->includes);
   include->kind = kIncludeKind;
   include->start = key_tok.range.start;
@@ -746,7 +753,7 @@ static IncludeNode* ParseIncludeEntry(Parser* p, const StrView alias, const Toke
   return include;
 }
 
-static void ParseStringListItem(Parser* p, Frame* frame) {
+static inline void ParseStringListItem(Parser* p, Frame* frame) {
   const Token dash = NextTok(p);
   const int row = dash.range.start.row;
   const Token value = PeekTok(p);
@@ -760,6 +767,7 @@ static void ParseStringListItem(Parser* p, Frame* frame) {
     MarkDocumentAsPartial(p->doc);
     return;
   }
+
   NextTok(p);
 
   StringNode* slot = AppendNewStringInSeq(frame->strings);
@@ -768,7 +776,7 @@ static void ParseStringListItem(Parser* p, Frame* frame) {
   MaybeAttachTrailingComment(p, (DocumentNode*)slot, row);
 }
 
-static void ParseStatusListItem(Parser* p, Frame* frame) {
+static inline void ParseStatusListItem(Parser* p, Frame* frame) {
   const Token dash = NextTok(p);
   const int row = dash.range.start.row;
   const Token value = PeekTok(p);
@@ -786,6 +794,7 @@ static void ParseStatusListItem(Parser* p, Frame* frame) {
     MarkDocumentAsPartial(p->doc);
     return;
   }
+
   NextTok(p);
 
   cmd->cmd = BuildStringNodeFromToken(value);
@@ -794,7 +803,7 @@ static void ParseStatusListItem(Parser* p, Frame* frame) {
   MaybeAttachTrailingComment(p, (DocumentNode*)cmd, row);
 }
 
-static void ParsePreconditionListItem(Parser* p, Frame* frame) {
+static inline void ParsePreconditionListItem(Parser* p, Frame* frame) {
   const Token dash = NextTok(p);
   const int row = dash.range.start.row;
 
@@ -831,8 +840,8 @@ static void ParsePreconditionListItem(Parser* p, Frame* frame) {
   MarkDocumentAsPartial(p->doc);
 }
 
-static void HandlePreconditionBodyKey(Parser* p, Frame* frame, const StrView key, const Token value_tok,
-                                      const bool has_value, const int indent) {
+static inline void HandlePreconditionBodyKey(Parser* p, Frame* frame, const StrView key, const Token value_tok,
+                                             const bool has_value, const int indent) {
   PreconditionNode* pre = frame->precondition;
 
   if (StrViewEqualsCStr(key, "sh")) {
@@ -841,6 +850,7 @@ static void HandlePreconditionBodyKey(Parser* p, Frame* frame, const StrView key
     pre->command->end = value_tok.range.end;
     if (has_value)
       pre->command->cmd = BuildStringNodeFromToken(value_tok);
+
     if (has_value)
       pre->end = MaxPos(pre->end, value_tok.range.end);
   } else if (StrViewEqualsCStr(key, "msg")) {
@@ -857,35 +867,35 @@ static void HandlePreconditionBodyKey(Parser* p, Frame* frame, const StrView key
 static bool TokenIsTrue(const Token value_tok, const bool has_value);
 static void AppendInlineStrings(Parser* p, StringSeq* seq, const Token value_tok);
 
-static ShellOpts ParseShellOptName(const StrView name) {
+static inline ShellOpts ParseShellOptName(const StrView name) {
   if (StrViewEqualsCStr(name, "allexport"))
     return kAllExportShellOpt;
-  if (StrViewEqualsCStr(name, "errexit"))
+  else if (StrViewEqualsCStr(name, "errexit"))
     return kErrExitShellOpt;
-  if (StrViewEqualsCStr(name, "noexec"))
+  else if (StrViewEqualsCStr(name, "noexec"))
     return kNoExecShellOpt;
-  if (StrViewEqualsCStr(name, "noglob"))
+  else if (StrViewEqualsCStr(name, "noglob"))
     return kNoGlobShellOpt;
-  if (StrViewEqualsCStr(name, "nounset"))
+  else if (StrViewEqualsCStr(name, "nounset"))
     return kNoUnsetShellOpt;
-  if (StrViewEqualsCStr(name, "xtrace"))
+  else if (StrViewEqualsCStr(name, "xtrace"))
     return kXTraceShellOpt;
-  if (StrViewEqualsCStr(name, "pipefail"))
+  else if (StrViewEqualsCStr(name, "pipefail"))
     return kPipeFailShellOpt;
   return kNoShellOpts;
 }
 
-static ShOpts ParseShOptName(const StrView name) {
+static inline ShOpts ParseShOptName(const StrView name) {
   if (StrViewEqualsCStr(name, "expand_aliases"))
     return kExpandAliasesShOpt;
-  if (StrViewEqualsCStr(name, "globstar"))
+  else if (StrViewEqualsCStr(name, "globstar"))
     return kGlobStarShOpt;
-  if (StrViewEqualsCStr(name, "nullglob"))
+  else if (StrViewEqualsCStr(name, "nullglob"))
     return kNullGlobShOpt;
   return kNoShOpts;
 }
 
-static void AccumulateShellOpts(ShellOpts** slot, const StrView raw, const Pos raw_start) {
+static inline void AccumulateShellOpts(ShellOpts** slot, const StrView raw, const Pos raw_start) {
   SpanItem* items = NULL;
   size_t items_len = 0;
   size_t items_cap = 0;
@@ -898,7 +908,7 @@ static void AccumulateShellOpts(ShellOpts** slot, const StrView raw, const Pos r
   free(items);
 }
 
-static void AccumulateShOpts(ShOpts** slot, const StrView raw, const Pos raw_start) {
+static inline void AccumulateShOpts(ShOpts** slot, const StrView raw, const Pos raw_start) {
   SpanItem* items = NULL;
   size_t items_len = 0;
   size_t items_cap = 0;
@@ -906,21 +916,23 @@ static void AccumulateShOpts(ShOpts** slot, const StrView raw, const Pos raw_sta
 
   if (!*slot)
     *slot = (ShOpts*)calloc(1, sizeof(ShOpts));
+
   for (size_t i = 0; i < items_len; i++)
     **slot = SetShOpts(**slot, ParseShOptName(items[i].text));
+
   free(items);
 }
 
-static ForAttribute ParseForAttribute(const StrView value) {
+static inline ForAttribute ParseForAttribute(const StrView value) {
   if (StrViewEqualsCStr(value, "sources"))
     return kSourcesForAttribute;
-  if (StrViewEqualsCStr(value, "generates"))
+  else if (StrViewEqualsCStr(value, "generates"))
     return kGeneratesForAttribute;
   return kInvalidForAttribute;
 }
 
-static void HandleForBodyKey(Parser* p, Frame* frame, const StrView key, const Token key_tok, const Token value_tok,
-                             const bool has_value, const int indent) {
+static inline void HandleForBodyKey(Parser* p, Frame* frame, const StrView key, const Token key_tok,
+                                    const Token value_tok, const bool has_value, const int indent) {
   ForNode* node = frame->for_each;
 
   if (StrViewEqualsCStr(key, "var")) {
@@ -933,18 +945,22 @@ static void HandleForBodyKey(Parser* p, Frame* frame, const StrView key, const T
         name.len--;
         start.col++;
       }
+
       node->var = MakeTaskRef(name, start, value_tok.range.end);
       node->var.ref_kind = kVarRefKind;
       node->var.from = (DocumentNode*)node;
     }
+
     PushFrame(p, (Frame){.indent = indent, .kind = kFrameOther, .task = frame->task});
   } else if (StrViewEqualsCStr(key, "split")) {
     if (has_value)
       node->split = TrimQuotes(value_tok.data);
+
     PushFrame(p, (Frame){.indent = indent, .kind = kFrameOther, .task = frame->task});
   } else if (StrViewEqualsCStr(key, "as")) {
     if (has_value)
       node->as = TrimQuotes(value_tok.data);
+
     PushFrame(p, (Frame){.indent = indent, .kind = kFrameOther, .task = frame->task});
   } else if (StrViewEqualsCStr(key, "matrix")) {
     node->for_kind = kMatrixForKind;
@@ -957,8 +973,8 @@ static void HandleForBodyKey(Parser* p, Frame* frame, const StrView key, const T
   }
 }
 
-static void HandleCmdBodyKey(Parser* p, Frame* frame, const StrView key, const Token key_tok, const Token value_tok,
-                             const bool has_value, const int indent) {
+static inline void HandleCmdBodyKey(Parser* p, Frame* frame, const StrView key, const Token key_tok,
+                                    const Token value_tok, const bool has_value, const int indent) {
   CommandNode* cmd = frame->command;
 
   cmd->end = MaxPos(cmd->end, has_value ? value_tok.range.end : key_tok.range.end);
@@ -966,18 +982,21 @@ static void HandleCmdBodyKey(Parser* p, Frame* frame, const StrView key, const T
   if (StrViewEqualsCStr(key, "cmd")) {
     if (has_value)
       cmd->cmd = BuildStringNodeFromToken(value_tok);
+
     PushFrame(p, (Frame){.indent = indent, .kind = kFrameOther, .task = frame->task});
   } else if (StrViewEqualsCStr(key, "task")) {
     if (has_value) {
       cmd->task_call = MakeTaskRef(TrimQuotes(value_tok.data), value_tok.range.start, value_tok.range.end);
       cmd->task_call.from = (DocumentNode*)cmd;
     }
+
     PushFrame(p, (Frame){.indent = indent, .kind = kFrameOther, .task = frame->task});
   } else if (StrViewEqualsCStr(key, "if")) {
     if (has_value) {
       cmd->if_expr = (StringNode*)calloc(1, sizeof(StringNode));
       *cmd->if_expr = BuildStringNodeFromToken(value_tok);
     }
+
     PushFrame(p, (Frame){.indent = indent, .kind = kFrameOther, .task = frame->task});
   } else if (StrViewEqualsCStr(key, "silent")) {
     cmd->silent = TokenIsTrue(value_tok, has_value);
@@ -988,14 +1007,17 @@ static void HandleCmdBodyKey(Parser* p, Frame* frame, const StrView key, const T
   } else if (StrViewEqualsCStr(key, "platforms")) {
     if (has_value)
       AppendInlineStrings(p, &cmd->platforms, value_tok);
+
     PushFrame(p, (Frame){.indent = indent, .kind = kFrameStringList, .task = frame->task, .strings = &cmd->platforms});
   } else if (StrViewEqualsCStr(key, "set")) {
     if (has_value)
       AccumulateShellOpts(&cmd->set, value_tok.data, value_tok.range.start);
+
     PushFrame(p, (Frame){.indent = indent, .kind = kFrameOther, .task = frame->task});
   } else if (StrViewEqualsCStr(key, "shopt")) {
     if (has_value)
       AccumulateShOpts(&cmd->shopt, value_tok.data, value_tok.range.start);
+
     PushFrame(p, (Frame){.indent = indent, .kind = kFrameOther, .task = frame->task});
   } else if (StrViewEqualsCStr(key, "for")) {
     cmd->for_each = NewForNode();
@@ -1012,6 +1034,7 @@ static void HandleCmdBodyKey(Parser* p, Frame* frame, const StrView key, const T
         cmd->for_each->for_kind = kListForKind;
         AppendInlineStrings(p, &cmd->for_each->items, value_tok);
       }
+
       PushFrame(p, (Frame){.indent = indent, .kind = kFrameOther, .task = frame->task});
     } else {
       PushFrame(p, (Frame){.indent = indent, .kind = kFrameForBody, .task = frame->task, .for_each = cmd->for_each});
@@ -1033,8 +1056,8 @@ static void HandleCmdBodyKey(Parser* p, Frame* frame, const StrView key, const T
   }
 }
 
-static void HandleOutputBodyKey(Parser* p, Frame* frame, const StrView key, const Token value_tok, const bool has_value,
-                                const int indent) {
+static inline void HandleOutputBodyKey(Parser* p, Frame* frame, const StrView key, const Token value_tok,
+                                       const bool has_value, const int indent) {
   OutputNode* out = p->doc->output;
   if (!out) {
     PushFrame(p, (Frame){.indent = indent, .kind = kFrameOther});
@@ -1056,10 +1079,9 @@ static void HandleOutputBodyKey(Parser* p, Frame* frame, const StrView key, cons
   PushFrame(p, (Frame){.indent = indent, .kind = kFrameOutput});
 }
 
-static void HandleIncludeBodyKey(Parser* p, Frame* frame, const StrView key, const Token value_tok,
-                                 const bool has_value, const int indent) {
+static inline void HandleIncludeBodyKey(Parser* p, Frame* frame, const StrView key, const Token value_tok,
+                                        const bool has_value, const int indent) {
   IncludeNode* include = frame->include;
-
   if (StrViewEqualsCStr(key, "taskfile")) {
     if (has_value)
       include->taskfile = TrimQuotes(value_tok.data);
@@ -1078,11 +1100,13 @@ static void HandleIncludeBodyKey(Parser* p, Frame* frame, const StrView key, con
   } else if (StrViewEqualsCStr(key, "aliases")) {
     if (has_value)
       AppendInlineStrings(p, &include->aliases, value_tok);
+
     PushFrame(p, (Frame){.indent = indent, .kind = kFrameStringList, .strings = &include->aliases});
     return;
   } else if (StrViewEqualsCStr(key, "excludes")) {
     if (has_value)
       AppendInlineStrings(p, &include->excludes, value_tok);
+
     PushFrame(p, (Frame){.indent = indent, .kind = kFrameStringList, .strings = &include->excludes});
     return;
   } else if (StrViewEqualsCStr(key, "vars")) {
@@ -1093,11 +1117,11 @@ static void HandleIncludeBodyKey(Parser* p, Frame* frame, const StrView key, con
   PushFrame(p, (Frame){.indent = indent, .kind = kFrameIncludeBody, .include = include});
 }
 
-static bool TokenIsTrue(const Token value_tok, const bool has_value) {
+static inline bool TokenIsTrue(const Token value_tok, const bool has_value) {
   return has_value && StrViewEqualsCStr(TrimQuotes(value_tok.data), "true");
 }
 
-static void AppendInlineStrings(Parser* p, StringSeq* seq, const Token value_tok) {
+static inline void AppendInlineStrings(Parser* p, StringSeq* seq, const Token value_tok) {
   SpanItem* items = NULL;
   size_t items_len = 0;
   size_t items_cap = 0;
@@ -1107,12 +1131,13 @@ static void AppendInlineStrings(Parser* p, StringSeq* seq, const Token value_tok
     StringNode* slot = AppendNewStringInSeq(seq);
     *slot = BuildStringNode(items[i].text, items[i].start, items[i].end);
   }
+
   free(items);
   (void)p;
 }
 
-static bool TryParseTaskStringSeqKey(Parser* p, TaskNode* task, const StrView key, const Token value_tok,
-                                     const bool has_value, const int indent) {
+static inline bool TryParseTaskStringSeqKey(Parser* p, TaskNode* task, const StrView key, const Token value_tok,
+                                            const bool has_value, const int indent) {
   StringSeq* target = NULL;
   if (StrViewEqualsCStr(key, "aliases"))
     target = &task->aliases;
@@ -1132,11 +1157,13 @@ static bool TryParseTaskStringSeqKey(Parser* p, TaskNode* task, const StrView ke
 
   if (has_value)
     AppendInlineStrings(p, target, value_tok);
+
   PushFrame(p, (Frame){.indent = indent, .kind = kFrameStringList, .task = task, .strings = target});
   return true;
 }
 
-static bool TryParseTaskScalarKey(TaskNode* task, const StrView key, const Token value_tok, const bool has_value) {
+static inline bool TryParseTaskScalarKey(TaskNode* task, const StrView key, const Token value_tok,
+                                         const bool has_value) {
   if (!has_value)
     return false;
 
@@ -1159,7 +1186,7 @@ static bool TryParseTaskScalarKey(TaskNode* task, const StrView key, const Token
   return true;
 }
 
-static bool TryParseTaskFlagKey(TaskNode* task, const StrView key, const Token value_tok, const bool has_value) {
+static inline bool TryParseTaskFlagKey(TaskNode* task, const StrView key, const Token value_tok, const bool has_value) {
   TaskFlags flag = kNoTaskFlags;
   if (StrViewEqualsCStr(key, "silent"))
     flag = kSilentFlag;
@@ -1181,7 +1208,7 @@ static bool TryParseTaskFlagKey(TaskNode* task, const StrView key, const Token v
   return true;
 }
 
-static bool TryParseTaskEnumKey(TaskNode* task, const StrView key, const Token value_tok, const bool has_value) {
+static inline bool TryParseTaskEnumKey(TaskNode* task, const StrView key, const Token value_tok, const bool has_value) {
   if (!has_value)
     return false;
 
@@ -1193,6 +1220,7 @@ static bool TryParseTaskEnumKey(TaskNode* task, const StrView key, const Token v
       task->method = kChecksumMethodKind;
     else if (StrViewEqualsCStr(value, "timestamp"))
       task->method = kTimestampMethodKind;
+
     return true;
   }
 
@@ -1203,16 +1231,16 @@ static bool TryParseTaskEnumKey(TaskNode* task, const StrView key, const Token v
       task->mode = kTaskRunOnceMode;
     else if (StrViewEqualsCStr(value, "when_changed"))
       task->mode = kTaskRunWhenChangedMode;
+
     return true;
   }
 
   return false;
 }
 
-static void ParseTaskBodyKey(Parser* p, Frame* frame, const StrView key, const Token value_tok, const bool has_value,
-                             const int indent) {
+static inline void ParseTaskBodyKey(Parser* p, Frame* frame, const StrView key, const Token value_tok,
+                                    const bool has_value, const int indent) {
   TaskNode* task = frame->task;
-
   if (TryParseTaskScalarKey(task, key, value_tok, has_value) || TryParseTaskFlagKey(task, key, value_tok, has_value) ||
       TryParseTaskEnumKey(task, key, value_tok, has_value)) {
     PushFrame(p, (Frame){.indent = indent, .kind = kFrameOther, .task = task});
@@ -1225,6 +1253,7 @@ static void ParseTaskBodyKey(Parser* p, Frame* frame, const StrView key, const T
   if (StrViewEqualsCStr(key, "deps")) {
     if (has_value)
       ParseInlineDeps(p, task, value_tok);
+
     PushFrame(p, (Frame){.indent = indent, .kind = kFrameDepsList, .task = task});
   } else if (StrViewEqualsCStr(key, "cmds")) {
     PushFrame(p, (Frame){.indent = indent, .kind = kFrameCmdsList, .task = task});
@@ -1237,6 +1266,7 @@ static void ParseTaskBodyKey(Parser* p, Frame* frame, const StrView key, const T
       cmd->cmd = BuildStringNodeFromToken(value_tok);
       cmd->end = value_tok.range.end;
     }
+
     PushFrame(p, (Frame){.indent = indent, .kind = kFrameOther, .task = task});
   } else if (StrViewEqualsCStr(key, "vars")) {
     PushFrame(p, (Frame){.indent = indent, .kind = kFrameVars, .task = task});
@@ -1253,7 +1283,7 @@ static void ParseTaskBodyKey(Parser* p, Frame* frame, const StrView key, const T
   }
 }
 
-static void ParseLine(Parser* p) {
+static inline void ParseLine(Parser* p) {
   const Token tok = PeekTok(p);
   const int indent = LineIndent(tok);
   const int row = tok.range.start.row;
@@ -1292,6 +1322,7 @@ static void ParseLine(Parser* p) {
       NextTok(p);
       MarkDocumentAsPartial(p->doc);
     }
+
     return;
   }
 
@@ -1315,6 +1346,7 @@ static void ParseLine(Parser* p) {
     char chomp = '\0';
     if (header.data.len > 1 && (header.data.start[1] == '-' || header.data.start[1] == '+'))
       chomp = header.data.start[1];
+
     const Pos content_start = (Pos){.row = header.range.end.row + 1, .col = 1};
     const StrView content = LexerConsumeBlockScalar(&p->lexer, indent, chomp);
     value_tok.data = content;
@@ -1335,6 +1367,7 @@ static void ParseLine(Parser* p) {
       } else if (StrViewEqualsCStr(key, "version")) {
         if (has_value)
           p->doc->version = TrimQuotes(value_tok.data);
+
         PushFrame(p, (Frame){.indent = indent, .kind = kFrameOther});
       } else if (StrViewEqualsCStr(key, "output")) {
         p->doc->output = NewOutputNode();
@@ -1350,6 +1383,7 @@ static void ParseLine(Parser* p) {
             p->doc->output->output_kind = kPrefixedOutputKind;
           else
             p->doc->output->output_kind = kInterleavedOutputKind;
+
           PushFrame(p, (Frame){.indent = indent, .kind = kFrameOther});
         } else {
           PushFrame(p, (Frame){.indent = indent, .kind = kFrameOutput});
@@ -1357,10 +1391,12 @@ static void ParseLine(Parser* p) {
       } else if (StrViewEqualsCStr(key, "dotenv")) {
         if (has_value)
           AppendInlineStrings(p, &p->doc->dotenv, value_tok);
+
         PushFrame(p, (Frame){.indent = indent, .kind = kFrameStringList, .strings = &p->doc->dotenv});
       } else {
         PushFrame(p, (Frame){.indent = indent, .kind = kFrameOther});
       }
+
       break;
 
     case kFrameTasks: {
@@ -1370,6 +1406,7 @@ static void ParseLine(Parser* p) {
         PushFrame(p, (Frame){.indent = indent, .kind = kFrameOther});
         break;
       }
+
       TaskNode* task = NewTaskNode();
       task->name = key;
       task->start = key_tok.range.start;
@@ -1395,6 +1432,7 @@ static void ParseLine(Parser* p) {
       } else {
         PushFrame(p, (Frame){.indent = indent, .kind = kFrameTaskBody, .task = slot});
       }
+
       break;
     }
 
@@ -1441,6 +1479,7 @@ static void ParseLine(Parser* p) {
         if (has_value)
           entry->value = ClassifyScalarValue(value_tok);
       }
+
       PushFrame(p, (Frame){.indent = indent, .kind = kFrameOther, .task = frame->task});
       break;
 
@@ -1456,6 +1495,7 @@ static void ParseLine(Parser* p) {
       if (StrViewEqualsCStr(key, "vars")) {
         if (has_value)
           AppendInlineStrings(p, &frame->task->requires_vars, value_tok);
+
         PushFrame(p, (Frame){
                          .indent = indent,
                          .kind = kFrameStringList,
@@ -1465,6 +1505,7 @@ static void ParseLine(Parser* p) {
       } else {
         PushFrame(p, (Frame){.indent = indent, .kind = kFrameOther, .task = frame->task});
       }
+
       break;
 
     case kFrameMapBody:
@@ -1479,6 +1520,7 @@ static void ParseLine(Parser* p) {
       } else {
         PushFrame(p, (Frame){.indent = indent, .kind = kFrameIncludeBody, .include = include});
       }
+
       break;
     }
 
@@ -1488,7 +1530,7 @@ static void ParseLine(Parser* p) {
   }
 }
 
-static void ResolveRefAgainstScope(RefNode* ref, Document* doc, TaskNode* scope) {
+static inline void ResolveRefAgainstScope(RefNode* ref, Document* doc, TaskNode* scope) {
   if (!ref || ref->to || StrViewIsEmpty(ref->name))
     return;
 
@@ -1501,6 +1543,7 @@ static void ResolveRefAgainstScope(RefNode* ref, Document* doc, TaskNode* scope)
     VarNode* env_target = scope ? FindTaskEnvVar(scope, ref->name) : NULL;
     if (!env_target)
       env_target = FindDocumentEnvVar(doc, ref->name);
+
     ref->to = (DocumentNode*)env_target;
     return;
   }
@@ -1514,45 +1557,55 @@ static void ResolveRefAgainstScope(RefNode* ref, Document* doc, TaskNode* scope)
   ref->to = (DocumentNode*)target;
 }
 
-static void ResolveStringRefs(StringNode* str, Document* doc, TaskNode* scope) {
+static inline void ResolveStringRefs(StringNode* str, Document* doc, TaskNode* scope) {
   if (!str)
     return;
+
   for (uint64_t i = 0; i < GetNumberOfRefsInString(str); i++)
     ResolveRefAgainstScope(GetStringRefAt(str, i), doc, scope);
 }
 
-static void ResolveVarValue(VarNode* var, Document* doc, TaskNode* scope) {
+static inline void ResolveVarValue(VarNode* var, Document* doc, TaskNode* scope) {
   switch (var->var_kind) {
     case kScalarVarNodeKind:
       if (var->value && IsStringNode(var->value))
         ResolveStringRefs((StringNode*)var->value, doc, scope);
+
       break;
+
     case kShellVarNodeKind:
       if (var->command)
         ResolveStringRefs(&var->command->cmd, doc, scope);
+
       break;
+
     case kRefVarNodeKind:
       ResolveRefAgainstScope(var->ref, doc, scope);
       break;
+
     case kMapVarNodeKind: {
       if (!var->value)
         break;
+
       MapNode* map = (MapNode*)var->value;
       for (uint64_t i = 0; i < GetNumberOfMapEntrysInSeq(&map->entries); i++) {
         MapEntryNode* entry = GetMapEntryInSeqAt(&map->entries, i);
         if (entry->value && IsStringNode(entry->value))
           ResolveStringRefs((StringNode*)entry->value, doc, scope);
       }
+
       break;
     }
+
     default:
       break;
   }
 }
 
-static void ResolveDocumentReferences(Document* doc) {
+static inline void ResolveDocumentReferences(Document* doc) {
   for (uint64_t i = 0; i < GetNumberOfVarsInDocument(doc); i++)
     ResolveVarValue(GetDocumentVarAt(doc, i), doc, NULL);
+
   for (uint64_t i = 0; i < GetNumberOfEnvVarsInDocument(doc); i++)
     ResolveVarValue(GetDocumentEnvVarAt(doc, i), doc, NULL);
 
@@ -1572,47 +1625,56 @@ static void ResolveDocumentReferences(Document* doc) {
 
     for (uint64_t j = 0; j < GetNumberOfVarsInSeq(&task->vars); j++)
       ResolveVarValue(GetVarInSeqAt(&task->vars, j), doc, task);
+
     for (uint64_t j = 0; j < GetNumberOfVarsInSeq(&task->env); j++)
       ResolveVarValue(GetVarInSeqAt(&task->env, j), doc, task);
   }
 }
 
-static void ExtendEnd(DocumentNode* parent, DocumentNode* child) {
+static inline void ExtendEnd(DocumentNode* parent, DocumentNode* child) {
   if (!parent || !child)
     return;
+
   parent->end = MaxPos(parent->end, child->end);
 }
 
-static void ExtendVarRange(VarNode* var) {
+static inline void ExtendVarRange(VarNode* var) {
   switch (var->var_kind) {
     case kScalarVarNodeKind:
       ExtendEnd((DocumentNode*)var, var->value);
       break;
+
     case kShellVarNodeKind:
       ExtendEnd((DocumentNode*)var, (DocumentNode*)var->command);
       break;
+
     case kRefVarNodeKind:
       ExtendEnd((DocumentNode*)var, (DocumentNode*)var->ref);
       break;
+
     case kMapVarNodeKind: {
       if (!var->value)
         break;
+
       MapNode* map = (MapNode*)var->value;
       for (uint64_t i = 0; i < GetNumberOfMapEntrysInSeq(&map->entries); i++) {
         MapEntryNode* entry = GetMapEntryInSeqAt(&map->entries, i);
         ExtendEnd((DocumentNode*)map, (DocumentNode*)entry);
       }
+
       ExtendEnd((DocumentNode*)var, var->value);
       break;
     }
+
     default:
       break;
   }
 }
 
-static void ExtendContainerRanges(Document* doc) {
+static inline void ExtendContainerRanges(Document* doc) {
   for (uint64_t i = 0; i < GetNumberOfVarsInDocument(doc); i++)
     ExtendVarRange(GetDocumentVarAt(doc, i));
+
   for (uint64_t i = 0; i < GetNumberOfEnvVarsInDocument(doc); i++)
     ExtendVarRange(GetDocumentEnvVarAt(doc, i));
 
@@ -1620,8 +1682,10 @@ static void ExtendContainerRanges(Document* doc) {
     IncludeNode* include = GetDocumentIncludeAt(doc, i);
     for (uint64_t j = 0; j < GetNumberOfIncludeAliases(include); j++)
       ExtendEnd((DocumentNode*)include, (DocumentNode*)GetIncludeAliasAt(include, j));
+
     for (uint64_t j = 0; j < GetNumberOfIncludeExcludes(include); j++)
       ExtendEnd((DocumentNode*)include, (DocumentNode*)GetIncludeExcludeAt(include, j));
+
     for (uint64_t j = 0; j < GetNumberOfVarsInSeq(&include->vars); j++) {
       VarNode* var = GetVarInSeqAt(&include->vars, j);
       ExtendVarRange(var);
@@ -1634,18 +1698,22 @@ static void ExtendContainerRanges(Document* doc) {
 
     for (uint64_t j = 0; j < GetNumberOfCommandsInSeq(&task->cmds); j++)
       ExtendEnd((DocumentNode*)task, (DocumentNode*)GetCommandInSeqAt(&task->cmds, j));
+
     for (uint64_t j = 0; j < GetNumberOfRefsInSeq(&task->deps); j++)
       ExtendEnd((DocumentNode*)task, (DocumentNode*)GetRefInSeqAt(&task->deps, j));
+
     for (uint64_t j = 0; j < GetNumberOfVarsInSeq(&task->vars); j++) {
       VarNode* var = GetVarInSeqAt(&task->vars, j);
       ExtendVarRange(var);
       ExtendEnd((DocumentNode*)task, (DocumentNode*)var);
     }
+
     for (uint64_t j = 0; j < GetNumberOfVarsInSeq(&task->env); j++) {
       VarNode* var = GetVarInSeqAt(&task->env, j);
       ExtendVarRange(var);
       ExtendEnd((DocumentNode*)task, (DocumentNode*)var);
     }
+
     for (uint64_t j = 0; j < GetNumberOfCommandsInSeq(&task->cmds); j++) {
       CommandNode* cmd = GetCommandInSeqAt(&task->cmds, j);
       ExtendEnd((DocumentNode*)cmd, (DocumentNode*)cmd->if_expr);
@@ -1653,36 +1721,47 @@ static void ExtendContainerRanges(Document* doc) {
         ForNode* loop = cmd->for_each;
         for (uint64_t k = 0; k < GetNumberOfItemsInFor(loop); k++)
           ExtendEnd((DocumentNode*)loop, (DocumentNode*)GetForItemAt(loop, k));
+
         if (loop->for_kind == kVarForKind)
           ExtendEnd((DocumentNode*)loop, (DocumentNode*)&loop->var);
+
         if (loop->matrix) {
           for (uint64_t k = 0; k < GetNumberOfMapEntrysInSeq(&loop->matrix->entries); k++)
             ExtendEnd((DocumentNode*)loop->matrix, (DocumentNode*)GetMapEntryInSeqAt(&loop->matrix->entries, k));
+
           ExtendEnd((DocumentNode*)loop, (DocumentNode*)loop->matrix);
         }
+
         ExtendEnd((DocumentNode*)cmd, (DocumentNode*)loop);
       }
+
       if (cmd->defer) {
         ExtendEnd((DocumentNode*)cmd->defer, (DocumentNode*)cmd->defer->cmd);
         ExtendEnd((DocumentNode*)cmd, (DocumentNode*)cmd->defer);
       }
+
       for (uint64_t k = 0; k < GetNumberOfStringsInSeq(&cmd->platforms); k++)
         ExtendEnd((DocumentNode*)cmd, (DocumentNode*)GetStringInSeqAt(&cmd->platforms, k));
+
       ExtendEnd((DocumentNode*)task, (DocumentNode*)cmd);
     }
+
     for (uint64_t j = 0; j < GetNumberOfCommandsInSeq(&task->status_cmds); j++)
       ExtendEnd((DocumentNode*)task, (DocumentNode*)GetCommandInSeqAt(&task->status_cmds, j));
+
     for (uint64_t j = 0; j < GetNumberOfPreconditionsInSeq(&task->preconditions); j++) {
       PreconditionNode* pre = GetPreconditionInSeqAt(&task->preconditions, j);
       ExtendEnd((DocumentNode*)pre, (DocumentNode*)pre->command);
       ExtendEnd((DocumentNode*)pre, (DocumentNode*)pre->message);
       ExtendEnd((DocumentNode*)task, (DocumentNode*)pre);
     }
+
 #define EXTEND_TASK_STRING_SEQ(Singular, Plural, Field)                \
   for (uint64_t j = 0; j < GetNumberOfStringsInSeq(&task->Field); j++) \
     ExtendEnd((DocumentNode*)task, (DocumentNode*)GetStringInSeqAt(&task->Field, j));
     FOR_EACH_TASK_STRING_SEQ(EXTEND_TASK_STRING_SEQ)
 #undef EXTEND_TASK_STRING_SEQ
+
     for (uint64_t j = 0; j < GetNumberOfStringsInSeq(&task->dotenvs); j++)
       ExtendEnd((DocumentNode*)task, (DocumentNode*)GetStringInSeqAt(&task->dotenvs, j));
   }

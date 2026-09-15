@@ -1,12 +1,12 @@
 #ifndef TASKFILE_PARSER_TOKEN_H
 #define TASKFILE_PARSER_TOKEN_H
 
-#include "taskfile_parser.h"
-
 #ifdef __cplusplus
 #include <iostream>
 extern "C" {
 #endif  // __cplusplus
+
+#include "taskfile_parser.h"
 
 #define FOR_EACH_TOKEN_KIND(V) \
   V(Key)                       \

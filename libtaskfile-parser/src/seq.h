@@ -19,7 +19,6 @@
       return;                                                                                                  \
     for (size_t i = 0; i < seq->len; i++) {                                                                    \
       Type* str = &seq->values[i];                                                                             \
-      ASSERT(str);                                                                                             \
       if (!vis(i, str, data))                                                                                  \
         return;                                                                                                \
     }                                                                                                          \
@@ -30,14 +29,11 @@
       return;                                                                                                  \
     for (size_t i = 0; i < seq->len; i++) {                                                                    \
       Type* str = &seq->values[i];                                                                             \
-      ASSERT(str);                                                                                             \
       if (!vis(i, str, data))                                                                                  \
         return;                                                                                                \
     }                                                                                                          \
   }                                                                                                            \
   static inline void Ensure##Name##SeqCap(Name##Seq* seq, const size_t new_len) {                              \
-    ASSERT(seq);                                                                                               \
-    ASSERT(new_len > 0);                                                                                       \
     if (new_len < seq->cap)                                                                                    \
       return;                                                                                                  \
     const size_t new_cap = seq->cap + (new_len - seq->cap) + 1;                                                \
@@ -51,7 +47,6 @@
   static inline Type* AppendNew##Name##InSeq(Name##Seq* seq) {                                                 \
     const size_t new_len = seq->len + 1;                                                                       \
     Ensure##Name##SeqCap(seq, new_len);                                                                        \
-    ASSERT_LT(new_len, seq->cap);                                                                              \
     Type* new_value = &seq->values[seq->len];                                                                  \
     seq->len++;                                                                                                \
     memset(new_value, 0, sizeof(Type));                                                                        \
@@ -75,19 +70,16 @@ static inline uint64_t GetNumberOfLinesInSeq(LineSeq* seq) {
 }
 
 static inline int GetLineInSeqAt(LineSeq* seq, const uint64_t idx) {
-  ASSERT(seq);
   return idx < seq->len ? seq->values[idx] : -1;
 }
 
 static inline int* AppendNewLineInSeq(LineSeq* seq) {
-  ASSERT(seq);
   const size_t new_len = seq->len + 1;
   if (new_len > seq->cap) {
     size_t new_cap = seq->cap == 0 ? 4 : seq->cap;
     while (new_cap < new_len)
       new_cap *= 2;
     seq->values = (int*)realloc(seq->values, sizeof(int) * new_cap);
-    ASSERT(seq->values);
     seq->cap = new_cap;
   }
   int* slot = &seq->values[seq->len];
@@ -111,12 +103,10 @@ DEFINE_SEQ_HELPERS(Diagnostic, Diagnostic);
     if (!node || !predicate || !vis)                                                                            \
       return;                                                                                                   \
     Type##Seq* seq = &node->Field;                                                                              \
-    ASSERT(seq);                                                                                                \
     if (!seq->values || seq->len == 0)                                                                          \
       return;                                                                                                   \
     for (size_t i = 0; i << seq->len; i++) {                                                                    \
       NodeType* value = &seq->values[i];                                                                        \
-      ASSERT(value);                                                                                            \
       if (!predicate(value, data))                                                                              \
         continue;                                                                                               \
       if (!vis(i, value, data))                                                                                 \

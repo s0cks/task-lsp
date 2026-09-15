@@ -163,15 +163,15 @@ TEST_F(TestParser, Test_Parse_GlobalScalarVarsClassifyLiteralKinds) {
   VarNode* app_name = GetDocumentVarAt(result.doc, 0);
   ASSERT_EQ(app_name->var_kind, kScalarVarNodeKind);
   ASSERT_TRUE(IsStringNode(app_name->value));
-  ASSERT_EQ(std::string(((StringNode*)app_name->value)->value), "myapp");
+  ASSERT_EQ(std::string((reinterpret_cast<StringNode*>(app_name->value))->value), "myapp");
 
   VarNode* debug = GetDocumentVarAt(result.doc, 1);
   ASSERT_TRUE(IsBoolNode(debug->value));
-  ASSERT_TRUE(((BoolNode*)debug->value)->value);
+  ASSERT_TRUE((reinterpret_cast<BoolNode*>(debug->value))->value);
 
   VarNode* retries = GetDocumentVarAt(result.doc, 2);
   ASSERT_TRUE(IsNumberNode(retries->value));
-  ASSERT_EQ(((NumberNode*)retries->value)->value, 3.0);
+  ASSERT_EQ((reinterpret_cast<NumberNode*>(retries->value))->value, 3.0);
 }
 
 TEST_F(TestParser, Test_Parse_ShellRefAndMapVars) {
@@ -200,7 +200,7 @@ TEST_F(TestParser, Test_Parse_ShellRefAndMapVars) {
 
   VarNode* config = GetDocumentVarAt(result.doc, 3);
   ASSERT_EQ(config->var_kind, kMapVarNodeKind);
-  MapNode* map = (MapNode*)config->value;
+  auto map = reinterpret_cast<MapNode*>(config->value);
   ASSERT_EQ(GetNumberOfMapEntrysInSeq(&map->entries), 2);
   ASSERT_EQ(std::string(GetMapEntryInSeqAt(&map->entries, 0)->key), "database");
 }
@@ -225,7 +225,7 @@ TEST_F(TestParser, Test_Parse_TaskLocalVarShadowsGlobal) {
   CommandNode* cmd = GetCommandInSeqAt(&task->cmds, 0);
   ASSERT_EQ(GetNumberOfRefsInString(&cmd->cmd), 1);
   RefNode* ref = GetStringRefAt(&cmd->cmd, 0);
-  ASSERT_EQ(ref->to, (DocumentNode*)local);
+  ASSERT_EQ(ref->to, reinterpret_cast<DocumentNode*>(local));
 }
 
 TEST_F(TestParser, Test_Parse_TemplateRefWithPipeline) {
@@ -264,8 +264,8 @@ TEST_F(TestParser, Test_Parse_LeadingCommentAttachesToNextTask) {
   ASSERT_TRUE(IsParseOk(result));
 
   TaskNode* task = GetDocumentTaskAt(result.doc, 0);
-  ASSERT_EQ(GetNumberOfCommentsForNode((DocumentNode*)task), 1);
-  CommentNode* comment = GetNodeCommentAt((DocumentNode*)task, 0);
+  ASSERT_EQ(GetNumberOfCommentsForNode(reinterpret_cast<DocumentNode*>(task)), 1);
+  CommentNode* comment = GetNodeCommentAt(reinterpret_cast<DocumentNode*>(task), 0);
   ASSERT_EQ(std::string(comment->value), "Runs the build.\nSecond line.");
 }
 
@@ -281,7 +281,7 @@ TEST_F(TestParser, Test_Parse_CommentSeparatedByBlankLineFloats) {
   ASSERT_TRUE(IsParseOk(result));
 
   TaskNode* task = GetDocumentTaskAt(result.doc, 0);
-  ASSERT_EQ(GetNumberOfCommentsForNode((DocumentNode*)task), 0);
+  ASSERT_EQ(GetNumberOfCommentsForNode(reinterpret_cast<DocumentNode*>(task)), 0);
   ASSERT_EQ(GetNumberOfCommentsInDocument(result.doc), 1);
 }
 
@@ -296,7 +296,7 @@ TEST_F(TestParser, Test_Parse_TrailingCommentAttachesToCommand) {
 
   TaskNode* task = GetDocumentTaskAt(result.doc, 0);
   CommandNode* cmd = GetCommandInSeqAt(&task->cmds, 0);
-  ASSERT_TRUE(NodeHasTrailingComment((DocumentNode*)cmd));
+  ASSERT_TRUE(NodeHasTrailingComment(reinterpret_cast<DocumentNode*>(cmd)));
   ASSERT_EQ(std::string(cmd->trailing_comment->value), "runs tests");
 }
 
@@ -379,7 +379,7 @@ TEST_F(TestParser, Test_Parse_UnquotedTaskNameWithColon) {
   TaskNode* test_task = GetDocumentTaskAt(result.doc, 1);
   ASSERT_EQ(std::string(test_task->name), "go:test");
   ASSERT_EQ(GetNumberOfRefsInSeq(&test_task->deps), 1);
-  ASSERT_EQ(GetRefInSeqAt(&test_task->deps, 0)->to, (DocumentNode*)build);
+  ASSERT_EQ(GetRefInSeqAt(&test_task->deps, 0)->to, reinterpret_cast<DocumentNode*>(build));
 }
 
 TEST_F(TestParser, Test_Parse_TaskNameWithColonUsesQuotedKey) {
@@ -405,7 +405,7 @@ TEST_F(TestParser, Test_Parse_TaskNameWithColonUsesQuotedKey) {
   ASSERT_EQ(GetNumberOfRefsInSeq(&test_task->deps), 1);
   RefNode* dep = GetRefInSeqAt(&test_task->deps, 0);
   ASSERT_EQ(std::string(dep->name), "docker:build");
-  ASSERT_EQ(dep->to, (DocumentNode*)docker_build);
+  ASSERT_EQ(dep->to, reinterpret_cast<DocumentNode*>(docker_build));
 }
 
 TEST_F(TestParser, Test_Parse_TaskSingleCommandShorthandExpandsAndFlags) {
@@ -461,16 +461,17 @@ TEST_F(TestParser, Test_Visit_DocumentVisitsAllNestedNodes) {
   TaskfileParseResult result = ParseTaskfileDocumentStr(kDoc, strlen(kDoc));
   ASSERT_TRUE(IsParseOk(result));
 
-  int counts[32] = {0};
+  std::array<int, 32> counts{};
   struct Ctx {
     int* counts;
-  } ctx{counts};
+  } ctx{counts.data()};
   VisitDocument(
       result.doc,
-      [](DocumentNode* node, void* data) {
+      [](DocumentNode* node, void* data) -> VisitResult {
         auto* c = static_cast<Ctx*>(data);
         if (node->kind < 32)
           c->counts[node->kind]++;
+
         return kVisitContinue;
       },
       nullptr, &ctx);
@@ -497,10 +498,10 @@ TEST_F(TestParser, Test_FindNodeAtPosition_FindsDeeplyNestedRef) {
   RefNode* ref = GetStringRefAt(&cmd->cmd, 0);
 
   DocumentNode* found = FindNodeAtPosition(result.doc, ref->start);
-  ASSERT_EQ(found, (DocumentNode*)ref);
+  ASSERT_EQ(found, reinterpret_cast<DocumentNode*>(ref));
 
   DocumentNode* found_task = FindNodeAtPosition(result.doc, task->start);
-  ASSERT_EQ(found_task, (DocumentNode*)task);
+  ASSERT_EQ(found_task, reinterpret_cast<DocumentNode*>(task));
 
   DocumentNode* found_none = FindNodeAtPosition(result.doc, Pos{999, 1});
   ASSERT_EQ(found_none, nullptr);
@@ -548,12 +549,12 @@ TEST_F(TestParser, Test_Parse_VarSecretAndExplicitValueSubkeys) {
   ASSERT_TRUE(IsVarSecret(token));
   ASSERT_EQ(token->var_kind, kScalarVarNodeKind);
   ASSERT_TRUE(IsStringNode(token->value));
-  ASSERT_EQ(std::string(((StringNode*)token->value)->value), "abc123");
+  ASSERT_EQ(std::string(reinterpret_cast<StringNode*>(token->value)->value), "abc123");
 }
 
 namespace {
 
-bool PosLessOrEqual(const Pos a, const Pos b) {
+auto PosLessOrEqual(const Pos a, const Pos b) -> bool {
   return a.row < b.row || (a.row == b.row && a.col <= b.col);
 }
 
@@ -562,18 +563,18 @@ struct RangeCheckCtx {
   std::vector<std::string> failures;
 };
 
-std::string DescribeNode(DocumentNode* node) {
+auto DescribeNode(DocumentNode* node) -> std::string {
   std::ostringstream out;
   out << "kind=" << node->kind << " range=(" << node->start.row << "," << node->start.col << ")-(" << node->end.row
       << "," << node->end.col << ")";
   return out.str();
 }
 
-::testing::AssertionResult AssertRangesCoverChildren(Document* doc) {
+auto AssertRangesCoverChildren(Document* doc) -> ::testing::AssertionResult {
   RangeCheckCtx ctx;
   VisitDocument(
       doc,
-      [](DocumentNode* node, void* raw) {
+      [](DocumentNode* node, void* raw) -> VisitResult {
         auto* c = static_cast<RangeCheckCtx*>(raw);
         if (!c->stack.empty()) {
           DocumentNode* parent = c->stack.back();
@@ -585,7 +586,7 @@ std::string DescribeNode(DocumentNode* node) {
         c->stack.push_back(node);
         return kVisitContinue;
       },
-      [](DocumentNode*, void* raw) {
+      [](DocumentNode*, void* raw) -> VisitResult {
         static_cast<RangeCheckCtx*>(raw)->stack.pop_back();
         return kVisitContinue;
       },
@@ -1146,11 +1147,11 @@ TEST_F(TestParser, Test_Meta_TrailingCommentAttachesToItsOwnField) {
   ASSERT_TRUE(IsParseOk(result));
 
   TaskNode* task = GetDocumentTaskAt(result.doc, 0);
-  ASSERT_TRUE(NodeHasTrailingComment((DocumentNode*)task));
+  ASSERT_TRUE(NodeHasTrailingComment(reinterpret_cast<DocumentNode*>(task)));
   ASSERT_EQ(std::string(task->trailing_comment->value), "the build task");
 
   CommandNode* cmd = GetCommandInSeqAt(&task->cmds, 0);
-  ASSERT_TRUE(NodeHasTrailingComment((DocumentNode*)cmd));
+  ASSERT_TRUE(NodeHasTrailingComment(reinterpret_cast<DocumentNode*>(cmd)));
   ASSERT_EQ(std::string(cmd->trailing_comment->value), "say hello");
   ASSERT_GT(cmd->trailing_ws, 0);
 }
@@ -1167,8 +1168,8 @@ TEST_F(TestParser, Test_Meta_PerNodeIncompleteFlags) {
 
   TaskNode* task = GetDocumentTaskAt(result.doc, 0);
   CommandNode* cmd = GetCommandInSeqAt(&task->cmds, 0);
-  ASSERT_TRUE(IsNodeIncomplete((DocumentNode*)cmd));
-  ASSERT_FALSE(IsNodeIncomplete((DocumentNode*)task));
+  ASSERT_TRUE(IsNodeIncomplete(reinterpret_cast<DocumentNode*>(cmd)));
+  ASSERT_FALSE(IsNodeIncomplete(reinterpret_cast<DocumentNode*>(task)));
 }
 
 TEST_F(TestParser, Test_Ranges_ForDeferAndIncludeNodesCoverChildren) {
