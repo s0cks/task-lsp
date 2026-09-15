@@ -146,11 +146,13 @@ TaskNode* GetDocumentTaskAt(Document* doc, const uint64_t idx) {
 TaskNode* FindDocumentTask(Document* doc, const StrView name) {
   if (!doc)
     return NULL;
-  for (uint64_t i = 0; i < GetNumberOfTasksInSeq(&doc->tasks); i++) {
+
+  for (size_t i = 0; i < GetNumberOfTasksInSeq(&doc->tasks); i++) {
     TaskNode* task = GetTaskInSeqAt(&doc->tasks, i);
     if (StrViewEquals(task->name, name))
       return task;
   }
+
   return NULL;
 }
 
@@ -165,11 +167,13 @@ VarNode* GetDocumentVarAt(Document* doc, const uint64_t idx) {
 VarNode* FindDocumentVar(Document* doc, const StrView name) {
   if (!doc)
     return NULL;
+
   for (uint64_t i = 0; i < GetNumberOfVarsInSeq(&doc->vars); i++) {
     VarNode* var = GetVarInSeqAt(&doc->vars, i);
     if (StrViewEquals(var->name, name))
       return var;
   }
+
   return NULL;
 }
 
@@ -271,6 +275,7 @@ void VisitDocumentCommentsMatching(Document* doc, CommentPredicate predicate, Co
 void VisitDocumentTasks(Document* doc, TaskVisitor vis, void* data) {
   if (!doc)
     return;
+
   VisitTasksInSeq(&doc->tasks, vis, data);
 }
 

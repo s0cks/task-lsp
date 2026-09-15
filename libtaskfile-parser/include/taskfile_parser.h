@@ -131,6 +131,7 @@ static inline bool StrViewIsEmpty(const StrView view) {
 static inline bool StrViewEquals(const StrView a, const StrView b) {
   if (a.len != b.len)
     return false;
+
   return a.len == 0 || memcmp(a.start, b.start, a.len) == 0;
 }
 
@@ -862,6 +863,8 @@ StrView GetDocumentVersion(Document* doc);
 uint64_t GetNumberOfTasksInDocument(Document* rhs);
 TaskNode* GetDocumentTaskAt(Document* doc, const uint64_t idx);
 TaskNode* FindDocumentTask(Document* doc, const StrView name);
+void VisitDocumentTasks(Document* doc, TaskVisitor vis, void* data);
+void VisitDocumentTasksMatch(Document* doc, TaskPredicate predicate, TaskVisitor vis, void* data);
 
 static inline bool DocumentHasTasks(Document* rhs) {
   return GetNumberOfTasksInDocument(rhs) > 0;
