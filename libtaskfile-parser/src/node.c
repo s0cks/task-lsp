@@ -36,3 +36,28 @@ uint64_t GetNumberOfCommentsForNode(DocumentNode* node) {
 CommentNode* GetNodeCommentAt(DocumentNode* node, const uint64_t idx) {
   return node ? GetCommentInSeqAt(&node->comments, idx) : NULL;
 }
+
+void VisitNodeComments(DocumentNode* node, CommentVisitor vis, void* data) {
+  if (!node)
+    return;
+
+  for (size_t i = 0; i < node->comments.len; i++) {
+    CommentNode* n = &node->comments.values[i];
+    if (!vis(i, n, data))
+      return;
+  }
+}
+
+void VisitNodeCommentsMatching(DocumentNode* node, CommentPredicate predicate, CommentVisitor vis, void* data) {
+  if (!node)
+    return;
+
+  for (size_t i = 0; i < node->comments.len; i++) {
+    CommentNode* n = &node->comments.values[i];
+    if (!predicate(n, data))
+      continue;
+
+    if (!vis(i, n, data))
+      return;
+  }
+}

@@ -10,6 +10,7 @@ tasks:
         - VERSION
     cmds:
       - |
+        PKG_CONFIG_PATH="{{.ROOT_DIR}}/build/meson-uninstalled" \
         go build \
           {{.GO_BUILD_ARGS | default "" }} \
           -o {{.GO_TARGET_NAME | default "taskfile-lsp" }} \
@@ -29,7 +30,9 @@ tasks:
       - sh: "command -v go"
         msg: "go is not installed. Please install go before building"
     cmds:
-      - go test ./...
+      - |
+        PKG_CONFIG_PATH="{{.ROOT_DIR}}/build/meson-uninstalled" \
+        go test ./...
   clean:
     preconditions:
       - sh: "command -v go"

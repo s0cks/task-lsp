@@ -632,17 +632,9 @@ struct _VarNode {
   StrView name;
   VarNodeKind var_kind;
   bool secret;
-  union {
-    struct {
-      DocumentNode* value;
-    };
-    struct {
-      CommandNode* command;
-    };
-    struct {
-      RefNode* ref;
-    };
-  };
+  DocumentNode* value;
+  CommandNode* command;
+  RefNode* ref;
 };
 DEFINE_NODE_VISITOR(Var);
 
@@ -845,6 +837,7 @@ typedef struct {
 } LineSeq;
 
 typedef struct _Document Document;
+void FreeDocument(Document*);
 
 OutputNode* GetDocumentOutput(Document* doc);
 NewlineStyle GetDocumentNewlineStyle(Document* doc);
@@ -953,6 +946,8 @@ void VisitNodeDiagnosticsMatching(DocumentNode* node, DiagnosticPredicate predic
 
 uint64_t GetNumberOfCommentsForNode(DocumentNode* node);
 CommentNode* GetNodeCommentAt(DocumentNode* node, const uint64_t idx);
+void VisitNodeComments(DocumentNode* node, CommentVisitor vis, void* data);
+void VisitNodeCommentsMatching(DocumentNode* node, CommentPredicate predicate, CommentVisitor vis, void* data);
 
 static inline bool NodeHasComments(DocumentNode* rhs) {
   return GetNumberOfCommentsForNode(rhs) > 0;
@@ -993,10 +988,8 @@ void FreeDocumentNode(DocumentNode* node);
 // ╰───────╯
 typedef struct {
   bool success;
-  union {
-    char* msg;
-    Document* doc;
-  };
+  Document* doc;
+  char* msg;
 } TaskfileParseResult;
 
 TaskfileParseResult ParseTaskfileDocumentStr(const char* data, const size_t data_len);

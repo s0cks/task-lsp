@@ -19,6 +19,7 @@
     snprintf(message, total_size, Format, ##__VA_ARGS__);                \
     return (TaskfileParseResult){                                        \
         .success = false,                                                \
+        .doc = NULL,                                                     \
         .msg = message,                                                  \
     };                                                                   \
   })
@@ -1794,5 +1795,5 @@ TaskfileParseResult ParseTaskfileDocumentStr(const char* data, const size_t data
   ResolveDocumentReferences(p.doc);
   ExtendContainerRanges(p.doc);
 
-  return (TaskfileParseResult){.success = true, .doc = p.doc};
+  return (TaskfileParseResult){.success = true, .msg = NULL, .doc = p.doc};
 }

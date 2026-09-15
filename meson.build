@@ -59,7 +59,9 @@ pkg = import('pkgconfig')
 pkg.generate(
   name: meson.project_name(),
   version: meson.project_version(),
-  description: '',
-  libraries: [],
+  description: 'A Language Server Protocol implementation for Taskfiles',
+  libraries: [
+    parser,
+  ],
   requires: all_deps,
 )

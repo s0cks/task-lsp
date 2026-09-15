@@ -18,6 +18,16 @@ Document* NewDocument(const char* path) {
   return doc;
 }
 
+void FreeDocument(Document* doc) {
+  if (!doc)
+    return;
+
+  if (doc->path)
+    free(doc->path);
+
+  // TODO(@s0cks): finished freeing doc
+}
+
 TaskNode* NewTaskNode(void) {
   TaskNode* task = (TaskNode*)calloc(1, sizeof(TaskNode));
   if (task)
