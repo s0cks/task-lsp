@@ -10,9 +10,10 @@ extern "C" {
 
 #define FOR_EACH_TOKEN_KIND(V) \
   V(Key)                       \
-  V(Colon)                     \
+  V(Dash)                      \
   V(String)                    \
   V(Number)                    \
+  V(BlockScalarHeader)         \
   V(BlockComment)              \
   V(LineComment)               \
   V(DocumentSeparator)
@@ -23,17 +24,6 @@ typedef enum {
 #define DEFINE_KIND(Name) k##Name##Token,
   FOR_EACH_TOKEN_KIND(DEFINE_KIND)
 #undef DEFINE_KIND
-
-  kArrowToken,
-  kPipeToken,
-  kHashToken,
-  kDashToken,
-
-  kDescToken,
-
-  kVarsToken,
-  kTasksToken,
-
   kEofToken,
   kTotalNumberOfTokenKinds,
 } TokenKind;
@@ -43,6 +33,10 @@ typedef struct {
   TokenKind kind;
   StrView data;
   Range range;
+  ScalarStyle style;
+  ChompStyle chomp;
+  int indent;
+  int leading_ws;
 } Token;
 
 #ifdef __cplusplus
@@ -50,10 +44,13 @@ typedef struct {
 
 static inline auto operator<<(std::ostream& stream, const TokenKind& rhs) -> std::ostream& {
   switch (rhs) {
-    case kStringToken:
-      return stream << "String";
-    case kDescToken:
-      return stream << "Description";
+#define DEFINE_CASE(Name) \
+  case k##Name##Token:    \
+    return stream << #Name;
+    FOR_EACH_TOKEN_KIND(DEFINE_CASE)
+#undef DEFINE_CASE
+    case kEofToken:
+      return stream << "Eof";
     case kInvalidToken:
       return stream << "Invalid";
     default:
@@ -66,7 +63,7 @@ static inline auto operator<<(std::ostream& stream, const Token& rhs) -> std::os
   stream << "kind=" << rhs.kind << ", ";
   stream << "data=" << std::string(rhs.data.start, rhs.data.len) << ", ";
   stream << "range=" << rhs.range;
-  return stream;
+  return stream << "}";
 }
 #endif  // __cplusplus
 

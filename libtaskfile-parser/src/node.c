@@ -28,3 +28,11 @@ void VisitNodeDiagnosticsMatching(DocumentNode* node, DiagnosticPredicate predic
     return;
   return VisitMatchingDiagnosticsInSeq(&node->diagnostics, predicate, vis, data);
 }
+
+uint64_t GetNumberOfCommentsForNode(DocumentNode* node) {
+  return node ? GetNumberOfCommentsInSeq(&node->comments) : 0;
+}
+
+CommentNode* GetNodeCommentAt(DocumentNode* node, const uint64_t idx) {
+  return node ? GetCommentInSeqAt(&node->comments, idx) : NULL;
+}

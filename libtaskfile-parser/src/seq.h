@@ -49,7 +49,7 @@
     seq->cap = new_cap;                                                                                        \
   }                                                                                                            \
   static inline Type* AppendNew##Name##InSeq(Name##Seq* seq) {                                                 \
-    const size_t new_len = seq->len;                                                                           \
+    const size_t new_len = seq->len + 1;                                                                       \
     Ensure##Name##SeqCap(seq, new_len);                                                                        \
     ASSERT_LT(new_len, seq->cap);                                                                              \
     Type* new_value = &seq->values[seq->len];                                                                  \
@@ -68,6 +68,32 @@ DEFINE_NODE_SEQ_HELPERS(Var);
 DEFINE_NODE_SEQ_HELPERS(Comment);
 DEFINE_NODE_SEQ_HELPERS(Command);
 DEFINE_NODE_SEQ_HELPERS(Precondition);
+DEFINE_NODE_SEQ_HELPERS(PipelineExpr);
+DEFINE_NODE_SEQ_HELPERS(MapEntry);
+static inline uint64_t GetNumberOfLinesInSeq(LineSeq* seq) {
+  return seq ? seq->len : 0;
+}
+
+static inline int GetLineInSeqAt(LineSeq* seq, const uint64_t idx) {
+  ASSERT(seq);
+  return idx < seq->len ? seq->values[idx] : -1;
+}
+
+static inline int* AppendNewLineInSeq(LineSeq* seq) {
+  ASSERT(seq);
+  const size_t new_len = seq->len + 1;
+  if (new_len > seq->cap) {
+    size_t new_cap = seq->cap == 0 ? 4 : seq->cap;
+    while (new_cap < new_len)
+      new_cap *= 2;
+    seq->values = (int*)realloc(seq->values, sizeof(int) * new_cap);
+    ASSERT(seq->values);
+    seq->cap = new_cap;
+  }
+  int* slot = &seq->values[seq->len];
+  seq->len = new_len;
+  return slot;
+}
 DEFINE_SEQ_HELPERS(Diagnostic, Diagnostic);
 #undef DEFINE_NODE_SEQ_HELPERS
 

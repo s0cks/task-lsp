@@ -16,11 +16,23 @@ typedef struct {
   size_t rpos;
   int line;
   int col;
+  bool line_has_content;
+
+  NewlineStyle newline_style;
+  bool saw_tab_indent;
+  int min_indent_step;
+  int last_indent;
+  LineSeq blank_lines;
+  int leading_ws;
 } Lexer;
 
 void InitLexer(Lexer* lex, const char* source);
 Token LexerNext(Lexer* lex);
 void ResetLexer(Lexer* lex);
+
+StrView LexerConsumeBlockScalar(Lexer* lex, int header_indent, char chomp);
+
+int LexerIndentWidth(const Lexer* lex);
 
 #ifdef __cplusplus
 };

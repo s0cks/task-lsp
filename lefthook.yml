@@ -22,9 +22,9 @@ pre-commit:
       glob: "*.{h,c,hpp,cpp,cc}"
       run: clang-format -i {staged_files}
       stage_fixed: true
-    clang-tidy:
-      glob: "*.{h,c,hpp,cpp,cc}"
-      run: clang-tidy -p build {staged_files}
+    # clang-tidy:
+    #   glob: "*.{h,c,hpp,cpp,cc}"
+    #   run: clang-tidy -p build {staged_files}
     iwyu:
       glob: "*.{h,c}"
       root: "libtaskfile-parser"

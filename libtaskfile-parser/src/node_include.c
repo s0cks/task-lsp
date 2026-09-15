@@ -1,6 +1,31 @@
 #include "common.h"
-#include "src/seq.h"
+#include "seq.h"
 #include "taskfile_parser.h"
 
-DEFINE_NODE_SEQ_HELPERS(Include, Aliases, String, StringNode, aliases)
-DEFINE_NODE_SEQ_HELPERS(Include, Excludes, String, StringNode, excludes);
+uint64_t GetNumberOfIncludeAliases(IncludeNode* rhs) {
+  return GetNumberOfStringsInSeq(rhs ? &rhs->aliases : NULL);
+}
+
+StringNode* GetIncludeAliasAt(IncludeNode* node, const uint64_t idx) {
+  return node ? GetStringInSeqAt(&node->aliases, idx) : NULL;
+}
+
+void VisitIncludeAliases(IncludeNode* node, StringVisitor vis, void* data) {
+  if (!node)
+    return;
+  VisitStringsInSeq(&node->aliases, vis, data);
+}
+
+uint64_t GetNumberOfIncludeExcludes(IncludeNode* rhs) {
+  return GetNumberOfStringsInSeq(rhs ? &rhs->excludes : NULL);
+}
+
+StringNode* GetIncludeExcludeAt(IncludeNode* node, const uint64_t idx) {
+  return node ? GetStringInSeqAt(&node->excludes, idx) : NULL;
+}
+
+void VisitIncludeExcludes(IncludeNode* node, StringVisitor vis, void* data) {
+  if (!node)
+    return;
+  VisitStringsInSeq(&node->excludes, vis, data);
+}
