@@ -1,9 +1,11 @@
 [global]
 include = [
   "docs/**/*.md",
-  "README.md"
+  "README.md",
 ]
-exclude = [ ]
+exclude = [
+  "CHANGELOG.md",
+]
 respect-gitignore = true
 
 [MD013]
