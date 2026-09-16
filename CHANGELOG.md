@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.0](https://github.com/s0cks/task-lsp/compare/lsp-v0.0.5...lsp-v0.1.0) (2026-09-16)
+
+
+### Features
+
+* ✨ implement c parser logic ([abb6623](https://github.com/s0cks/task-lsp/commit/abb662369ec8e1fb7caa2b415070a43c8e08729e))
+
+
+### Bug Fixes
+
+* 🐛 fix rumdl config ([36639c2](https://github.com/s0cks/task-lsp/commit/36639c2dbb2f51bbb1ed06e8b9ca03367d90965b))
+
 ## [0.0.5](https://github.com/s0cks/task-lsp/compare/lsp-v0.0.4...lsp-v0.0.5) (2026-09-12)
 
 
