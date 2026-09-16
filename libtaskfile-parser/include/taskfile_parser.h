@@ -473,10 +473,6 @@ static inline bool IncludeHasExcludes(IncludeNode* rhs) {
 }
 // ──────────────────────────────────────────────────────────────────────
 
-// TODO(@s0cks): handle loops
-
-// TODO(@s0cks): handle defer
-
 // ╭──────────────╮
 // │ Command Node │
 // ╰──────────────╯

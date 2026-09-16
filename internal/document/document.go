@@ -36,22 +36,14 @@ func (doc *Document) Free() {
 	}
 }
 
-// #define FOR_EACH_DOCUMENT_NODE_KIND(V) \
-//   V(Ref)                               \
-//   V(PipelineExpr)                      \
 //   V(Command)                           \
-//   V(Var)                               \
 //   V(String)                            \
 //   V(Bool)                              \
 //   V(Number)                            \
 //   V(Null)                              \
 //   V(MapEntry)                          \
 //   V(Map)                               \
-//   V(Include)                           \
-//   V(Precondition)                      \
-//   V(If)                                \
+
+// #define FOR_EACH_DOCUMENT_NODE_KIND(V) \
+//   V(PipelineExpr)                      \
 //   V(Set)                               \
-//   V(For)                               \
-//   V(Defer)                             \
-//   V(Output)                            \
-//   V(Diagnostic)
