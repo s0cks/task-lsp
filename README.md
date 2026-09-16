@@ -15,7 +15,7 @@ your Taskfiles
 |     Diagnostics     |                   Detect invalid task references                    |
 |  Document Symbols   | Browse tasks and other declarations from your editors symbol picker |
 | Hover Documentation |      Show task descriptions when hovering over task references      |
-|     References      |                                 TBD                                 |
+|     References      |            Find References for tasks, variables and more            |
 
 ## Installation
 
