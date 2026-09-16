@@ -205,3 +205,23 @@ func goVisitDocumentTasks(idx C.uint64_t, cTask *C.TaskNode, data unsafe.Pointer
 	keepGoing := vis(uint64(idx), goTask)
 	return C.bool(keepGoing)
 }
+
+func (n *Task) GetNumberOfDeps() uint64 {
+	if n == nil || n.handle == nil {
+		return 0
+	}
+
+	return uint64(n.toTaskNode().deps.len)
+}
+
+func (n *Task) GetDepAt(idx uint64) Ref {
+	if n == nil || n.handle == nil {
+		return Ref{}
+	}
+
+	return Ref{
+		Node: Node{
+			handle: (*C.DocumentNode)(unsafe.Pointer(getRefInSeqAt(&n.toTaskNode().deps, idx))),
+		},
+	}
+}

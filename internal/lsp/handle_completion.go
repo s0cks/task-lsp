@@ -3,7 +3,6 @@ package lsp
 import (
 	"context"
 	"encoding/json"
-	"strings"
 	"taskfile-lsp/internal/rpc"
 	"taskfile-lsp/internal/taskfile"
 )
@@ -63,41 +62,45 @@ func (s *Server) handleCompletion(ctx context.Context, conn *rpc.Conn, params js
 		return nil, rpc.NewError(rpc.InvalidParams, err.Error())
 	}
 
-	doc, ok := s.docs.Get(p.TextDocument.URI)
-	if !ok || doc.Parsed == nil {
-		return CompletionList{Items: taskBodyKeywords}, nil
-	}
+	//TODO(@s0cks): implement
+	//
+	// doc, ok := s.docs.Get(p.TextDocument.URI)
+	// if !ok || doc.Parsed == nil {
+	// 	return CompletionList{Items: taskBodyKeywords}, nil
+	// }
+	//
+	// lc := doc.Parsed.ContextAt(toTFPos(p.Position))
+	// switch lc.Kind {
+	// case "depslist":
+	// 	return CompletionList{Items: taskNameItems(doc.Parsed)}, nil
+	//
+	// case "cmdslist":
+	// 	line := lineAt(doc.Text, p.Position.Line)
+	// 	cursor := min(p.Position.Character, len(line))
+	// 	if strings.Contains(line[:cursor], "task:") {
+	// 		return CompletionList{Items: taskNameItems(doc.Parsed)}, nil
+	// 	}
+	//
+	// 	return CompletionList{Items: []CompletionItem{}}, nil
+	//
+	// case "tasks", "vars":
+	// 	return CompletionList{Items: []CompletionItem{}}, nil
+	//
+	// case "root":
+	// 	return CompletionList{Items: rootKeywords}, nil
+	//
+	// case "taskbody":
+	// 	return CompletionList{Items: taskBodyKeywords}, nil
+	//
+	// case "varbody":
+	// 	return CompletionList{Items: varBodyKeywords}, nil
+	//
+	// case "method":
+	// 	return CompletionList{Items: methodKeywords}, nil
+	//
+	// default:
+	// 	return CompletionList{Items: []CompletionItem{}}, nil
+	// }
 
-	lc := doc.Parsed.ContextAt(toTFPos(p.Position))
-	switch lc.Kind {
-	case "depslist":
-		return CompletionList{Items: taskNameItems(doc.Parsed)}, nil
-
-	case "cmdslist":
-		line := lineAt(doc.Text, p.Position.Line)
-		cursor := min(p.Position.Character, len(line))
-		if strings.Contains(line[:cursor], "task:") {
-			return CompletionList{Items: taskNameItems(doc.Parsed)}, nil
-		}
-
-		return CompletionList{Items: []CompletionItem{}}, nil
-
-	case "tasks", "vars":
-		return CompletionList{Items: []CompletionItem{}}, nil
-
-	case "root":
-		return CompletionList{Items: rootKeywords}, nil
-
-	case "taskbody":
-		return CompletionList{Items: taskBodyKeywords}, nil
-
-	case "varbody":
-		return CompletionList{Items: varBodyKeywords}, nil
-
-	case "method":
-		return CompletionList{Items: methodKeywords}, nil
-
-	default:
-		return CompletionList{Items: []CompletionItem{}}, nil
-	}
+	return CompletionList{}, nil
 }

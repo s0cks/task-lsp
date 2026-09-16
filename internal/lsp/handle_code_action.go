@@ -21,19 +21,22 @@ func (s *Server) handleCodeAction(ctx context.Context, conn *rpc.Conn, params js
 	}
 
 	actions := []CodeAction{}
-	doc, ok := s.docs.Get(p.TextDocument.URI)
-	if !ok || doc.Parsed == nil {
-		return actions, nil
-	}
 
-	for _, gen := range codeActionGenerators {
-		new_actions, err := gen(doc, doc.Parsed, &p)
-		if err != nil {
-			return nil, rpc.NewErrorf(rpc.InternalError, "failed to generate code actions: %v", err)
-		}
-
-		actions = append(actions, new_actions...)
-	}
+	//TODO(@s0cks): implement
+	//
+	// doc, ok := s.docs.Get(p.TextDocument.URI)
+	// if !ok || doc.Parsed == nil {
+	// 	return actions, nil
+	// }
+	//
+	// for _, gen := range codeActionGenerators {
+	// 	new_actions, err := gen(doc, doc.Parsed, &p)
+	// 	if err != nil {
+	// 		return nil, rpc.NewErrorf(rpc.InternalError, "failed to generate code actions: %v", err)
+	// 	}
+	//
+	// 	actions = append(actions, new_actions...)
+	// }
 
 	return actions, nil
 }

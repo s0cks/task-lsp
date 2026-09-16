@@ -14,26 +14,28 @@ func (s *Server) handleReferences(ctx context.Context, conn *rpc.Conn, params js
 
 	locs := []Location{}
 	doc, ok := s.docs.Get(p.TextDocument.URI)
-	if !ok || doc.Parsed == nil {
+	if !ok || doc.parsed == nil {
 		return locs, rpc.NewErrorf(rpc.InternalError, "document is unparsed")
 	}
 
-	name, _, ok := doc.Parsed.NameOrRefAt(toTFPos(p.Position))
-	if !ok {
-		return locs, rpc.NewErrorf(rpc.InternalError, "failed to find reference at pos: %v", p.Position)
-	}
-
-	if p.Context.IncludeDeclaration {
-		if t, ok := doc.Parsed.Tasks[name]; ok {
-			locs = append(locs, Location{URI: p.TextDocument.URI, Range: toRange(t.NameRange)})
-		}
-	}
-
-	for _, r := range doc.Parsed.Refs {
-		if r.Name == name {
-			locs = append(locs, Location{URI: p.TextDocument.URI, Range: toRange(r.Range)})
-		}
-	}
+	//TODO(@s0cks): implement
+	//
+	// name, _, ok := doc.Parsed.NameOrRefAt(toTFPos(p.Position))
+	// if !ok {
+	// 	return locs, rpc.NewErrorf(rpc.InternalError, "failed to find reference at pos: %v", p.Position)
+	// }
+	//
+	// if p.Context.IncludeDeclaration {
+	// 	if t, ok := doc.Parsed.Tasks[name]; ok {
+	// 		locs = append(locs, Location{URI: p.TextDocument.URI, Range: toRange(t.NameRange)})
+	// 	}
+	// }
+	//
+	// for _, r := range doc.Parsed.Refs {
+	// 	if r.Name == name {
+	// 		locs = append(locs, Location{URI: p.TextDocument.URI, Range: toRange(r.Range)})
+	// 	}
+	// }
 
 	return locs, nil
 }

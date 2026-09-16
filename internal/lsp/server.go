@@ -48,16 +48,11 @@ func toTFPos(p Position) taskfile.Position {
 	return taskfile.Position{Line: p.Line, Character: p.Character}
 }
 
-func (s *Server) publish(conn *rpc.Conn, uri string, version int, raw []taskfile.Diagnostic) {
-	diags := make([]Diagnostic, 0, len(raw))
-	for _, d := range raw {
-		diags = append(diags, Diagnostic{
-			Range:    toRange(d.Range),
-			Severity: DiagnosticSeverity(d.Severity),
-			Code:     d.Code,
-			Source:   "taskfile-lsp",
-			Message:  d.Message,
-		})
+func (s *Server) publish(conn *rpc.Conn, uri string, version int, diags []Diagnostic) {
+	for i := range diags {
+		if diags[i].Source == "" {
+			diags[i].Source = "taskfile-lsp"
+		}
 	}
 	v := version
 	if err := conn.Notify("textDocument/publishDiagnostics", PublishDiagnosticsParams{

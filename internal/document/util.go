@@ -111,3 +111,14 @@ func visitComments(node *C.DocumentNode, vis CommentVisitor) {
 		unsafe.Pointer(&handle),
 	)
 }
+
+func toStrView(s string) C.StrView {
+	if len(s) == 0 {
+		return C.StrView{}
+	}
+
+	return C.StrView{
+		start: (*C.char)(unsafe.Pointer(unsafe.StringData(s))),
+		len:   C.size_t(len(s)),
+	}
+}

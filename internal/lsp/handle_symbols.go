@@ -14,17 +14,10 @@ func (s *Server) handleSymbols(ctx context.Context, conn *rpc.Conn, params json.
 
 	symbols := []Symbol{}
 	doc, ok := s.docs.Get(p.TextDocument.URI)
-	if !ok || doc.Parsed == nil {
+	if !ok || doc.parsed == nil {
 		return symbols, nil
 	}
 
-	for _, v := range doc.Parsed.Vars {
-		symbols = append(symbols, NewVarSymbol(v))
-	}
-
-	for _, task := range doc.Parsed.Tasks {
-		symbols = append(symbols, NewTaskSymbol(task))
-	}
-
+	//TODO(@s0cks): implement
 	return symbols, nil
 }

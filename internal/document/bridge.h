@@ -4,5 +4,6 @@
 #include "taskfile_parser.h"
 
 bool goVisitComment(uint64_t, CommentNode*, void*);
+bool goVisitDocumentVars(uint64_t, VarNode*, void*);
 
 #endif  // TASKFILE_PARSER_BRIDGE_H

@@ -1,19 +1,22 @@
 package lsp
 
 import (
-	"strings"
 	"taskfile-lsp/internal/taskfile"
 )
 
 type WorkspaceEditGenerator func(uri string, doc *Document, task *taskfile.Task, at Position) *WorkspaceEdit
 
 func addTaskFieldEdit(field string) WorkspaceEditGenerator {
+	_ = field
+
 	return func(uri string, doc *Document, task *taskfile.Task, at Position) *WorkspaceEdit {
 		return &WorkspaceEdit{
-			Changes: map[string][]TextEdit{uri: {{
-				Range:   Range{Start: at, End: at},
-				NewText: strings.Repeat(" ", doc.Parsed.BodyIndent) + field + ": \"\"\n",
-			}}},
+			//TODO(@s0cks): implement
+			//
+			// Changes: map[string][]TextEdit{uri: {{
+			// 	Range:   Range{Start: at, End: at},
+			// 	NewText: strings.Repeat(" ", doc.Parsed.BodyIndent) + field + ": \"\"\n",
+			// }}},
 		}
 	}
 }
@@ -46,9 +49,12 @@ func getTaskCodeActions(doc *Document, params *CodeActionParams, task *taskfile.
 
 func GenRefactorTaskActions(doc *Document, file *taskfile.File, params *CodeActionParams) ([]CodeAction, error) {
 	actions := []CodeAction{}
-	if task, ok := doc.Parsed.TaskAt(toTFPos(params.Range.Start)); ok {
-		actions = append(actions, getTaskCodeActions(doc, params, task)...)
-	}
+
+	//TODO(@s0cks): implement
+	//
+	// if task, ok := doc.Parsed.TaskAt(toTFPos(params.Range.Start)); ok {
+	// 	actions = append(actions, getTaskCodeActions(doc, params, task)...)
+	// }
 
 	return actions, nil
 }

@@ -49,7 +49,7 @@ func (n *Var) Kind() VarKind {
 		return ScalarVar
 	}
 
-	return VarKind(n.toVarNode().kind)
+	return VarKind(n.toVarNode().var_kind)
 }
 
 func (n *Var) IsScalar() bool {
