@@ -1,3 +1,36 @@
+enable_tracing = get_option('enable_tracing')
+enable_graphviz = get_option('enable_graphviz')
+enable_testing = get_option('enable_testing')
+
+all_deps = []
+if enable_graphviz
+  gvc = dependency('libgvc', version: '>= 15.1.0', required: false)
+  if gvc.found()
+    message('graphviz is enabled')
+    add_project_arguments(
+      '-DTASKFILE_PARSER_GRAPHVIZ_ENABLED',
+      language: ['c', 'cpp'],
+    )
+    all_deps += gvc
+  endif
+endif
+
+tracy_dep = dependency('tracy', required: false)
+if enable_tracing
+  if tracy_dep.found()
+    message('profiling is enabled with tracy')
+    all_deps += tracy_dep
+    add_project_arguments(
+      '-DTASKFILE_PARSER_ENABLE_TRACING',
+      language: ['c', 'cpp'],
+    )
+  endif
+endif
+
+if enable_testing
+  gtest_dep = dependency('gtest', main: true, required: false)
+endif
+
 parser_inc_dir = include_directories('include')
 parser_private_inc = include_directories('src')
 
@@ -37,3 +70,14 @@ parser_dep = declare_dependency(
 if enable_testing and gtest_dep.found()
   subdir('tests')
 endif
+
+pkg = import('pkgconfig')
+pkg.generate(
+  name: meson.project_name(),
+  version: meson.project_version(),
+  description: 'A Language Server Protocol implementation for Taskfiles',
+  libraries: [
+    parser,
+  ],
+  requires: all_deps,
+)

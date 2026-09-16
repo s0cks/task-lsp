@@ -37,7 +37,8 @@
       "exclude-paths": [
         "docker/build-env",
         "docs",
-        "vscode"
+        "vscode",
+        "libtaskfile-parser"
       ],
       "initial-version": "0.0.0",
       "bump-minor-pre-major": true,
