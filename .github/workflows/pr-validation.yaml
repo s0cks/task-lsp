@@ -119,6 +119,7 @@ jobs:
       - name: Lint using vale
         if: ${{ steps.changed.outputs.any_changed == 'true' }}
         run: |
+          vale sync
           vale ${{ steps.changed.outputs.all_changed_files }}
   line-libtaskfile-parser-files:
     name: Lint and test libtaskfile-parser sources
