@@ -6,6 +6,7 @@ include = [
 exclude = [
   "**/CHANGELOG.md",
 ]
+force-exclude = true
 respect-gitignore = true
 
 [MD013]
