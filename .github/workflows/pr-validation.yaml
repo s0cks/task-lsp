@@ -26,11 +26,6 @@ jobs:
         with:
           files: |
             **/*.go
-      - name: go vet
-        if: ${{ steps.changed.outputs.any_changed == 'true' }}
-        run: |
-          go vet \
-            ./...
       - name: golangci-lint
         if: ${{ steps.changed.outputs.any_changed == 'true' }}
         run: |
@@ -38,6 +33,7 @@ jobs:
       - name: go test
         if: ${{ steps.changed.outputs.any_changed == 'true' }}
         run: |
+          export PKG_CONFIG_PATH="build/meson-uninstalled:$PKG_CONFIG_PATH"
           go test \
             -v \
             -race \
