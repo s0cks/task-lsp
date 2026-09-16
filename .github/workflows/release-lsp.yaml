@@ -89,7 +89,6 @@ jobs:
           export GOOS=${{ matrix.os }}
           export GOARCH=${{ matrix.arch }}
           export PKG_CONFIG_PATH="build/meson-uninstalled:$PKG_CONFIG_PATH"
-
           go build \
             -trimpath \
             -ldflags="-s -w -X taskfile-lsp/internal/lsp.Version=${{ steps.clean_version.outputs.tag }}" \
