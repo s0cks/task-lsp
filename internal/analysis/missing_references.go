@@ -1,6 +1,9 @@
 package analysis
 
-import "taskfile-lsp/internal/document"
+import (
+	"fmt"
+	"taskfile-lsp/internal/document"
+)
 
 const CodeMissingReference = "missing-reference"
 
@@ -15,6 +18,7 @@ func (MissingReferencesPass) Run(doc *document.Document) []Diagnostic {
 		if !v.IsRef() {
 			return true // only ref-kind vars point at another var -- skip the rest
 		}
+
 		ref := v.Ref()
 		if _, ok := doc.FindVar(ref.Name()); !ok {
 			diags = append(diags, Diagnostic{
@@ -23,21 +27,23 @@ func (MissingReferencesPass) Run(doc *document.Document) []Diagnostic {
 				Message: "var \"" + v.Name() + "\" references undefined var \"" + ref.Name() + "\"",
 			})
 		}
+
 		return true
 	})
 
 	doc.VisitTasks(func(_ uint64, t document.Task) bool {
-		n := t.GetNumberOfDeps()
-		for i := uint64(0); i < n; i++ {
-			dep := t.GetDepAt(i)
-			if _, ok := doc.FindTask(dep.Name()); !ok {
+		t.VisitDeps(func(_ uint64, r document.Ref) bool {
+			if _, ok := doc.FindTask(r.Name()); !ok {
 				diags = append(diags, Diagnostic{
-					Range:   dep.Range(),
+					Range:   r.Range(),
 					Code:    CodeMissingReference,
-					Message: "task \"" + t.Name() + "\" depends on undefined task \"" + dep.Name() + "\"",
+					Message: fmt.Sprintf("task `%s` depends on undefined task `%s`", t.Name(), r.Name()),
 				})
 			}
-		}
+
+			return true
+		})
+
 		return true
 	})
 

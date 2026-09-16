@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"taskfile-lsp/internal/rpc"
-	"taskfile-lsp/internal/taskfile"
 )
 
 var methodKeywords = []CompletionItem{
@@ -48,13 +47,13 @@ var taskBodyKeywords = []CompletionItem{
 	{Label: "aliases", Kind: CompletionItemKeyword, Detail: "Alternative names for the task"},
 }
 
-func taskNameItems(f *taskfile.File) []CompletionItem {
-	items := make([]CompletionItem, 0, len(f.Order))
-	for _, name := range f.Order {
-		items = append(items, CompletionItem{Label: name, Kind: CompletionItemValue, Detail: f.Tasks[name].Desc})
-	}
-	return items
-}
+// func taskNameItems(f *taskfile.File) []CompletionItem {
+// 	items := make([]CompletionItem, 0, len(f.Order))
+// 	for _, name := range f.Order {
+// 		items = append(items, CompletionItem{Label: name, Kind: CompletionItemValue, Detail: f.Tasks[name].Desc})
+// 	}
+// 	return items
+// }
 
 func (s *Server) handleCompletion(ctx context.Context, conn *rpc.Conn, params json.RawMessage) (any, *rpc.Error) {
 	var p CompletionParams

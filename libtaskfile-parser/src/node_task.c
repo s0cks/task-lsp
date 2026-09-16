@@ -16,6 +16,13 @@ void VisitTaskDotenvs(TaskNode* node, StringVisitor vis, void* data) {
   VisitStringsInSeq(&node->dotenvs, vis, data);
 }
 
+void VisitTaskDeps(TaskNode* node, RefVisitor vis, void* data) {
+  if (!node)
+    return;
+
+  return VisitRefsInSeq(&node->deps, vis, data);
+}
+
 #define DEFINE_TASK_STRING_SEQ(Singular, Plural, Field)                   \
   uint64_t GetNumberOf##Plural##InTask(TaskNode* rhs) {                   \
     return GetNumberOfStringsInSeq(rhs ? &rhs->Field : NULL);             \

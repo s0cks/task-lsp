@@ -18,8 +18,10 @@ type Pass interface {
 
 func RunAll(doc *document.Document, passes []Pass) []Diagnostic {
 	var diags []Diagnostic
+
 	for _, p := range passes {
 		diags = append(diags, p.Run(doc)...)
 	}
+
 	return diags
 }

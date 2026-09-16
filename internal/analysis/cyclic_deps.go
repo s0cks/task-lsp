@@ -20,10 +20,11 @@ func (CyclicDepsPass) Run(doc *document.Document) []Diagnostic {
 		name := t.Name()
 		tasks[name] = t
 		n := t.GetNumberOfDeps()
-		for i := uint64(0); i < n; i++ {
+		for i := range n {
 			dep := t.GetDepAt(i)
 			edges[name] = append(edges[name], dep.Name())
 		}
+
 		return true
 	})
 
@@ -32,6 +33,7 @@ func (CyclicDepsPass) Run(doc *document.Document) []Diagnostic {
 		gray  = 1
 		black = 2
 	)
+
 	color := map[string]int{}
 	seen := map[string]bool{} // dedupe: report each cycle once
 	var diags []Diagnostic
@@ -46,9 +48,11 @@ func (CyclicDepsPass) Run(doc *document.Document) []Diagnostic {
 			if _, exists := tasks[dep]; !exists {
 				continue // undefined task -- MissingReferencesPass's job, not ours
 			}
+
 			switch color[dep] {
 			case white:
 				visit(dep)
+
 			case gray:
 				cycle := cycleFrom(stack, dep)
 				key := strings.Join(cycle, ",")
@@ -61,6 +65,7 @@ func (CyclicDepsPass) Run(doc *document.Document) []Diagnostic {
 						Message: "cyclic task dependency: " + strings.Join(cycle, " -> "),
 					})
 				}
+
 			}
 		}
 
@@ -83,5 +88,6 @@ func cycleFrom(stack []string, closingAt string) []string {
 			return append(append([]string{}, stack[i:]...), closingAt)
 		}
 	}
+
 	return append(append([]string{}, stack...), closingAt)
 }

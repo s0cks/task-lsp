@@ -118,8 +118,8 @@ void InitLexer(Lexer* lex, const char* source) {
   ResetLexer(lex);
   lex->source = source;
   lex->rpos = 0;
-  lex->line = 1;
-  lex->col = 1;
+  lex->line = 0;
+  lex->col = 0;
   lex->line_has_content = false;
 }
 

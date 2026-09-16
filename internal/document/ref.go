@@ -5,11 +5,13 @@ package document
 
 #include <stdlib.h>
 #include "taskfile_parser.h"
-
 #include "bridge.h"
 */
 import "C"
-import "unsafe"
+import (
+	"runtime/cgo"
+	"unsafe"
+)
 
 type RefKind int
 
@@ -28,6 +30,17 @@ type Ref struct {
 	// Range value_range;                \
 	// DiagnosticSeq diagnostics;        \
 }
+
+func toRef(node *C.RefNode) Ref {
+	return Ref{
+		Node: Node{
+			handle: (*C.DocumentNode)(unsafe.Pointer(node)),
+		},
+	}
+}
+
+type RefVisitor func(idx uint64, ref Ref) bool
+type RefPredicate func(ref Ref) bool
 
 func (n *Ref) toRefNode() *C.RefNode {
 	if n == nil || n.handle == nil {
@@ -95,4 +108,12 @@ func (n *Ref) IsIncomplete() bool {
 
 func (n *Ref) IsError() bool {
 	return (n.Status() & NodeError) == NodeError
+}
+
+//export goVisitRef
+func goVisitRef(idx C.uint64_t, cRef *C.RefNode, data unsafe.Pointer) C.bool {
+	handle := *(*cgo.Handle)(data)
+	vis := handle.Value().(RefVisitor)
+	keepGoing := vis(uint64(idx), toRef(cRef))
+	return C.bool(keepGoing)
 }

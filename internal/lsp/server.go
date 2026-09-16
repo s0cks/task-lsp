@@ -3,10 +3,9 @@ package lsp
 import (
 	"fmt"
 	"log"
-	"strings"
 
+	"taskfile-lsp/internal/document"
 	"taskfile-lsp/internal/rpc"
-	"taskfile-lsp/internal/taskfile"
 )
 
 type Server struct {
@@ -37,15 +36,11 @@ func (s *Server) Register(conn *rpc.Conn) {
 	conn.HandleRequest("textDocument/documentSymbol", s.handleSymbols)
 }
 
-func toRange(r taskfile.Range) Range {
+func toRange(r document.Range) Range {
 	return Range{
-		Start: Position{Line: r.Start.Line, Character: r.Start.Character},
-		End:   Position{Line: r.End.Line, Character: r.End.Character},
+		Start: Position{Line: r.Start.Row, Character: r.Start.Col},
+		End:   Position{Line: r.End.Row, Character: r.End.Col},
 	}
-}
-
-func toTFPos(p Position) taskfile.Position {
-	return taskfile.Position{Line: p.Line, Character: p.Character}
 }
 
 func (s *Server) publish(conn *rpc.Conn, uri string, version int, diags []Diagnostic) {
@@ -64,16 +59,16 @@ func (s *Server) publish(conn *rpc.Conn, uri string, version int, diags []Diagno
 	}
 }
 
-func NewTaskEdit(f *taskfile.File, name string) TextEdit {
-	indent := strings.Repeat(" ", f.TaskIndent)
-	body := strings.Repeat(" ", f.BodyIndent)
-	cmdIndent := strings.Repeat(" ", f.BodyIndent+2)
-	text := fmt.Sprintf("\n%s%s:\n%scmds:\n%s- echo \"TODO: implement %s\"\n", indent, name, body, cmdIndent, name)
-
-	insertLine := f.TasksLine + 1
-	if len(f.Order) > 0 {
-		insertLine = f.Tasks[f.Order[len(f.Order)-1]].EndLine + 1
-	}
-	at := Position{Line: insertLine, Character: 0}
-	return TextEdit{Range: Range{Start: at, End: at}, NewText: text}
-}
+// func NewTaskEdit(f *taskfile.File, name string) TextEdit {
+// 	indent := strings.Repeat(" ", f.TaskIndent)
+// 	body := strings.Repeat(" ", f.BodyIndent)
+// 	cmdIndent := strings.Repeat(" ", f.BodyIndent+2)
+// 	text := fmt.Sprintf("\n%s%s:\n%scmds:\n%s- echo \"TODO: implement %s\"\n", indent, name, body, cmdIndent, name)
+//
+// 	insertLine := f.TasksLine + 1
+// 	if len(f.Order) > 0 {
+// 		insertLine = f.Tasks[f.Order[len(f.Order)-1]].EndLine + 1
+// 	}
+// 	at := Position{Line: insertLine, Character: 0}
+// 	return TextEdit{Range: Range{Start: at, End: at}, NewText: text}
+// }

@@ -748,6 +748,7 @@ static inline bool IsTaskShortForm(TaskNode* rhs) {
 uint64_t GetNumberOfDotenvsInTask(TaskNode* rhs);
 StringNode* GetTaskDotenvAt(TaskNode* node, uint64_t idx);
 void VisitTaskDotenvs(TaskNode* node, StringVisitor vis, void* data);
+void VisitTaskDeps(TaskNode* node, RefVisitor vis, void* data);
 
 static inline bool TaskHasDotenvs(TaskNode* rhs) {
   return GetNumberOfDotenvsInTask(rhs) > 0;

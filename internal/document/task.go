@@ -225,3 +225,18 @@ func (n *Task) GetDepAt(idx uint64) Ref {
 		},
 	}
 }
+
+func (n *Task) VisitDeps(vis RefVisitor) {
+	if n == nil || n.handle == nil {
+		return
+	}
+
+	handle := cgo.NewHandle(vis)
+	defer handle.Delete()
+
+	C.VisitTaskDeps(
+		n.toTaskNode(),
+		(C.RefVisitor)(unsafe.Pointer(C.goVisitRef)),
+		unsafe.Pointer(&handle),
+	)
+}

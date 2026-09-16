@@ -19,6 +19,7 @@ func (IncompleteNodesPass) Run(doc *document.Document) []Diagnostic {
 				Code:    CodeIncompleteNode,
 				Message: "task \"" + t.Name() + "\" has a parse error",
 			})
+
 		case t.IsIncomplete():
 			diags = append(diags, Diagnostic{
 				Range:   document.Range{Start: t.Start(), End: t.End()},
@@ -26,6 +27,7 @@ func (IncompleteNodesPass) Run(doc *document.Document) []Diagnostic {
 				Message: "task \"" + t.Name() + "\" is incomplete",
 			})
 		}
+
 		return true // every other task is fine -- skip it, nothing to report
 	})
 
@@ -37,6 +39,7 @@ func (IncompleteNodesPass) Run(doc *document.Document) []Diagnostic {
 				Code:    CodeIncompleteNode,
 				Message: "var \"" + v.Name() + "\" has a parse error",
 			})
+
 		case v.IsIncomplete():
 			diags = append(diags, Diagnostic{
 				Range:   document.Range{Start: v.Start(), End: v.End()},
@@ -44,6 +47,7 @@ func (IncompleteNodesPass) Run(doc *document.Document) []Diagnostic {
 				Message: "var \"" + v.Name() + "\" is incomplete",
 			})
 		}
+
 		return true
 	})
 
