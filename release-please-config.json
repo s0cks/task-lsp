@@ -20,6 +20,14 @@
       "package-name": "build-env",
       "initial-version": "1.0.0"
     },
+    "libtaskfile-parser": {
+      "release-type": "simple",
+      "package-name": "libtaskfile-parser",
+      "initial-version": "1.0.0",
+      "extra-files":[
+        "VERSION"
+      ]
+    },
     ".": {
       "release-type": "go",
       "package-name": "lsp",
