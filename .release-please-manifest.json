@@ -1,7 +1,7 @@
 {
   ".": "0.0.5",
   "docker/build-env": "1.2.0",
-  "libtaskfile-parser": "1.0.0",
+  "libtaskfile-parser": "1.1.0",
   "docs": "1.6.0",
   "vscode": "0.0.0"
 }
