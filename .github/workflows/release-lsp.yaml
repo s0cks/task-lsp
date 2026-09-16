@@ -88,6 +88,7 @@ jobs:
           export CGO_ENABLED=1
           export GOOS=${{ matrix.os }}
           export GOARCH=${{ matrix.arch }}
+          export PKG_CONFIG_PATH="build/meson-uninstalled:$PKG_CONFIG_PATH"
 
           go build \
             -trimpath \
