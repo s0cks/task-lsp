@@ -16,6 +16,7 @@ static inline auto IsParseOk(const TaskfileParseResult& rhs) -> ::testing::Asser
   return ::testing::AssertionSuccess();
 }
 
+// NOLINTNEXTLINE
 static inline auto IsParseError(const TaskfileParseResult& result) -> ::testing::AssertionResult {
   if (result.success)
     return ::testing::AssertionFailure() << "result is successful, expected error";
@@ -35,6 +36,7 @@ static inline auto IsParseError(const TaskfileParseResult& result, const std::st
   return ::testing::AssertionSuccess();
 }
 
+// NOLINTNEXTLINE
 static inline auto HasDiagnostic(const TaskfileParseResult& result, DiagnosticPredicate filter)
     -> ::testing::AssertionResult {
   if (!result.success)
@@ -53,6 +55,7 @@ static inline auto HasDiagnostic(const TaskfileParseResult& result, DiagnosticPr
     return IsParseError(result, (Message));                                                                  \
   }
 
+// NOLINTNEXTLINE
 FOR_EACH_PARE_ERROR_MESSAGE(DEFINE_PARSE_ERROR_MESSAGE_ASSERT)
 #undef DEFINE_PARSE_ERROR_MESSAGE_ASSERT
 
@@ -469,7 +472,7 @@ TEST_F(TestParser, Test_Visit_DocumentVisitsAllNestedNodes) {
       result.doc,
       [](DocumentNode* node, void* data) -> VisitResult {
         auto* c = static_cast<Ctx*>(data);
-        if (node->kind < 32)
+        if (static_cast<int>(node->kind) < 32)
           c->counts[node->kind]++;
 
         return kVisitContinue;

@@ -27,6 +27,7 @@ foreach suite : test_suites
     include_directories: test_exec_include_directories,
     dependencies: base_test_deps + get_variable('test_' + suite + '_deps', []),
     install: false,
+    cpp_args: ['-Wno-unused'],
   )
   test(
     suite + ' tests',

@@ -1,7 +1,7 @@
 package document
 
 /*
-#cgo pkg-config: taskfile-lsp-uninstalled
+#cgo pkg-config: taskfile-parser-uninstalled
 
 #include <stdlib.h>
 #include "taskfile_parser.h"

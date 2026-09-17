@@ -15,18 +15,6 @@ if enable_graphviz
   endif
 endif
 
-tracy_dep = dependency('tracy', required: false)
-if enable_tracing
-  if tracy_dep.found()
-    message('profiling is enabled with tracy')
-    all_deps += tracy_dep
-    add_project_arguments(
-      '-DTASKFILE_PARSER_ENABLE_TRACING',
-      language: ['c', 'cpp'],
-    )
-  endif
-endif
-
 if enable_testing
   gtest_dep = dependency('gtest', main: true, required: false)
 endif
@@ -50,6 +38,7 @@ parser = static_library(
     'src/token.c',
     'src/visit.c',
   ],
+  c_args: [ '-Wno-unused' ],
   dependencies: all_deps,
   link_with: [],
   include_directories: [
@@ -71,13 +60,15 @@ if enable_testing and gtest_dep.found()
   subdir('tests')
 endif
 
+install_headers('include' / 'taskfile_parser.h', subdir: 'taskfile_parser')
 pkg = import('pkgconfig')
-pkg.generate(
-  name: meson.project_name(),
+pkg.generate(parser,
+  name: 'taskfile-parser',
   version: meson.project_version(),
   description: 'A Language Server Protocol implementation for Taskfiles',
   libraries: [
     parser,
   ],
+  subdirs: 'taskfile_parser',
   requires: all_deps,
 )
