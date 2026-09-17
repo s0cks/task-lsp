@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/s0cks/task-lsp/compare/lsp-v0.2.0...lsp-v0.2.1) (2026-09-17)
+
+
+### Bug Fixes
+
+* 🐛 fix build using meson option ([03cc132](https://github.com/s0cks/task-lsp/commit/03cc132c0a515e4c11d59c13fa786b56bfba959d))
+
 ## [0.2.0](https://github.com/s0cks/task-lsp/compare/lsp-v0.1.0...lsp-v0.2.0) (2026-09-17)
 
 
