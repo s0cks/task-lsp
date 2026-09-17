@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/s0cks/task-lsp/compare/lsp-v0.1.0...lsp-v0.2.0) (2026-09-17)
+
+
+### Features
+
+* ✨ add support for document symbols ([c9f3d7c](https://github.com/s0cks/task-lsp/commit/c9f3d7c427d7e10fa7a6d4cd40253198cf0654fa))
+
 ## [0.1.0](https://github.com/s0cks/task-lsp/compare/lsp-v0.0.5...lsp-v0.1.0) (2026-09-16)
 
 
