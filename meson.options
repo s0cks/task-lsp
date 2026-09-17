@@ -1,8 +1,8 @@
 option(
-  'enable_tracing',
+  'enable_testing',
   type: 'boolean',
-  value: false,
-  description: 'Enable profiling (w/ Tracy)',
+  value: true,
+  description: 'Enable unit tests using GTest',
 )
 
 option(

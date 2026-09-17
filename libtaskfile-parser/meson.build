@@ -1,4 +1,3 @@
-enable_tracing = get_option('enable_tracing')
 enable_graphviz = get_option('enable_graphviz')
 enable_testing = get_option('enable_testing')
 
