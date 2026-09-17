@@ -240,3 +240,18 @@ func (n *Task) VisitDeps(vis RefVisitor) {
 		unsafe.Pointer(&handle),
 	)
 }
+
+func (n *Task) VisitAliases(vis StringVisitor) {
+	if n == nil || n.handle == nil {
+		return
+	}
+
+	handle := cgo.NewHandle(vis)
+	defer handle.Delete()
+
+	C.VisitTaskAliases(
+		n.toTaskNode(),
+		(C.StringVisitor)(unsafe.Pointer(C.goVisitString)),
+		unsafe.Pointer(&handle),
+	)
+}

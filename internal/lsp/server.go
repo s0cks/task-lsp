@@ -33,7 +33,7 @@ func (s *Server) Register(conn *rpc.Conn) {
 	conn.HandleRequest("textDocument/references", s.handleReferences)
 	conn.HandleRequest("textDocument/completion", s.handleCompletion)
 	conn.HandleRequest("textDocument/codeAction", s.handleCodeAction)
-	conn.HandleRequest("textDocument/documentSymbol", s.handleSymbols)
+	conn.HandleRequest("textDocument/documentSymbol", s.handleDocumentSymbols)
 }
 
 func toRange(r document.Range) Range {

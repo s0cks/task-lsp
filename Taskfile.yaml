@@ -51,6 +51,45 @@ tasks:
     cmds:
       - task: meson:install
 
+  zip:
+    cmds:
+      - |
+        ouch compress                   \
+          assets                        \
+          docker                        \
+          internal                      \
+          libtaskfile-parser            \
+          taskfiles                     \
+          wiki                          \
+          .clang-format                 \
+          .clang-tidy                   \
+          .clangd                       \
+          .dockerignore                 \
+          .editorconfig                 \
+          .env                          \
+          .gitignore                    \
+          .release-please-manifest.json \
+          .rumdl.toml                   \
+          .vale.ini                     \
+          .valeignore                   \
+          .yamlfmt                      \
+          .yamllint                     \
+          CHANGELOG.md                  \
+          docker-compose.yaml           \
+          go.mod                        \
+          go.sum                        \
+          lefthook.yml                  \
+          LICENSE                       \
+          main.go                       \
+          meson.build                   \
+          meson.format                  \
+          meson.options                 \
+          README.md                     \
+          release-please-config.json    \
+          Taskfile.yaml                 \
+          VERSION                       \
+          sources.zip
+
   clean:
     deps:
       - go:clean

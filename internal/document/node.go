@@ -137,7 +137,7 @@ func (n *Node) End() Pos {
 	return toPos(&n.handle.end)
 }
 
-func (n *Ref) Range() Range {
+func (n *Node) Range() Range {
 	if n.handle == nil {
 		return Range{}
 	}

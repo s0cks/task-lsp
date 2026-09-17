@@ -8,6 +8,7 @@ package document
 */
 import "C"
 import (
+	"runtime/cgo"
 	"unsafe"
 )
 
@@ -15,6 +16,17 @@ type String struct {
 	Node
 
 	// RefSeq  refs
+}
+
+type StringVisitor func(idx uint64, s String) bool
+type StringPredicate func(idx uint64, s String) bool
+
+func toString(node *C.DocumentNode) String {
+	return String{
+		Node: Node{
+			handle: node,
+		},
+	}
 }
 
 func (n *String) toStringNode() *C.StringNode {
@@ -51,4 +63,13 @@ func (n *String) GetRefAt(idx uint64) Ref {
 			handle: (*C.DocumentNode)(unsafe.Pointer(getRefInSeqAt(&n.toStringNode().refs, idx))),
 		},
 	}
+}
+
+//export goVisitString
+func goVisitString(idx C.uint64_t, cStr *C.StringNode, data unsafe.Pointer) C.bool {
+	handle := *(*cgo.Handle)(data)
+	vis := handle.Value().(StringVisitor)
+
+	goStr := toString((*C.DocumentNode)(unsafe.Pointer(cStr)))
+	return C.bool(vis(uint64(idx), goStr))
 }

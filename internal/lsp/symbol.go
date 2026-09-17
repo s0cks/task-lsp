@@ -1,65 +1,40 @@
 package lsp
 
-type Symbol struct {
-	Name           string `json:"name"`
-	Detail         string `json:"detail"`
-	Kind           int    `json:"kind"`
-	Range          Range  `json:"range"`
-	SelectionRange Range  `json:"selectionRange"`
-}
+type SymbolKind int
 
-// func NewTaskSymbol(t *taskfile.Task) Symbol {
-// 	return Symbol{
-// 		Name:   t.Name,
-// 		Detail: "function",
-// 		Kind:   12,
-// 		SelectionRange: Range{
-// 			Start: Position{
-// 				Line:      t.NameRange.Start.Line,
-// 				Character: t.NameRange.Start.Character,
-// 			},
-// 			End: Position{
-// 				Line:      t.NameRange.Start.Line,
-// 				Character: t.NameRange.Start.Character,
-// 			},
-// 		},
-// 		Range: Range{
-// 			Start: Position{
-// 				Line:      t.NameRange.Start.Line,
-// 				Character: t.NameRange.Start.Character,
-// 			},
-// 			End: Position{
-// 				Line:      t.NameRange.Start.Line,
-// 				Character: t.NameRange.Start.Character,
-// 			},
-// 		},
-// 	}
-// }
-//
-// func NewVarSymbol(v *taskfile.TaskVar) Symbol {
-// 	return Symbol{
-// 		Name:   v.Name,
-// 		Detail: "property",
-// 		Kind:   7,
-// 		SelectionRange: Range{
-// 			Start: Position{
-// 				Line:      v.NameRange.Start.Line,
-// 				Character: v.NameRange.Start.Character,
-// 			},
-// 			End: Position{
-// 				Line:      v.NameRange.Start.Line,
-// 				Character: v.NameRange.Start.Character,
-// 			},
-// 		},
-// 		Range: Range{
-// 			Start: Position{
-// 				Line:      v.NameRange.Start.Line,
-// 				Character: v.NameRange.Start.Character,
-// 			},
-// 			End: Position{
-// 				Line:      v.NameRange.Start.Line,
-// 				Character: v.NameRange.Start.Character,
-// 			},
-// 		},
-// 	}
-// }
+const (
+	FileSymbol          SymbolKind = 1
+	ModuleSymbol        SymbolKind = 2
+	NamespaceSymbol     SymbolKind = 3
+	PackageSymbol       SymbolKind = 4
+	ClassSymbol         SymbolKind = 5
+	MethodSymbol        SymbolKind = 6
+	PropertySymbol      SymbolKind = 7
+	FieldSymbol         SymbolKind = 8
+	ConstructorSymbol   SymbolKind = 9
+	EnumSymbol          SymbolKind = 10
+	InterfaceSymbol     SymbolKind = 11
+	FunctionSymbol      SymbolKind = 12
+	VariableSymbol      SymbolKind = 13
+	ConstantSymbol      SymbolKind = 14
+	StringSymbol        SymbolKind = 15
+	NumberSymbol        SymbolKind = 16
+	BooleanSymbol       SymbolKind = 17
+	ArraySymbol         SymbolKind = 18
+	ObjectSymbol        SymbolKind = 19
+	KeySymbol           SymbolKind = 20
+	NullSymbol          SymbolKind = 21
+	EnumMemberSymbol    SymbolKind = 22
+	StructSymbol        SymbolKind = 23
+	EventSymbol         SymbolKind = 24
+	OperatorSymbol      SymbolKind = 25
+	TypeParameterSymbol SymbolKind = 26
+)
+
+type Symbol struct {
+	Name           string     `json:"name"`
+	Detail         string     `json:"detail"`
+	Kind           SymbolKind `json:"kind"`
+	Range          Range      `json:"range"`
+	SelectionRange Range      `json:"selectionRange"`
+}
