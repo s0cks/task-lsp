@@ -3,17 +3,19 @@ package lsp
 import (
 	"context"
 	"encoding/json"
+	"strings"
+
+	"taskfile-lsp/internal/document"
 	"taskfile-lsp/internal/rpc"
 )
 
 var methodKeywords = []CompletionItem{
-	{Label: "checksum", Kind: CompletionItemKeyword, Detail: ""},
-	{Label: "timestamp", Kind: CompletionItemKeyword, Detail: ""},
-	{Label: "none", Kind: CompletionItemKeyword, Detail: ""},
+	{Label: "checksum", Kind: CompletionItemKeyword},
+	{Label: "timestamp", Kind: CompletionItemKeyword},
+	{Label: "none", Kind: CompletionItemKeyword},
 }
 
 var varBodyKeywords = []CompletionItem{
-	{Label: "scalar", Kind: CompletionItemKeyword, Detail: "A scalar value"},
 	{Label: "sh", Kind: CompletionItemKeyword, Detail: "A shell command value"},
 	{Label: "ref", Kind: CompletionItemKeyword, Detail: "A reference to another variable"},
 	{Label: "map", Kind: CompletionItemKeyword, Detail: "A nested map value"},
@@ -45,15 +47,84 @@ var taskBodyKeywords = []CompletionItem{
 	{Label: "summary", Kind: CompletionItemKeyword, Detail: "Detailed description shown in --summary"},
 	{Label: "prompt", Kind: CompletionItemKeyword, Detail: "Prompts shown before task execution"},
 	{Label: "aliases", Kind: CompletionItemKeyword, Detail: "Alternative names for the task"},
+	{Label: "method", Kind: CompletionItemKeyword, Detail: "How up-to-date checks are performed"},
 }
 
-// func taskNameItems(f *taskfile.File) []CompletionItem {
-// 	items := make([]CompletionItem, 0, len(f.Order))
-// 	for _, name := range f.Order {
-// 		items = append(items, CompletionItem{Label: name, Kind: CompletionItemValue, Detail: f.Tasks[name].Desc})
-// 	}
-// 	return items
-// }
+var builtinTemplateVars = []CompletionItem{
+	{Label: "TASK", Kind: CompletionItemValue, Detail: "The name of the current task"},
+	{Label: "ROOT_DIR", Kind: CompletionItemValue, Detail: "The root Taskfile's directory"},
+	{Label: "TASKFILE_DIR", Kind: CompletionItemValue, Detail: "The directory of the Taskfile this task is defined in"},
+	{Label: "USER_WORKING_DIR", Kind: CompletionItemValue, Detail: "The directory task was run from"},
+	{Label: "CLI_ARGS", Kind: CompletionItemValue, Detail: "Extra CLI arguments passed after --"},
+}
+
+func (s *Server) taskCompletionItems(uri string) []CompletionItem {
+	var items []CompletionItem
+
+	f, ok := s.ws.File(uri)
+	if !ok || f.Parsed == nil {
+		return items
+	}
+
+	f.Parsed.VisitTasks(func(_ uint64, t document.Task) bool {
+		items = append(items, CompletionItem{
+			Label: t.Name(), Kind: CompletionItemValue, Detail: t.Desc(),
+		})
+		return true
+	})
+
+	for _, e := range f.IncludeEdges {
+		if e.TargetURI == "" {
+			continue
+		}
+
+		target, ok := s.ws.File(e.TargetURI)
+		if !ok || target.Parsed == nil {
+			continue
+		}
+
+		target.Parsed.VisitTasks(func(_ uint64, t document.Task) bool {
+			items = append(items, CompletionItem{
+				Label: e.Namespace + ":" + t.Name(), Kind: CompletionItemValue, Detail: t.Desc(),
+			})
+
+			return true
+		})
+	}
+
+	return items
+}
+
+func (s *Server) varCompletionItems(uri string) []CompletionItem {
+	items := append([]CompletionItem{}, builtinTemplateVars...)
+
+	f, ok := s.ws.File(uri)
+	if !ok || f.Parsed == nil {
+		return items
+	}
+
+	f.Parsed.VisitVars(func(_ uint64, v document.Var) bool {
+		items = append(items, CompletionItem{Label: v.Name(), Kind: CompletionItemValue})
+		return true
+	})
+
+	return items
+}
+
+func filterByPrefix(items []CompletionItem, prefix string) []CompletionItem {
+	if prefix == "" {
+		return items
+	}
+
+	out := items[:0:0]
+	for _, it := range items {
+		if strings.HasPrefix(it.Label, prefix) {
+			out = append(out, it)
+		}
+	}
+
+	return out
+}
 
 func (s *Server) handleCompletion(ctx context.Context, conn *rpc.Conn, params json.RawMessage) (any, *rpc.Error) {
 	var p CompletionParams
@@ -61,45 +132,37 @@ func (s *Server) handleCompletion(ctx context.Context, conn *rpc.Conn, params js
 		return nil, rpc.NewError(rpc.InvalidParams, err.Error())
 	}
 
-	//TODO(@s0cks): implement
-	//
-	// doc, ok := s.docs.Get(p.TextDocument.URI)
-	// if !ok || doc.Parsed == nil {
-	// 	return CompletionList{Items: taskBodyKeywords}, nil
-	// }
-	//
-	// lc := doc.Parsed.ContextAt(toTFPos(p.Position))
-	// switch lc.Kind {
-	// case "depslist":
-	// 	return CompletionList{Items: taskNameItems(doc.Parsed)}, nil
-	//
-	// case "cmdslist":
-	// 	line := lineAt(doc.Text, p.Position.Line)
-	// 	cursor := min(p.Position.Character, len(line))
-	// 	if strings.Contains(line[:cursor], "task:") {
-	// 		return CompletionList{Items: taskNameItems(doc.Parsed)}, nil
-	// 	}
-	//
-	// 	return CompletionList{Items: []CompletionItem{}}, nil
-	//
-	// case "tasks", "vars":
-	// 	return CompletionList{Items: []CompletionItem{}}, nil
-	//
-	// case "root":
-	// 	return CompletionList{Items: rootKeywords}, nil
-	//
-	// case "taskbody":
-	// 	return CompletionList{Items: taskBodyKeywords}, nil
-	//
-	// case "varbody":
-	// 	return CompletionList{Items: varBodyKeywords}, nil
-	//
-	// case "method":
-	// 	return CompletionList{Items: methodKeywords}, nil
-	//
-	// default:
-	// 	return CompletionList{Items: []CompletionItem{}}, nil
-	// }
+	doc, ok := s.docs.Get(p.TextDocument.URI)
+	if !ok {
+		return CompletionList{Items: rootKeywords}, nil
+	}
 
-	return CompletionList{}, nil
+	completionCtx, partial := classifyCompletion(doc.Text, p.Position)
+
+	switch completionCtx {
+	case ctxDepsList, ctxCmdsTaskField:
+		return CompletionList{Items: filterByPrefix(s.taskCompletionItems(p.TextDocument.URI), partial)}, nil
+
+	case ctxTemplateVar:
+		return CompletionList{Items: filterByPrefix(s.varCompletionItems(p.TextDocument.URI), partial)}, nil
+
+	case ctxCmdsList:
+		return CompletionList{Items: []CompletionItem{}}, nil
+
+	case ctxVarBody:
+		return CompletionList{Items: varBodyKeywords}, nil
+
+	case ctxTaskBody:
+		return CompletionList{Items: taskBodyKeywords}, nil
+
+	case ctxMethod:
+		return CompletionList{Items: methodKeywords}, nil
+
+	case ctxRoot:
+		return CompletionList{Items: rootKeywords}, nil
+
+	default:
+		return CompletionList{Items: []CompletionItem{}}, nil
+
+	}
 }

@@ -128,10 +128,16 @@ type ServerInfo struct {
 	Version string `json:"version"`
 }
 
+type WorkspaceFolder struct {
+	URI  string `json:"uri"`
+	Name string `json:"name"`
+}
+
 type InitializeParams struct {
-	ProcessID    *int            `json:"processId,omitempty"`
-	RootURI      *string         `json:"rootUri,omitempty"`
-	Capabilities json.RawMessage `json:"capabilities,omitempty"`
+	ProcessID        *int              `json:"processId,omitempty"`
+	RootURI          *string           `json:"rootUri,omitempty"`
+	WorkspaceFolders []WorkspaceFolder `json:"workspaceFolders,omitempty"`
+	Capabilities     json.RawMessage   `json:"capabilities,omitempty"`
 }
 
 type InitializeResult struct {

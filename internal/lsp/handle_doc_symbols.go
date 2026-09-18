@@ -29,6 +29,7 @@ func getSymbolsForTask(task *document.Task) []Symbol {
 
 		return true
 	})
+
 	return symbols
 }
 

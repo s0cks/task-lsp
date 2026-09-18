@@ -3,6 +3,7 @@ package lsp
 import (
 	"context"
 	"encoding/json"
+
 	"taskfile-lsp/internal/rpc"
 )
 
@@ -13,11 +14,11 @@ func (s *Server) handleDidOpen(ctx context.Context, conn *rpc.Conn, params json.
 		return
 	}
 
-	diags := s.docs.Open(&Document{
+	affected := s.docs.Open(&Document{
 		URI:        p.TextDocument.URI,
 		LanguageID: p.TextDocument.LanguageID,
 		Version:    p.TextDocument.Version,
 		Text:       p.TextDocument.Text,
 	})
-	s.publish(conn, p.TextDocument.URI, p.TextDocument.Version, diags)
+	s.recomputeAndPublish(conn, affected)
 }

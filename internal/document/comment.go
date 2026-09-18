@@ -20,6 +20,14 @@ func (n *Comment) toCommentNode() *C.CommentNode {
 	return (*C.CommentNode)(unsafe.Pointer(n.handle))
 }
 
+func toComment(node *C.DocumentNode) Comment {
+	return Comment{
+		Node: Node{
+			handle: node,
+		},
+	}
+}
+
 type CommentPredicate func(c Comment) bool
 type CommentVisitor func(idx uint64, c Comment) bool
 
@@ -63,10 +71,5 @@ func (n *Comment) Value() string {
 func goVisitComment(idx C.uint64_t, cNode *C.CommentNode, data unsafe.Pointer) C.bool {
 	handle := *(*cgo.Handle)(data)
 	vis := handle.Value().(CommentVisitor)
-	goNode := Comment{
-		Node: Node{
-			handle: (*C.DocumentNode)(unsafe.Pointer(cNode)),
-		},
-	}
-	return C.bool(vis(uint64(idx), goNode))
+	return C.bool(vis(uint64(idx), toComment((*C.DocumentNode)(unsafe.Pointer(cNode)))))
 }

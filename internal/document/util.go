@@ -101,6 +101,26 @@ func getRefInSeqAt(seq *C.RefSeq, idx uint64) *C.RefNode {
 	return (*C.RefNode)(targetPtr)
 }
 
+func getCommandInSeqAt(seq *C.CommandSeq, idx uint64) *C.CommandNode {
+	if seq == nil || seq.len == 0 {
+		return nil
+	}
+
+	elemSize := unsafe.Sizeof(*seq.values)
+	targetPtr := unsafe.Add(unsafe.Pointer(seq.values), uintptr(idx)*elemSize)
+	return (*C.CommandNode)(targetPtr)
+}
+
+func getStringInSeqAt(seq *C.StringSeq, idx uint64) *C.StringNode {
+	if seq == nil || seq.len == 0 {
+		return nil
+	}
+
+	elemSize := unsafe.Sizeof(*seq.values)
+	targetPtr := unsafe.Add(unsafe.Pointer(seq.values), uintptr(idx)*elemSize)
+	return (*C.StringNode)(targetPtr)
+}
+
 func visitComments(node *C.DocumentNode, vis CommentVisitor) {
 	handle := cgo.NewHandle(vis)
 	defer handle.Delete()

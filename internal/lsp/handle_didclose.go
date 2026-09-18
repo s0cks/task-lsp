@@ -3,6 +3,7 @@ package lsp
 import (
 	"context"
 	"encoding/json"
+
 	"taskfile-lsp/internal/rpc"
 )
 

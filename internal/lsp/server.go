@@ -6,15 +6,38 @@ import (
 
 	"taskfile-lsp/internal/document"
 	"taskfile-lsp/internal/rpc"
+	"taskfile-lsp/internal/workspace"
 )
 
 type Server struct {
-	docs *DocumentStore
-	log  *log.Logger
+	ws        *workspace.Workspace
+	docs      *DocumentStore
+	log       *log.Logger
+	diagCache map[string][]Diagnostic
 }
 
 func NewServer(logger *log.Logger) *Server {
-	return &Server{docs: NewDocumentStore(logger), log: logger}
+	ws := workspace.New()
+	return &Server{
+		ws:        ws,
+		docs:      NewDocumentStore(logger, ws),
+		log:       logger,
+		diagCache: make(map[string][]Diagnostic),
+	}
+}
+
+func (s *Server) recomputeAndPublish(conn *rpc.Conn, affected []string) {
+	for _, uri := range affected {
+		diags := s.computeDiagnosticsFor(uri)
+		s.diagCache[uri] = diags
+
+		version := 0
+		if f, ok := s.ws.File(uri); ok {
+			version = f.Version
+		}
+
+		s.publish(conn, uri, version, diags)
+	}
 }
 
 func (s *Server) Register(conn *rpc.Conn) {
@@ -46,11 +69,16 @@ func toRange(r document.Range) Range {
 }
 
 func (s *Server) publish(conn *rpc.Conn, uri string, version int, diags []Diagnostic) {
+	if diags == nil {
+		diags = []Diagnostic{}
+	}
+
 	for i := range diags {
 		if diags[i].Source == "" {
 			diags[i].Source = "taskfile-lsp"
 		}
 	}
+
 	v := version
 	if err := conn.Notify("textDocument/publishDiagnostics", PublishDiagnosticsParams{
 		URI:         uri,

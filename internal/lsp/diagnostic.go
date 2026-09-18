@@ -1,7 +1,6 @@
 package lsp
 
 import "taskfile-lsp/internal/analysis"
-import "taskfile-lsp/internal/document"
 
 type DiagnosticSeverity int
 
@@ -42,23 +41,18 @@ var passes = []analysis.Pass{
 	analysis.CyclicDepsPass{},
 }
 
-// parseAndConvert parses text into a *document.Document and runs every
-// registered pass over it, converting the result into LSP diagnostics.
-// On parse failure it returns a single diagnostic built from the parser's
-// error message and a nil *document.Document -- callers must treat a nil
-// parsed doc as "nothing to query" rather than a programmer error.
-func parseAndConvert(text string) (*document.Document, []Diagnostic) {
-	parsed, err := document.ParseDocumentString(text)
-	if err != nil {
-		return nil, []Diagnostic{{
-			Range:    Range{},
-			Severity: SeverityError,
-			Message:  err.Error(),
-		}}
+func (s *Server) computeDiagnosticsFor(uri string) []Diagnostic {
+	f, ok := s.ws.File(uri)
+	if !ok {
+		return nil
+	}
+
+	if f.Parsed == nil {
+		return []Diagnostic{{Severity: SeverityError, Message: "failed to parse document"}}
 	}
 
 	var diags []Diagnostic
-	for _, d := range analysis.RunAll(parsed, passes) {
+	for _, d := range analysis.RunAll(uri, f.Parsed, s.ws, passes) {
 		diags = append(diags, Diagnostic{
 			Range:    toLSPRange(d.Range),
 			Severity: SeverityWarning,
@@ -67,5 +61,18 @@ func parseAndConvert(text string) (*document.Document, []Diagnostic) {
 		})
 	}
 
-	return parsed, diags
+	for _, c := range s.ws.DetectIncludeCycles() {
+		if c.URI != uri {
+			continue
+		}
+
+		diags = append(diags, Diagnostic{
+			Range:    toLSPRange(c.Range),
+			Severity: SeverityWarning,
+			Code:     "include-cycle",
+			Message:  c.Message,
+		})
+	}
+
+	return diags
 }

@@ -226,6 +226,22 @@ func (n *Task) GetDepAt(idx uint64) Ref {
 	}
 }
 
+func (n *Task) GetNumberOfCmds() uint64 {
+	if n == nil || n.handle == nil {
+		return 0
+	}
+
+	return uint64(n.toTaskNode().cmds.len)
+}
+
+func (n *Task) GetCmdAt(idx uint64) Command {
+	if n == nil || n.handle == nil {
+		return Command{}
+	}
+
+	return toCommand(getCommandInSeqAt(&n.toTaskNode().cmds, idx))
+}
+
 func (n *Task) VisitDeps(vis RefVisitor) {
 	if n == nil || n.handle == nil {
 		return

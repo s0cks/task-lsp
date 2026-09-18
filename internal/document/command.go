@@ -9,7 +9,16 @@ package document
 #include "bridge.h"
 */
 import "C"
+import "unsafe"
 
 type Command struct {
-	handle *C.CommandNode
+	Node
+}
+
+func toCommand(node *C.CommandNode) Command {
+	return Command{
+		Node: Node{
+			handle: (*C.DocumentNode)(unsafe.Pointer(node)),
+		},
+	}
 }

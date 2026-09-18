@@ -3,6 +3,7 @@ package lsp
 import (
 	"context"
 	"encoding/json"
+
 	"taskfile-lsp/internal/rpc"
 )
 
@@ -18,6 +19,6 @@ func (s *Server) handleDidChange(ctx context.Context, conn *rpc.Conn, params jso
 	}
 
 	text := p.ContentChanges[len(p.ContentChanges)-1].Text
-	diags := s.docs.Update(p.TextDocument.URI, p.TextDocument.Version, text)
-	s.publish(conn, p.TextDocument.URI, p.TextDocument.Version, diags)
+	affected := s.docs.Update(p.TextDocument.URI, p.TextDocument.Version, text)
+	s.recomputeAndPublish(conn, affected)
 }
