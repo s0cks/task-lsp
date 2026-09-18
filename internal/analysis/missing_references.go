@@ -15,6 +15,7 @@ func (MissingReferencesPass) Run(uri string, doc *document.Document, resolve Res
 		if !v.IsRef() {
 			return true
 		}
+
 		ref := v.Ref()
 		if _, _, ok := resolve.FindVar(uri, ref.Name()); !ok {
 			diags = append(diags, Diagnostic{
@@ -23,12 +24,13 @@ func (MissingReferencesPass) Run(uri string, doc *document.Document, resolve Res
 				Message: "var \"" + v.Name() + "\" references undefined var \"" + ref.Name() + "\"",
 			})
 		}
+
 		return true
 	})
 
 	doc.VisitTasks(func(_ uint64, t document.Task) bool {
 		n := t.GetNumberOfDeps()
-		for i := uint64(0); i < n; i++ {
+		for i := range n {
 			dep := t.GetDepAt(i)
 			if _, _, ok := resolve.FindTask(uri, dep.Name()); !ok {
 				diags = append(diags, Diagnostic{
@@ -38,6 +40,7 @@ func (MissingReferencesPass) Run(uri string, doc *document.Document, resolve Res
 				})
 			}
 		}
+
 		return true
 	})
 

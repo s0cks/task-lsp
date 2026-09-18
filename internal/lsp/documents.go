@@ -27,8 +27,8 @@ type DocumentStore struct {
 	languageIDs map[string]string
 }
 
-func NewDocumentStore(logger *log.Logger, ws *workspace.Workspace) *DocumentStore {
-	return &DocumentStore{log: logger, ws: ws, languageIDs: make(map[string]string)}
+func NewDocumentStore(ws *workspace.Workspace) *DocumentStore {
+	return &DocumentStore{ws: ws, languageIDs: make(map[string]string)}
 }
 
 func (s *DocumentStore) snapshot(uri string) (*Document, bool) {

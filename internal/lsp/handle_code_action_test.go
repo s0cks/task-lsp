@@ -3,14 +3,12 @@ package lsp
 import (
 	"context"
 	"encoding/json"
-	"log"
-	"os"
 	"strings"
 	"testing"
 )
 
 func newTestServer() *Server {
-	return NewServer(log.New(os.Stderr, "", 0))
+	return NewServer()
 }
 
 func openDoc(t *testing.T, s *Server, uri, text string) {

@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 
 	"taskfile-lsp/internal/rpc"
+
+	"charm.land/log/v2"
 )
 
 func (s *Server) handleDidOpen(ctx context.Context, conn *rpc.Conn, params json.RawMessage) {
 	var p DidOpenTextDocumentParams
 	if err := json.Unmarshal(params, &p); err != nil {
-		s.log.Printf("didOpen: %v", err)
+		log.Errorf("didOpen: %v", err)
 		return
 	}
 

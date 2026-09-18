@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 
 	"taskfile-lsp/internal/rpc"
+
+	"charm.land/log/v2"
 )
 
 func (s *Server) handleDidChange(ctx context.Context, conn *rpc.Conn, params json.RawMessage) {
 	var p DidChangeTextDocumentParams
 	if err := json.Unmarshal(params, &p); err != nil {
-		s.log.Printf("didChange: %v", err)
+		log.Errorf("didChange: %v", err)
 		return
 	}
 

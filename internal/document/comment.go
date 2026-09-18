@@ -17,6 +17,10 @@ type Comment struct {
 }
 
 func (n *Comment) toCommentNode() *C.CommentNode {
+	if n == nil || n.handle == nil {
+		return nil
+	}
+
 	return (*C.CommentNode)(unsafe.Pointer(n.handle))
 }
 

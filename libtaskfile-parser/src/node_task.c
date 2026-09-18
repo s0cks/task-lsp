@@ -16,6 +16,20 @@ void VisitTaskDotenvs(TaskNode* node, StringVisitor vis, void* data) {
   VisitStringsInSeq(&node->dotenvs, vis, data);
 }
 
+void VisitTaskVars(TaskNode* node, VarVisitor vis, void* data) {
+  if (!node)
+    return;
+
+  return VisitVarsInSeq(&node->vars, vis, data);
+}
+
+void VisitTaskEnvVars(TaskNode* node, VarVisitor vis, void* data) {
+  if (!node)
+    return;
+
+  return VisitVarsInSeq(&node->env, vis, data);
+}
+
 void VisitTaskDeps(TaskNode* node, RefVisitor vis, void* data) {
   if (!node)
     return;

@@ -8,7 +8,10 @@ package document
 #include "bridge.h"
 */
 import "C"
-import "unsafe"
+import (
+	"runtime/cgo"
+	"unsafe"
+)
 
 type VarKind int
 
@@ -21,11 +24,6 @@ const (
 
 type Var struct {
 	Node
-	//	struct _VarNode {
-	//	  DEFINE_DOCUMENT_NODE_FIELDS;
-	//	      DocumentNode* value;
-	//	      CommandNode* command;
-	//	};
 }
 
 func (n *Var) toVarNode() *C.VarNode {
@@ -34,6 +32,10 @@ func (n *Var) toVarNode() *C.VarNode {
 	}
 
 	return (*C.VarNode)(unsafe.Pointer(n.handle))
+}
+
+func toVar(node *C.DocumentNode) Var {
+	return Var{Node: Node{handle: node}}
 }
 
 func (n *Var) Name() string {
@@ -94,4 +96,11 @@ func (n *Var) Ref() Ref {
 			handle: (*C.DocumentNode)(unsafe.Pointer(n.toVarNode().ref)),
 		},
 	}
+}
+
+//export goVisitVar
+func goVisitVar(idx C.uint64_t, cNode *C.VarNode, data unsafe.Pointer) C.bool {
+	handle := *(*cgo.Handle)(data)
+	vis := handle.Value().(VarVisitor)
+	return C.bool(vis(uint64(idx), toVar((*C.DocumentNode)(unsafe.Pointer(cNode)))))
 }

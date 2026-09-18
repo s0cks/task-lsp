@@ -50,7 +50,6 @@ type Task struct {
 	// VarSeq env;
 	// CommandSeq status_cmds;
 	// PreconditionSeq preconditions;
-	// StringSeq aliases;
 	// StringSeq prompts;
 	// StringSeq sources;
 	// StringSeq generates;
@@ -268,6 +267,21 @@ func (n *Task) VisitAliases(vis StringVisitor) {
 	C.VisitTaskAliases(
 		n.toTaskNode(),
 		(C.StringVisitor)(unsafe.Pointer(C.goVisitString)),
+		unsafe.Pointer(&handle),
+	)
+}
+
+func (n *Task) VisitVars(vis VarVisitor) {
+	if n == nil || n.handle == nil {
+		return
+	}
+
+	handle := cgo.NewHandle(vis)
+	defer handle.Delete()
+
+	C.VisitTaskVars(
+		n.toTaskNode(),
+		(C.VarVisitor)(unsafe.Pointer(C.goVisitVar)),
 		unsafe.Pointer(&handle),
 	)
 }

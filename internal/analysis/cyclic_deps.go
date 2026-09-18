@@ -17,15 +17,6 @@ type depNode struct {
 	name string
 }
 
-// Run detects cycles in the task-dependency graph, following namespaced
-// deps (e.g. "docs:build") across files via resolve. It's seeded from this
-// doc's own tasks, but a cycle that passes through another file is still
-// found: hopping to a cross-file task via resolve.FindTask continues the
-// same DFS using that task's own deps, resolved from its own file's
-// perspective. Running this pass again for that other file will report the
-// same logical cycle a second time, attached to a different task -- that's
-// intentional, not deduped across files, since each file affected by the
-// cycle should show it.
 func (CyclicDepsPass) Run(uri string, doc *document.Document, resolve Resolver) []Diagnostic {
 	tasks := map[depNode]document.Task{}
 	doc.VisitTasks(func(_ uint64, t document.Task) bool {
@@ -53,14 +44,16 @@ func (CyclicDepsPass) Run(uri string, doc *document.Document, resolve Resolver) 
 			ref := dep.Name()
 			dt, targetURI, ok := resolve.FindTask(n.uri, ref)
 			if !ok {
-				continue // undefined -- MissingReferencesPass's job, not ours
+				continue
 			}
+
 			dn := depNode{uri: targetURI, name: dt.Name()}
 
 			switch color[dn] {
 			case white:
 				tasks[dn] = dt
 				visit(dn, dt)
+
 			case gray:
 				cycle := cycleFrom(stack, dn)
 				key := cycleKey(cycle)
@@ -72,6 +65,7 @@ func (CyclicDepsPass) Run(uri string, doc *document.Document, resolve Resolver) 
 						Message: "cyclic task dependency: " + describeCycle(cycle),
 					})
 				}
+
 			}
 		}
 
@@ -94,6 +88,7 @@ func cycleFrom(stack []depNode, closingAt depNode) []depNode {
 			return append(append([]depNode{}, stack[i:]...), closingAt)
 		}
 	}
+
 	return append(append([]depNode{}, stack...), closingAt)
 }
 
@@ -105,6 +100,7 @@ func cycleKey(cycle []depNode) string {
 		b.WriteString(n.name)
 		b.WriteByte(',')
 	}
+
 	return b.String()
 }
 
@@ -114,7 +110,9 @@ func describeCycle(cycle []depNode) string {
 		if i > 0 {
 			b.WriteString(" -> ")
 		}
+
 		b.WriteString(n.name)
 	}
+
 	return b.String()
 }

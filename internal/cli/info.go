@@ -65,6 +65,5 @@ func init() {
 		RunE:  HandleInfo,
 	}
 	AddFormatFlags(info)
-
 	RootCommand.AddCommand(info)
 }

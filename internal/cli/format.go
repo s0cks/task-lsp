@@ -35,10 +35,13 @@ func GetCliFormat() CliFormat {
 	switch format {
 	case "plain":
 		return CliFormatPlain
+
 	case "json":
 		return CliFormatJson
+
 	case "pretty":
 		return CliFormatPretty
+
 	default:
 		return DefaultCliFormat
 	}
@@ -65,8 +68,10 @@ func AddFormatFlags(cmd *cobra.Command) {
 	cmd.Flags().StringP("format", "f", "pretty", fmt.Sprintf("The output format. Valid values are: %s",
 		strings.Join(all, ", "),
 	))
+
 	for _, format := range all {
 		cmd.Flags().BoolP(format, "", false, fmt.Sprintf("Enable %s output", format))
 	}
+
 	cmd.MarkFlagsMutuallyExclusive(append(all, "format")...)
 }

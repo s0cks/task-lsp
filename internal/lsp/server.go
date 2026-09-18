@@ -2,7 +2,6 @@ package lsp
 
 import (
 	"fmt"
-	"log"
 
 	"taskfile-lsp/internal/document"
 	"taskfile-lsp/internal/rpc"
@@ -12,16 +11,14 @@ import (
 type Server struct {
 	ws        *workspace.Workspace
 	docs      *DocumentStore
-	log       *log.Logger
 	diagCache map[string][]Diagnostic
 }
 
-func NewServer(logger *log.Logger) *Server {
+func NewServer() *Server {
 	ws := workspace.New()
 	return &Server{
 		ws:        ws,
-		docs:      NewDocumentStore(logger, ws),
-		log:       logger,
+		docs:      NewDocumentStore(ws),
 		diagCache: make(map[string][]Diagnostic),
 	}
 }

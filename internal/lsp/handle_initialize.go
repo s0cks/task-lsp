@@ -8,6 +8,8 @@ import (
 
 	"taskfile-lsp/internal/rpc"
 	"taskfile-lsp/internal/workspace"
+
+	"charm.land/log/v2"
 )
 
 func (s *Server) handleInitialize(ctx context.Context, conn *rpc.Conn, params json.RawMessage) (any, *rpc.Error) {
@@ -27,7 +29,7 @@ func (s *Server) handleInitialize(ctx context.Context, conn *rpc.Conn, params js
 		if rootPath, err := workspace.URIToPath(*rootURI); err == nil {
 			s.loadWorkspaceRoot(rootPath)
 		} else {
-			s.log.Printf("initialize: could not resolve root URI %q: %v", *rootURI, err)
+			log.Errorf("initialize: could not resolve root URI %q: %v", *rootURI, err)
 		}
 	}
 
