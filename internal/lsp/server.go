@@ -3,7 +3,6 @@ package lsp
 import (
 	"fmt"
 
-	"taskfile-lsp/internal/document"
 	"taskfile-lsp/internal/rpc"
 	"taskfile-lsp/internal/workspace"
 )
@@ -58,12 +57,12 @@ func (s *Server) Register(conn *rpc.Conn) {
 	conn.HandleRequest("workspace/symbol", s.handleWorkspaceSymbols)
 }
 
-func toRange(r document.Range) Range {
-	return Range{
-		Start: Position{Line: r.Start.Row, Character: r.Start.Col},
-		End:   Position{Line: r.End.Row, Character: r.End.Col},
-	}
-}
+// func toRange(r document.Range) Range {
+// 	return Range{
+// 		Start: Position{Line: r.Start.Row, Character: r.Start.Col},
+// 		End:   Position{Line: r.End.Row, Character: r.End.Col},
+// 	}
+// }
 
 func (s *Server) publish(conn *rpc.Conn, uri string, version int, diags []Diagnostic) {
 	if diags == nil {

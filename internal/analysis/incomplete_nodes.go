@@ -1,6 +1,9 @@
 package analysis
 
-import "taskfile-lsp/internal/document"
+import (
+	"fmt"
+	"taskfile-lsp/internal/document"
+)
 
 const CodeIncompleteNode = "incomplete-node"
 
@@ -8,36 +11,43 @@ type IncompleteNodesPass struct{}
 
 func (IncompleteNodesPass) Name() string { return "incomplete-nodes" }
 
+type HasRange interface {
+	Range() document.Range
+}
+
 func (IncompleteNodesPass) Run(uri string, doc *document.Document, resolve Resolver) []Diagnostic {
 	var diags []Diagnostic
 
-	report := func(r document.Range, what string) {
-		diags = append(diags, Diagnostic{Range: r, Code: CodeIncompleteNode, Message: what})
+	report := func(t HasRange, format string, args ...any) {
+		diags = append(diags, Diagnostic{
+			Range:   t.Range(),
+			Code:    CodeIncompleteNode,
+			Message: fmt.Sprintf(format, args...),
+		})
 	}
 
 	doc.VisitTasks(func(_ uint64, t document.Task) bool {
 		switch {
 		case t.IsError():
-			report(document.Range{Start: t.Start(), End: t.End()}, "task \""+t.Name()+"\" has a parse error")
+			report(&t, "task `%s` has a parse error", t.Name())
 			return true
 
 		case t.IsIncomplete():
-			report(document.Range{Start: t.Start(), End: t.End()}, "task \""+t.Name()+"\" is incomplete")
+			report(&t, "task `%s` is incomplete", t.Name())
 			return true
-
 		}
 
 		for i := uint64(0); i < t.GetNumberOfCmds(); i++ {
 			cmd := t.GetCmdAt(i)
 			if cmd.IsIncomplete() || cmd.IsError() {
-				report(document.Range{Start: cmd.Start(), End: cmd.End()}, "task \""+t.Name()+"\" has an incomplete command")
+				report(&cmd, "task `%s` has incomplete command", t.Name())
 			}
 		}
 
 		for i := uint64(0); i < t.GetNumberOfDeps(); i++ {
 			dep := t.GetDepAt(i)
 			if dep.IsIncomplete() || dep.IsError() {
-				report(document.Range{Start: dep.Start(), End: dep.End()}, "task \""+t.Name()+"\" has an incomplete dependency")
+				report(&dep, "task `%s` has incomplete dependency", t.Name())
 			}
 		}
 
@@ -47,12 +57,12 @@ func (IncompleteNodesPass) Run(uri string, doc *document.Document, resolve Resol
 	doc.VisitVars(func(_ uint64, v document.Var) bool {
 		switch {
 		case v.IsError():
-			report(document.Range{Start: v.Start(), End: v.End()}, "var \""+v.Name()+"\" has a parse error")
+			report(&v, "var `%s` has a parse error", v.Name())
 
 		case v.IsIncomplete():
-			report(document.Range{Start: v.Start(), End: v.End()}, "var \""+v.Name()+"\" is incomplete")
-
+			report(&v, "var `%s` is incomplete", v.Name())
 		}
+
 		return true
 	})
 

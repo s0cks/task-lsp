@@ -3,7 +3,9 @@ package lsp
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
+	"taskfile-lsp/internal/document"
 	"taskfile-lsp/internal/rpc"
 )
 
@@ -21,6 +23,28 @@ func (s *Server) handleCodeAction(ctx context.Context, conn *rpc.Conn, params js
 	}
 
 	actions = append(actions, RemoveIncompleteNodeCodeAction(doc, p.TextDocument.URI, s.ws, &p)...)
+
+	task, found := doc.parsed.FindTaskAt(document.Pos{
+		Row: p.Range.Start.Line,
+		Col: p.Range.Start.Character,
+	})
+
+	if found {
+		actions = append(actions, CodeAction{
+			Title: fmt.Sprintf("Test %s", task.Name()),
+			Kind:  "quickfix",
+			Diagnostics: []Diagnostic{
+				{
+					Range:   Range{},
+					Code:    "task",
+					Message: "",
+				},
+			},
+			Edit: &WorkspaceEdit{
+				Changes: map[string][]TextEdit{},
+			},
+		})
+	}
 
 	return actions, nil
 }

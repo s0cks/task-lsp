@@ -1,8 +1,6 @@
 package lsp
 
 import (
-	"log"
-
 	"taskfile-lsp/internal/document"
 	"taskfile-lsp/internal/workspace"
 )
@@ -22,7 +20,6 @@ func (d *Document) Access(fn func(doc *document.Document, text string)) {
 }
 
 type DocumentStore struct {
-	log         *log.Logger
 	ws          *workspace.Workspace
 	languageIDs map[string]string
 }

@@ -95,4 +95,3 @@ tasks:
       - go:clean
       - meson:clean
       - vscode:clean
-      - hello-world

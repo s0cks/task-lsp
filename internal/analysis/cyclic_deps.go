@@ -29,6 +29,7 @@ func (CyclicDepsPass) Run(uri string, doc *document.Document, resolve Resolver) 
 		gray  = 1
 		black = 2
 	)
+
 	color := map[depNode]int{}
 	seen := map[string]bool{}
 	var diags []Diagnostic

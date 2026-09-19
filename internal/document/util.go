@@ -50,6 +50,18 @@ type Range struct {
 	End   Pos
 }
 
+func (r Range) Contains(pos Pos) bool {
+	if pos.Row < r.Start.Row || pos.Row > r.End.Row {
+		return false
+	} else if pos.Row == r.Start.Row && pos.Col < r.Start.Col {
+		return false
+	} else if pos.Row == r.End.Row && pos.Col > r.End.Col {
+		return false
+	}
+
+	return true
+}
+
 func toRange(cRange *C.Range) Range {
 	return Range{
 		Start: toPos(&cRange.start),

@@ -1,6 +1,9 @@
 package analysis
 
-import "taskfile-lsp/internal/document"
+import (
+	"fmt"
+	"taskfile-lsp/internal/document"
+)
 
 const CodeMissingReference = "missing-reference"
 
@@ -21,7 +24,7 @@ func (MissingReferencesPass) Run(uri string, doc *document.Document, resolve Res
 			diags = append(diags, Diagnostic{
 				Range:   ref.Range(),
 				Code:    CodeMissingReference,
-				Message: "var \"" + v.Name() + "\" references undefined var \"" + ref.Name() + "\"",
+				Message: fmt.Sprintf("var `%s` references undefined var `%s`", v.Name(), ref.Name()),
 			})
 		}
 
@@ -36,7 +39,7 @@ func (MissingReferencesPass) Run(uri string, doc *document.Document, resolve Res
 				diags = append(diags, Diagnostic{
 					Range:   dep.Range(),
 					Code:    CodeMissingReference,
-					Message: "task \"" + t.Name() + "\" depends on undefined task \"" + dep.Name() + "\"",
+					Message: fmt.Sprintf("task `%s` depends on undefined task `%s`", t.Name(), dep.Name()),
 				})
 			}
 		}

@@ -25,6 +25,6 @@ func createLogger() func() {
 	log.SetOutput(logFile)
 	log.SetFormatter(log.JSONFormatter)
 	return func() {
-		logFile.Close()
+		_ = logFile.Close()
 	}
 }

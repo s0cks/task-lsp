@@ -26,3 +26,27 @@ func (n *Defer) toDeferNode() *C.DeferNode {
 func toDefer(node *C.DocumentNode) Defer {
 	return Defer{Node: Node{handle: node}}
 }
+
+func (n *Defer) IsTaskCall() bool {
+	if n == nil || n.handle == nil {
+		return false
+	}
+
+	return bool(n.toDeferNode().is_task_call)
+}
+
+func (n *Defer) TaskCall() Ref {
+	if n == nil || n.handle == nil {
+		return Ref{}
+	}
+
+	return toRef(&n.toDeferNode().task_call)
+}
+
+func (n *Defer) Command() String {
+	if n == nil || n.handle == nil {
+		return String{}
+	}
+
+	return toString((*C.DocumentNode)(unsafe.Pointer(n.toDeferNode().cmd)))
+}

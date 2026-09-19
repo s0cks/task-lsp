@@ -58,6 +58,25 @@ func (doc *Document) FindVar(name string) (Var, bool) {
 	return Var{Node: Node{handle: (*C.DocumentNode)(unsafe.Pointer(v))}}, true
 }
 
+func (doc *Document) FindTaskAt(pos Pos) (Task, bool) {
+	if doc == nil || doc.Handle == nil {
+		return Task{}, false
+	}
+
+	var task Task
+	var found bool
+	doc.VisitTasks(func(idx uint64, t Task) bool {
+		if t.Range().Contains(pos) {
+			task = t
+			found = true
+		}
+
+		return true
+	})
+
+	return task, found
+}
+
 func (doc *Document) FindTask(name string) (Task, bool) {
 	if doc == nil || doc.Handle == nil {
 		return Task{}, false
