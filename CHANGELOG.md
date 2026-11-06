@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/s0cks/task-lsp/compare/lsp-v0.2.1...lsp-v0.3.0) (2026-11-06)
+
+
+### Features
+
+* ✨ add back osx builds? ([1b2fc7c](https://github.com/s0cks/task-lsp/commit/1b2fc7c2940513f43621333ae8dc28509780295f))
+
+
+### Bug Fixes
+
+* 🐛 lets fix macos builds ([3458c01](https://github.com/s0cks/task-lsp/commit/3458c0134f6b591a1dae15ab18869b0108d75f39))
+
 ## [0.2.1](https://github.com/s0cks/task-lsp/compare/lsp-v0.2.0...lsp-v0.2.1) (2026-09-17)
 
 
