@@ -52,7 +52,8 @@ jobs:
         run: |
           brew install \
             meson \
-            ninja
+            ninja \
+            pkg-config
       - name: Install Toolchain (Windows)
         if: matrix.runner == 'windows-latest'
         run: |
@@ -71,6 +72,8 @@ jobs:
             export CC=clang
             export CXX=clang++
             export LD=lld
+          elif [[ "${{ matrix.os }}" = "macos-14" ]]; then
+            export PATH="/opt/homebrew/bin:$PATH"
           fi
 
           meson setup build
@@ -88,7 +91,20 @@ jobs:
           export CGO_ENABLED=1
           export GOOS=${{ matrix.os }}
           export GOARCH=${{ matrix.arch }}
-          export PKG_CONFIG_PATH="build/meson-uninstalled:$PKG_CONFIG_PATH"
+
+          if [ "${{ matrix.os }}" = "darwin" ]; then
+            if [ "${{ matrix.arch }}" = "arm64" ]; then
+              BREW_PREFIX="/opt/homebrew"
+            else
+              BREW_PREFIX="/usr/local"
+            fi
+
+            export PATH="$BREW_PREFIX/bin:$PATH"
+            export CGO_CFLAGS="-I$BREW_PREFIX/include -I${{ github.workspace }}/build"
+            export CGO_LDFLAGS="-L$BREW_PREFIX/lib -L${{ github.workspace }}/build"
+          fi
+
+          export PKG_CONFIG_PATH="${{ github.workspace }}/build/meson-uninstalled:$PKG_CONFIG_PATH"
           go build \
             -trimpath \
             -ldflags="-s -w -X taskfile-lsp/internal/lsp.Version=${{ steps.clean_version.outputs.tag }}" \
