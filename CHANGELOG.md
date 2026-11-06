@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/s0cks/task-lsp/compare/lsp-v0.3.0...lsp-v0.3.1) (2026-11-06)
+
+
+### Bug Fixes
+
+* 🐛 update release-lsp workflow to build on macos-latest ([ce18fe3](https://github.com/s0cks/task-lsp/commit/ce18fe300f6d5c701e4a44b37b3be1c50d69316a))
+
 ## [0.3.0](https://github.com/s0cks/task-lsp/compare/lsp-v0.2.1...lsp-v0.3.0) (2026-11-06)
 
 
