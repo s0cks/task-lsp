@@ -7,6 +7,7 @@ import (
 	"taskfile-lsp/internal/cli"
 )
 
+// hello
 func main() {
 	if err := cli.RootCommand.Execute(); err != nil {
 		fmt.Println()
